@@ -1,0 +1,1 @@
+export const DB_NAME = "mahima_agency_store";
