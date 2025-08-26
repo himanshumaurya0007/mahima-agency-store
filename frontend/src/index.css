@@ -1,0 +1,581 @@
+@import 'tailwindcss';
+
+/* CUSTOM FONTS SETUP */
+
+/* ALPINO */
+
+@font-face {
+  font-family: 'Alpino';
+  src: url('../public/Assets/Fonts/Alpino/Alpino-Thin.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Alpino';
+  src: url('../public/Assets/Fonts/Alpino/Alpino-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Alpino';
+  src: url('../public/Assets/Fonts/Alpino/Alpino-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Alpino';
+  src: url('../public/Assets/Fonts/Alpino/Alpino-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Alpino';
+  src: url('../public/Assets/Fonts/Alpino/Alpino-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Alpino';
+  src: url('../public/Assets/Fonts/Alpino/Alpino-Black.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* SUPREME */
+
+@font-face {
+  font-family: 'Supreme';
+  src: url('../public/Assets/Fonts/Supreme/Supreme-Thin.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Supreme';
+  src: url('../public/Assets/Fonts/Supreme/Supreme-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Supreme';
+  src: url('../public/Assets/Fonts/Supreme/Supreme-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Supreme';
+  src: url('../public/Assets/Fonts/Supreme/Supreme-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Supreme';
+  src: url('../public/Assets/Fonts/Supreme/Supreme-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Supreme';
+  src: url('../public/Assets/Fonts/Supreme/Supreme-Extrabold.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* CUSTOM PROPERTIES */
+
+@theme {
+
+  /* Custom Font Families */
+  --font-alpino: 'Alpino', serif;
+  --font-supreme: 'Supreme', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Cream Noir Color Palette */
+  --color-black: #111111;
+  --color-white: #ffffff;
+  --color-cream: #fff4e6;
+  --color-vanilla: #f9ead3;
+  --color-peach: #ffd6b3;
+  --color-coffee: #2b2b2b;
+
+  /* Custom Gray Shades */
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+
+  /* Letter Spacing */
+  --letter-spacing-tighter: -0.05em;
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.025em;
+  --letter-spacing-wider: 0.05em; /* THIS IS DEFAULT LETTER SPACING */
+  --letter-spacing-widest: 0.1em;
+
+  /* Custom Font Sizes */
+  --font-size-brand: 2.5rem;
+  --font-size-hero: 3.5rem;
+  --font-size-section: 2rem;
+  --font-size-card: 1.25rem;
+  --font-size-body: 1rem;
+  --font-size-caption: 0.875rem;
+
+  /* Custom Spacing */
+  --spacing-section: 4rem;
+  --spacing-card: 1.5rem;
+  --spacing-element: 1rem;
+
+  /* Border Radius */
+  --radius-card: 12px;
+  --radius-button: 8px;
+  --radius-input: 6px;
+
+  /* Box Shadows */
+  --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-hover: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/*  BASE STYLES */
+
+body {
+  font-family: theme(--font-supreme);
+  background-color: theme(--color-cream);
+  color: theme(--color-black);
+  line-height: 1.6;
+  letter-spacing: theme(--letter-spacing-wider);
+}
+
+/*  HEADING TAGS DEFAULT STYLING  */
+h1 {
+  font-family: theme(--font-alpino);
+  font-size: 2.25rem; /* text-4xl */
+  font-weight: 700;
+  color: theme(--color-black);
+  line-height: 1.1;
+  letter-spacing: theme(--letter-spacing-wider);
+  margin-bottom: 1rem;
+}
+
+h2 {
+  font-family: theme(--font-alpino);
+  font-size: 1.875rem; /* text-3xl */
+  font-weight: 600;
+  color: theme(--color-black);
+  line-height: 1.2;
+  letter-spacing: theme(--letter-spacing-wider);
+  margin-bottom: 0.75rem;
+}
+
+h3 {
+  font-family: theme(--font-alpino);
+  font-size: 1.5rem; /* text-2xl */
+  font-weight: 600;
+  color: theme(--color-black);
+  line-height: 1.3;
+  letter-spacing: theme(--letter-spacing-wider);
+  margin-bottom: 0.5rem;
+}
+
+h4 {
+  font-family: theme(--font-alpino);
+  font-size: 1.25rem; /* text-xl */
+  font-weight: 500;
+  color: theme(--color-black);
+  line-height: 1.4;
+  letter-spacing: theme(--letter-spacing-wider);
+  margin-bottom: 0.5rem;
+}
+
+h5 {
+  font-family: theme(--font-alpino);
+  font-size: 1.125rem; /* text-lg */
+  font-weight: 500;
+  color: theme(--color-coffee);
+  line-height: 1.5;
+  letter-spacing: theme(--letter-spacing-wider);
+  margin-bottom: 0.25rem;
+}
+
+h6 {
+  font-family: theme(--font-alpino);
+  font-size: 1rem; /* text-base */
+  font-weight: 500;
+  color: theme(--color-coffee);
+  line-height: 1.5;
+  letter-spacing: theme(--letter-spacing-wider);
+  margin-bottom: 0.25rem;
+}
+
+/* Default paragraph styling */
+p {
+  font-family: theme(--font-supreme);
+  font-size: theme(--font-size-body);
+  color: theme(--color-black);
+  line-height: 1.6;
+  letter-spacing: theme(--letter-spacing-wider);
+  margin-bottom: 0.5rem;
+}
+
+/* COMPONENT CLASSES */
+@layer components {
+  /* Typography Classes*/
+  .text-brand {
+    font-family: theme(--font-alpino);
+    font-size: theme(--font-size-brand);
+    font-weight: 700;
+    color: theme(--color-black);
+    line-height: 1.2;
+    letter-spacing: theme(--letter-spacing-wider);
+  }
+
+  .text-hero {
+    font-family: theme(--font-alpino);
+    font-size: theme(--font-size-hero);
+    font-weight: 700;
+    color: theme(--color-black);
+    line-height: 1.1;
+    letter-spacing: theme(--letter-spacing-wider);
+  }
+
+  .text-section {
+    font-family: theme(--font-alpino);
+    font-size: theme(--font-size-section);
+    font-weight: 600;
+    color: theme(--color-black);
+    line-height: 1.3;
+    letter-spacing: theme(--letter-spacing-wider);
+  }
+
+  .text-card-title {
+    font-family: theme(--font-alpino);
+    font-size: theme(--font-size-card);
+    font-weight: 600;
+    color: theme(--color-black);
+    line-height: 1.4;
+    letter-spacing: theme(--letter-spacing-wider);
+  }
+
+  .text-body {
+    font-family: theme(--font-supreme);
+    font-size: theme(--font-size-body);
+    font-weight: 400;
+    color: theme(--color-black);
+    line-height: 1.6;
+    letter-spacing: theme(--letter-spacing-wider);
+  }
+
+  .text-caption {
+    font-family: theme(--font-supreme);
+    font-size: theme(--font-size-caption);
+    font-weight: 500;
+    color: theme(--color-coffee);
+    line-height: 1.5;
+    letter-spacing: theme(--letter-spacing-wider);
+  }
+  /* Button Components */
+  .btn-primary {
+    font-family: theme(--font-supreme);
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    border-radius: theme(--radius-button);
+    background-color: theme(--color-black);
+    color: theme(--color-cream);
+    letter-spacing: theme(--letter-spacing-wider);
+    cursor: pointer;
+    border: none;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(0px) scale(1);
+    will-change: transform, background-color, box-shadow;
+  }
+
+  .btn-primary:hover {
+    background-color: #2a2a2a;
+    transform: translateY(-2px) scale(1.02);
+    box-shadow:
+      0 8px 25px rgba(0, 0, 0, 0.15),
+      0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .btn-primary:active {
+    transform: translateY(0px) scale(0.98);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-secondary {
+    font-family: theme(--font-supreme);
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    border-radius: theme(--radius-button);
+    background-color: theme(--color-peach);
+    color: theme(--color-black);
+    letter-spacing: theme(--letter-spacing-wider);
+    cursor: pointer;
+    border: none;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(0px) scale(1);
+    will-change: transform, background-color, box-shadow, outline;
+  }
+
+  .btn-secondary:hover {
+    background-color: theme(--color-vanilla);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow:
+      0 8px 25px rgba(255, 214, 179, 0.25),
+      0 4px 12px rgba(255, 214, 179, 0.15);
+    outline: 2px solid theme(--color-peach);
+    outline-offset: 2px;
+  }
+
+  .btn-secondary:active {
+    transform: translateY(0px) scale(0.98);
+    box-shadow: 0 2px 8px rgba(255, 214, 179, 0.1);
+    outline: 1px solid theme(--color-peach);
+    outline-offset: 1px;
+    transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-outline {
+    font-family: theme(--font-supreme);
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    border-radius: theme(--radius-button);
+    background-color: transparent;
+    color: theme(--color-black);
+    border: 2px solid theme(--color-black);
+    letter-spacing: theme(--letter-spacing-wider);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(0px) scale(1);
+    will-change: transform, background-color, color, box-shadow;
+  }
+
+  .btn-outline:hover {
+    background-color: theme(--color-black);
+    color: theme(--color-cream);
+    border-color: theme(--color-black);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow:
+      0 8px 25px rgba(0, 0, 0, 0.15),
+      0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .btn-outline:active {
+    transform: translateY(0px) scale(0.98);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Card Components */
+  .card {
+    background-color: theme(--color-white);
+    border-radius: theme(--radius-card);
+    padding: theme(--spacing-card);
+    box-shadow: theme(--shadow-card);
+    border: 1px solid theme(--color-gray-300);
+    transition: all 0.2s ease;
+  }
+
+  .card:hover {
+    box-shadow: theme(--shadow-hover);
+    transform: translateY(-2px);
+    border-color: theme(--color-gray-400);
+  }
+
+  .card-highlight {
+    background-color: theme(--color-vanilla);
+    border-radius: theme(--radius-card);
+    padding: theme(--spacing-card);
+    box-shadow: theme(--shadow-card);
+    border: 1px solid theme(--color-peach);
+    transition: all 0.2s ease;
+  }
+
+  .card-highlight:hover {
+    box-shadow: theme(--shadow-hover);
+    transform: translateY(-2px);
+  }
+
+  /* Form Components */
+  .input-field {
+    font-family: theme(--font-supreme);
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: theme(--radius-input);
+    border: 1px solid theme(--color-gray-300);
+    background-color: theme(--color-white);
+    color: theme(--color-black);
+    letter-spacing: theme(--letter-spacing-wider);
+    transition: all 0.2s ease;
+  }
+
+  .input-field:focus {
+    outline: none;
+    border-color: theme(--color-peach);
+    box-shadow: 0 0 0 3px rgb(255 214 179 / 0.2);
+  }
+
+  .input-field::placeholder {
+    color: theme(--color-gray-400);
+    letter-spacing: theme(--letter-spacing-wider);
+  }
+
+  /* Navigation Components */
+  .nav-link {
+    font-family: theme(--font-supreme);
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: theme(--radius-button);
+    color: theme(--color-coffee);
+    letter-spacing: theme(--letter-spacing-wider);
+    text-decoration: none;
+    display: inline-block;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(0px) scale(1);
+    will-change: transform, background-color, color, box-shadow;
+  }
+
+  .nav-link:hover {
+    color: theme(--color-black);
+    background-color: theme(--color-vanilla);
+    transform: translateY(-1px) scale(1.02); /* SUBTLE SMOOTH LIFT */
+    box-shadow: 0 4px 12px rgba(249, 234, 211, 0.3);
+  }
+
+  .nav-link-active {
+    font-family: theme(--font-supreme);
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: theme(--radius-button);
+    color: theme(--color-black);
+    background-color: theme(--color-peach);
+    letter-spacing: theme(--letter-spacing-wider);
+    text-decoration: none;
+    display: inline-block;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(0px) scale(1);
+    box-shadow: 0 2px 8px rgba(255, 214, 179, 0.2);
+    will-change: transform, box-shadow;
+  }
+
+  .nav-link-active:hover {
+    transform: translateY(-1px) scale(1.02); /* SMOOTH LIFT */
+    box-shadow: 0 6px 20px rgba(255, 214, 179, 0.3);
+  }
+}
+
+/* UTILITY CLASSES */
+
+@layer utilities {
+  
+  /* Letter Spacing Utilities */
+  .tracking-tighter {
+    letter-spacing: theme(--letter-spacing-tighter);
+  }
+  .tracking-tight {
+    letter-spacing: theme(--letter-spacing-tight);
+  }
+  .tracking-normal {
+    letter-spacing: theme(--letter-spacing-normal);
+  }
+  .tracking-wide {
+    letter-spacing: theme(--letter-spacing-wide);
+  }
+  .tracking-wider {
+    letter-spacing: theme(--letter-spacing-wider);
+  }
+  .tracking-widest {
+    letter-spacing: theme(--letter-spacing-widest);
+  }
+
+  /* Spacing Utilities */
+  .section-spacing {
+    margin: theme(--spacing-section) 0;
+  }
+
+  .element-spacing {
+    margin: theme(--spacing-element) 0;
+  }
+
+  /* Animation Utilities */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+}
+
+/* ANIMATIONS */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* SCROLLBAR STYLING */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: theme(--color-cream);
+}
+
+::-webkit-scrollbar-thumb {
+  background: theme(--color-gray-400);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: theme(--color-gray-500);
+}
