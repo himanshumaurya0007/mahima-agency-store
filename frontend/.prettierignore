@@ -1,0 +1,25 @@
+# Ignore dependencies
+node_modules
+
+# Ignore build outputs
+dist
+build
+.out
+coverage
+
+# Ignore public assets
+public
+
+# Ignore configuration and lock files
+*.lock
+*.log
+*.min.js
+
+# Ignore env and system files
+.env
+.env.*
+.DS_Store
+
+# Ignore IDE/editor folders
+.vscode
+.idea
