@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+
+    <style>
+      .main-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .input-container {
+        position: relative;
+      }
+
+      .input {
+        padding: 5px 15px;
+        height: 40px;
+        border-left: 2px solid black;
+        border-bottom: 2px solid black;
+        border-right: 2px solid black;
+        border-top: transparent;
+        font-size: 16px;
+        background: transparent;
+        outline: none;
+        transition:  ease-in 0.4s;
+      }
+
+      .label {
+        position: absolute;
+        font-family: Verdana, Geneva, Tahoma, sans-serif;
+        font-size: 17px;
+        top: 15px;
+        left: 15px;
+        color: #0b2447;
+        transition: all 0.5s ease;
+        z-index: -1;
+      }
+
+      .input-container .topline {
+        position: absolute;
+        content: '';
+        background-color: black;
+        width: 0%;
+        height: 1.5px;
+        right: 0;
+        top: 0;
+        transition: width 0.4s ease;
+      }
+
+      .input-container input[type='text']:focus ~ .label,
+      .input-container input[type='text']:not(:placeholder-shown) ~ .label {
+        top: -10px;
+      }
+
+      .input-container input[type='text']:focus ~ .topline,
+      .input-container input[type='text']:not(:placeholder-shown) ~ .topline {
+        width: 46%;
+        transition: width 0.4s ease;
+      }
+
+      .input-container input[type='text']:not(:focus):placeholder-shown ~ .topline {
+        width: 100%;
+        transition: width 0.4s ease;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-container">
+      <div class="input-container">
+        <input class="input" name="text" type="text" required placeholder=" " />
+        <label class="label" for="input">First Name</label>
+        <div class="topline"></div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,10 +1,11 @@
 import React from 'react';
-import Test from './components/Test';
-
+import SignUp from './components/SignUp';
+import ResetPassword from './components/ResetPassword';
 const App = () => {
   return (
     <>
-    <Test />
+      {/* <SignUp /> */}
+      <ResetPassword />
     </>
   );
 };
