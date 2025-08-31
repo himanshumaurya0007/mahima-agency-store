@@ -1,9 +1,11 @@
+import { StatusCodes } from "http-status-codes";
+
 class ApiResponse {
-    constructor(statusCode, data, message = "Request successful") {
+    constructor(statusCode = StatusCodes.OK, data = null, message = "Request successful") {
         this.statusCode = statusCode;
         this.data = data;
         this.message = message;
-        this.success = statusCode >= 200 && statusCode < 300;
+        this.success = statusCode >= StatusCodes.OK && statusCode < StatusCodes.BAD_REQUEST;
     }
 }
 
