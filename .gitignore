@@ -35,5 +35,5 @@ Icon?
 **/tmp/
 
 # custom ignores
-*/.py
-*/.txt
+/*.py
+/*.txt
