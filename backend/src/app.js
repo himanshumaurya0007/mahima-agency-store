@@ -2,8 +2,11 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import logger from "./utils/logger.js";
+import { StatusCodes } from "http-status-codes";
 
 import healthCheckRouter from "./routes/healthCheck.route.js";
+
+import { ApiError } from "./utils/ApiError.js";
 import { errorMiddleware } from "./middlewares/error.middleware.js";
 
 const app = express();
@@ -33,6 +36,11 @@ if (process.env.NODE_ENV === "development") {
 
 // Routes
 app.use("/api/v1/health-check", healthCheckRouter);
+
+// Handle 404s
+app.use((req, res, next) => {
+    next(new ApiError(StatusCodes.NOT_FOUND, "Route not found"));
+});
 
 // Error middleware
 app.use(errorMiddleware);
