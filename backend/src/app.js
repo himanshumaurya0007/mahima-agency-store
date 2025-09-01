@@ -5,6 +5,7 @@ import logger from "./utils/logger.js";
 import { StatusCodes } from "http-status-codes";
 
 import healthCheckRouter from "./routes/healthCheck.route.js";
+import userRouter from "./routes/user.route.js";
 
 import { ApiError } from "./utils/ApiError.js";
 import { errorMiddleware } from "./middlewares/error.middleware.js";
@@ -36,6 +37,7 @@ if (process.env.NODE_ENV === "development") {
 
 // Routes
 app.use("/api/v1/health-check", healthCheckRouter);
+app.use("/api/v1/user", userRouter);
 
 // Handle 404s
 app.use((req, res, next) => {

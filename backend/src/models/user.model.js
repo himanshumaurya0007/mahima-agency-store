@@ -2,6 +2,8 @@ import mongoose, { Schema } from "mongoose";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
+import { emailRegex, phoneRegex, usernameRegex, passwordRegex } from "../utils/regex.js";
+
 const userSchema = new Schema(
     {
         firstName: {
@@ -26,8 +28,7 @@ const userSchema = new Schema(
             trim: true,
             lowercase: true,
             validate: {
-                validator: (v) =>
-                    /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(v),
+                validator: (v) => emailRegex.test(v),
                 message: (props) => `${props.value} is not a valid email address!`,
             },
         },
@@ -36,7 +37,7 @@ const userSchema = new Schema(
             required: [true, "Phone number is required"],
             trim: true,
             validate: {
-                validator: (v) => /^\+?[1-9]\d{1,14}$/.test(v),
+                validator: (v) => phoneRegex.test(v),
                 message: (props) => `${props.value} is not a valid phone number!`,
             },
         },
@@ -49,7 +50,7 @@ const userSchema = new Schema(
             minlength: [3, "Username must be at least 3 characters"],
             maxlength: [30, "Username must not exceed 30 characters"],
             validate: {
-                validator: (v) => /^[a-zA-Z0-9_]+$/.test(v),
+                validator: (v) => usernameRegex.test(v),
                 message: (props) => `${props.value} is not a valid username!`,
             },
         },
@@ -67,19 +68,21 @@ const userSchema = new Schema(
             required: [true, "Security answer is required"],
             minlength: [3, "Security answer must be at least 3 characters"],
             maxlength: [50, "Security answer must not exceed 50 characters"],
-            select: false, // Never return in queries
         },
         password: {
             type: String,
             required: [true, "Password is required"],
             minlength: [8, "Password must be at least 8 characters"],
             maxlength: [100, "Password must not exceed 100 characters"],
-            select: false, // Never return in queries
+            validate: {
+                validator: (v) => passwordRegex.test(v),
+                message:
+                    "Password must include at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character",
+            },
         },
         refreshToken: {
             type: String
         }
-
     },
     {
         timestamps: true
@@ -87,15 +90,37 @@ const userSchema = new Schema(
 )
 
 userSchema.pre("save", async function (next) {
-    if (!this.isModified("password")) return next();
+    try {
+        // Hash password if modified
+        if (this.isModified("password")) {
+            this.password = await bcrypt.hash(
+                this.password,
+                Number(process.env.BCRYPT_SALT_ROUNDS)
+            );
+        }
 
-    this.password = await bcrypt.hash(this.password, process.env.BCRYPT_SALT_ROUNDS);
-    next();
-})
+        // Hash security answer if modified
+        if (this.isModified("securityAnswer")) {
+            this.securityAnswer = await bcrypt.hash(
+                this.securityAnswer,
+                Number(process.env.BCRYPT_SALT_ROUNDS)
+            );
+        }
+
+        next();
+    } catch (err) {
+        next(err); // pass error to mongoose
+    }
+});
 
 userSchema.methods.comparePassword = async function (password) {
     return await bcrypt.compare(password, this.password);
 }
+
+userSchema.methods.compareSecurityAnswer = async function (answer) {
+    return await bcrypt.compare(answer, this.securityAnswer);
+};
+
 
 userSchema.methods.generateAccessToken = function () {
     return jwt.sign(
