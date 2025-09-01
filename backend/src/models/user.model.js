@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 
 import { emailRegex, phoneRegex, usernameRegex, passwordRegex } from "../utils/regex.js";
 import { errorMessages } from "../utils/errorMessages.js";
+import { SECURITY_QUESTIONS } from "../constants.js";
 
 const userSchema = new Schema(
     {
@@ -57,20 +58,16 @@ const userSchema = new Schema(
         },
         securityQuestion: {
             type: String,
-            enum: [
-                "What was the name of your first pet?",
-                "What city were you born in?",
-                "What was the name of your first school?",
-                "What is the name of your favorite childhood teacher?",
-                "What is the title of your favorite book or movie?",
-            ],
-            required: [true, "Security question is required"],
+            enum: {
+                values: SECURITY_QUESTIONS,
+            },
+            required: [true, errorMessages.REQUIRED("Security question")],
         },
         securityAnswer: {
             type: String,
-            required: [true, "Security answer is required"],
-            minlength: [3, "Security answer must be at least 3 characters"],
-            maxlength: [50, "Security answer must not exceed 50 characters"],
+            required: [true, errorMessages.REQUIRED("Security answer")],
+            minlength: [3, errorMessages.MIN_LENGTH("Security answer", 3)],
+            maxlength: [50, errorMessages.MAX_LENGTH("Security answer", 50)],
         },
         password: {
             type: String,

@@ -2,6 +2,7 @@ import Joi from "joi";
 
 import { emailRegex, phoneRegex, usernameRegex, passwordRegex } from "../utils/regex.js";
 import { errorMessages } from "../utils/errorMessages.js";
+import { SECURITY_QUESTIONS } from "../constants.js"
 
 export const userValidationSchema = Joi.object({
     firstName: Joi.string()
@@ -64,13 +65,7 @@ export const userValidationSchema = Joi.object({
         }),
 
     securityQuestion: Joi.string()
-        .valid(
-            "What was the name of your first pet?",
-            "What city were you born in?",
-            "What was the name of your first school?",
-            "What is the name of your favorite childhood teacher?",
-            "What is the title of your favorite book or movie?",
-        )
+        .valid(...SECURITY_QUESTIONS)
         .required()
         .messages({
             "any.only": "Invalid security question",
