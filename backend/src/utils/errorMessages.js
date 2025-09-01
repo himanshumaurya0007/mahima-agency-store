@@ -9,7 +9,7 @@ export const errorMessages = {
 
     // Specific fields
     EMAIL_INVALID: "Email must be a valid email address",
-    PHONE_INVALID: "Phone number must be in valid E.164 format",
+    PHONE_INVALID: "Phone number must be a valid Indian phone number (10 digits, cannot start with 0)",
     USERNAME_INVALID: "Username may only contain letters, numbers, and underscores",
     PASSWORD_INVALID:
         "Password must include at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character",
