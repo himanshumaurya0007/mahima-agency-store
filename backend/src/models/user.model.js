@@ -2,6 +2,7 @@ import mongoose, { Schema } from "mongoose";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
+import { fields } from "../utils/fields.js";
 import { emailRegex, phoneRegex, usernameRegex, passwordRegex } from "../utils/regex.js";
 import { errorMessages } from "../utils/errorMessages.js";
 import { SECURITY_QUESTIONS } from "../constants.js";
@@ -10,23 +11,23 @@ const userSchema = new Schema(
     {
         firstName: {
             type: String,
-            required: [true, errorMessages.REQUIRED("First name")],
-            minlength: [2, errorMessages.MIN_LENGTH("First name", 2)],
-            maxlength: [50, errorMessages.MAX_LENGTH("First name", 50)],
+            required: [true, errorMessages.REQUIRED(fields.firstName)],
+            minlength: [2, errorMessages.MIN_LENGTH(fields.firstName, 2)],
+            maxlength: [50, errorMessages.MAX_LENGTH(fields.firstName, 50)],
             trim: true,
             lowercase: true,
         },
         lastName: {
             type: String,
-            required: [true, errorMessages.REQUIRED("Last name")],
-            minlength: [2, errorMessages.MIN_LENGTH("Last name", 2)],
-            maxlength: [50, errorMessages.MAX_LENGTH("Last name", 50)],
+            required: [true, errorMessages.REQUIRED(fields.lastName)],
+            minlength: [2, errorMessages.MIN_LENGTH(fields.lastName, 2)],
+            maxlength: [50, errorMessages.MAX_LENGTH(fields.lastName, 50)],
             trim: true,
             lowercase: true,
         },
         email: {
             type: String,
-            required: [true, errorMessages.REQUIRED("Email")],
+            required: [true, errorMessages.REQUIRED(fields.email)],
             trim: true,
             lowercase: true,
             validate: {
@@ -36,7 +37,7 @@ const userSchema = new Schema(
         },
         phone: {
             type: String,
-            required: [true, errorMessages.REQUIRED("Phone number")],
+            required: [true, errorMessages.REQUIRED(fields.phone)],
             trim: true,
             validate: {
                 validator: (v) => phoneRegex.test(v),
@@ -45,9 +46,9 @@ const userSchema = new Schema(
         },
         username: {
             type: String,
-            required: [true, errorMessages.REQUIRED("Username")],
-            minlength: [3, errorMessages.MIN_LENGTH("Username", 3)],
-            maxlength: [30, errorMessages.MAX_LENGTH("Username", 30)],
+            required: [true, errorMessages.REQUIRED(fields.username)],
+            minlength: [3, errorMessages.MIN_LENGTH(fields.username, 3)],
+            maxlength: [30, errorMessages.MAX_LENGTH(fields.username, 30)],
             trim: true,
             lowercase: true,
             unique: true,
@@ -61,19 +62,19 @@ const userSchema = new Schema(
             enum: {
                 values: SECURITY_QUESTIONS,
             },
-            required: [true, errorMessages.REQUIRED("Security question")],
+            required: [true, errorMessages.REQUIRED(fields.securityQuestion)],
         },
         securityAnswer: {
             type: String,
-            required: [true, errorMessages.REQUIRED("Security answer")],
-            minlength: [3, errorMessages.MIN_LENGTH("Security answer", 3)],
-            maxlength: [50, errorMessages.MAX_LENGTH("Security answer", 50)],
+            required: [true, errorMessages.REQUIRED(fields.securityAnswer)],
+            minlength: [3, errorMessages.MIN_LENGTH(fields.securityAnswer, 3)],
+            maxlength: [50, errorMessages.MAX_LENGTH(fields.securityAnswer, 50)],
         },
         password: {
             type: String,
-            required: [true, errorMessages.REQUIRED("Password")],
-            minlength: [8, errorMessages.MIN_LENGTH("Password", 8)],
-            maxlength: [100, errorMessages.MAX_LENGTH("Password", 100)],
+            required: [true, errorMessages.REQUIRED(fields.password)],
+            minlength: [8, errorMessages.MIN_LENGTH(fields.password, 8)],
+            maxlength: [100, errorMessages.MAX_LENGTH(fields.password, 100)],
             validate: {
                 validator: (v) => passwordRegex.test(v),
                 message: errorMessages.PASSWORD_INVALID,
