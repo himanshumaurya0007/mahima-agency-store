@@ -12,6 +12,7 @@ class ApiError extends Error {
 
         this.statusCode = statusCode;
         this.data = null;
+        this.message = message;
         this.success = false;
         this.errors = errors;
 
@@ -21,13 +22,6 @@ class ApiError extends Error {
         } else {
             Error.captureStackTrace(this, this.constructor);
         }
-
-        // Log the error immediately
-        logger.error(`ApiError: ${message}`, {
-            statusCode: this.statusCode,
-            errors: this.errors,
-            stack: this.stack
-        });
     }
 }
 
