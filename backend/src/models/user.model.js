@@ -58,9 +58,11 @@ const userSchema = new Schema(
         securityQuestion: {
             type: String,
             enum: [
-                "What is your mother's maiden name?",
                 "What was the name of your first pet?",
-                "What is your favorite book?",
+                "What city were you born in?",
+                "What was the name of your first school?",
+                "What is the name of your favorite childhood teacher?",
+                "What is the title of your favorite book or movie?",
             ],
             required: [true, "Security question is required"],
         },
