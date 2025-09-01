@@ -1,5 +1,6 @@
 import Joi from "joi";
 
+import { fields } from "../utils/fields.js";
 import { emailRegex, phoneRegex, usernameRegex, passwordRegex } from "../utils/regex.js";
 import { errorMessages } from "../utils/errorMessages.js";
 import { SECURITY_QUESTIONS } from "../constants.js"
@@ -12,10 +13,10 @@ export const userValidationSchema = Joi.object({
         .lowercase()
         .required()
         .messages({
-            "string.base": errorMessages.STRING_BASE("First name"),
-            "string.empty": errorMessages.REQUIRED("First name"),
-            "string.min": errorMessages.MIN_LENGTH("First name", 2),
-            "string.max": errorMessages.MAX_LENGTH("First name", 50),
+            "string.base": errorMessages.STRING_BASE(fields.firstName),
+            "string.empty": errorMessages.REQUIRED(fields.firstName),
+            "string.min": errorMessages.MIN_LENGTH(fields.firstName, 2),
+            "string.max": errorMessages.MAX_LENGTH(fields.firstName, 50),
         }),
 
     lastName: Joi.string()
@@ -25,10 +26,10 @@ export const userValidationSchema = Joi.object({
         .lowercase()
         .required()
         .messages({
-            "string.base": errorMessages.STRING_BASE("Last name"),
-            "string.empty": errorMessages.REQUIRED("Last name"),
-            "string.min": errorMessages.MIN_LENGTH("Last name", 2),
-            "string.max": errorMessages.MAX_LENGTH("Last name", 50),
+            "string.base": errorMessages.STRING_BASE(fields.lastName),
+            "string.empty": errorMessages.REQUIRED(fields.lastName),
+            "string.min": errorMessages.MIN_LENGTH(fields.lastName, 2),
+            "string.max": errorMessages.MAX_LENGTH(fields.lastName, 50),
         }),
 
     email: Joi.string()
@@ -38,7 +39,7 @@ export const userValidationSchema = Joi.object({
         .required()
         .messages({
             "string.pattern.base": errorMessages.EMAIL_INVALID,
-            "string.empty": errorMessages.REQUIRED("Email"),
+            "string.empty": errorMessages.REQUIRED(fields.email),
         }),
 
     phone: Joi.string()
@@ -47,7 +48,7 @@ export const userValidationSchema = Joi.object({
         .required()
         .messages({
             "string.pattern.base": errorMessages.PHONE_INVALID,
-            "string.empty": errorMessages.REQUIRED("Phone number"),
+            "string.empty": errorMessages.REQUIRED(fields.phone),
         }),
 
     username: Joi.string()
@@ -59,9 +60,9 @@ export const userValidationSchema = Joi.object({
         .required()
         .messages({
             "string.pattern.base": errorMessages.USERNAME_INVALID,
-            "string.empty": errorMessages.REQUIRED("Username"),
-            "string.min": errorMessages.MIN_LENGTH("Username", 3),
-            "string.max": errorMessages.MAX_LENGTH("Username", 30),
+            "string.empty": errorMessages.REQUIRED(fields.username),
+            "string.min": errorMessages.MIN_LENGTH(fields.username, 3),
+            "string.max": errorMessages.MAX_LENGTH(fields.username, 30),
         }),
 
     securityQuestion: Joi.string()
@@ -69,7 +70,7 @@ export const userValidationSchema = Joi.object({
         .required()
         .messages({
             "any.only": "Invalid security question",
-            "string.empty": errorMessages.REQUIRED("Security question"),
+            "string.empty": errorMessages.REQUIRED(fields.securityQuestion),
         }),
 
     securityAnswer: Joi.string()
@@ -77,9 +78,9 @@ export const userValidationSchema = Joi.object({
         .max(50)
         .required()
         .messages({
-            "string.empty": errorMessages.REQUIRED("Security answer"),
-            "string.min": errorMessages.MIN_LENGTH("Security answer", 3),
-            "string.max": errorMessages.MAX_LENGTH("Security answer", 50),
+            "string.empty": errorMessages.REQUIRED(fields.securityAnswer),
+            "string.min": errorMessages.MIN_LENGTH(fields.securityAnswer, 3),
+            "string.max": errorMessages.MAX_LENGTH(fields.securityAnswer, 50),
         }),
 
     password: Joi.string()
@@ -89,9 +90,9 @@ export const userValidationSchema = Joi.object({
         .required()
         .messages({
             "string.pattern.base": errorMessages.PASSWORD_INVALID,
-            "string.empty": errorMessages.REQUIRED("Password"),
-            "string.min": errorMessages.MIN_LENGTH("Password", 8),
-            "string.max": errorMessages.MAX_LENGTH("Password", 100),
+            "string.empty": errorMessages.REQUIRED(fields.password),
+            "string.min": errorMessages.MIN_LENGTH(fields.password, 8),
+            "string.max": errorMessages.MAX_LENGTH(fields.password, 100),
         }),
 
     refreshToken: Joi.string().optional(),

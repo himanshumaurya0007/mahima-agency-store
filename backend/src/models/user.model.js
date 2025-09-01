@@ -30,6 +30,7 @@ const userSchema = new Schema(
             required: [true, errorMessages.REQUIRED(fields.email)],
             trim: true,
             lowercase: true,
+            unique: true,
             validate: {
                 validator: (v) => emailRegex.test(v),
                 message: errorMessages.EMAIL_INVALID,
@@ -61,6 +62,7 @@ const userSchema = new Schema(
             type: String,
             enum: {
                 values: SECURITY_QUESTIONS,
+                message: `Invalid ${fields.securityQuestion}`,
             },
             required: [true, errorMessages.REQUIRED(fields.securityQuestion)],
         },
@@ -91,20 +93,23 @@ const userSchema = new Schema(
 
 userSchema.pre("save", async function (next) {
     try {
+        const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS) || 10;
+
+        // Normalize phone → always store as +91XXXXXXXXXX
+        if (this.isModified("phone")) {
+            if (!this.phone.startsWith("+91")) {
+                this.phone = `+91${this.phone}`;
+            }
+        }
+        
         // Hash password if modified
         if (this.isModified("password")) {
-            this.password = await bcrypt.hash(
-                this.password,
-                Number(process.env.BCRYPT_SALT_ROUNDS)
-            );
+            this.password = await bcrypt.hash(this.password, saltRounds);
         }
 
         // Hash security answer if modified
         if (this.isModified("securityAnswer")) {
-            this.securityAnswer = await bcrypt.hash(
-                this.securityAnswer,
-                Number(process.env.BCRYPT_SALT_ROUNDS)
-            );
+            this.securityAnswer = await bcrypt.hash(this.securityAnswer, saltRounds);
         }
 
         next();
