@@ -3,55 +3,56 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
 import { emailRegex, phoneRegex, usernameRegex, passwordRegex } from "../utils/regex.js";
+import { errorMessages } from "../utils/errorMessages.js";
 
 const userSchema = new Schema(
     {
         firstName: {
             type: String,
-            required: [true, "First name is required"],
-            lowercase: true,
+            required: [true, errorMessages.REQUIRED("First name")],
+            minlength: [2, errorMessages.MIN_LENGTH("First name", 2)],
+            maxlength: [50, errorMessages.MAX_LENGTH("First name", 50)],
             trim: true,
-            minlength: [2, "First name must be at least 2 characters"],
-            maxlength: [50, "First name must not exceed 50 characters"],
+            lowercase: true,
         },
         lastName: {
             type: String,
-            required: [true, "Last name is required"],
-            lowercase: true,
+            required: [true, errorMessages.REQUIRED("Last name")],
+            minlength: [2, errorMessages.MIN_LENGTH("Last name", 2)],
+            maxlength: [50, errorMessages.MAX_LENGTH("Last name", 50)],
             trim: true,
-            minlength: [2, "Last name must be at least 2 characters"],
-            maxlength: [50, "Last name must not exceed 50 characters"],
+            lowercase: true,
         },
         email: {
             type: String,
-            required: [true, "Email is required"],
+            required: [true, errorMessages.REQUIRED("Email")],
             trim: true,
             lowercase: true,
             validate: {
                 validator: (v) => emailRegex.test(v),
-                message: (props) => `${props.value} is not a valid email address!`,
+                message: errorMessages.EMAIL_INVALID,
             },
         },
         phone: {
             type: String,
-            required: [true, "Phone number is required"],
+            required: [true, errorMessages.REQUIRED("Phone number")],
             trim: true,
             validate: {
                 validator: (v) => phoneRegex.test(v),
-                message: (props) => `${props.value} is not a valid phone number!`,
+                message: errorMessages.PHONE_INVALID,
             },
         },
         username: {
             type: String,
-            required: [true, "Username is required"],
-            lowercase: true,
+            required: [true, errorMessages.REQUIRED("Username")],
+            minlength: [3, errorMessages.MIN_LENGTH("Username", 3)],
+            maxlength: [30, errorMessages.MAX_LENGTH("Username", 30)],
             trim: true,
+            lowercase: true,
             unique: true,
-            minlength: [3, "Username must be at least 3 characters"],
-            maxlength: [30, "Username must not exceed 30 characters"],
             validate: {
                 validator: (v) => usernameRegex.test(v),
-                message: (props) => `${props.value} is not a valid username!`,
+                message: errorMessages.USERNAME_INVALID,
             },
         },
         securityQuestion: {
@@ -71,13 +72,12 @@ const userSchema = new Schema(
         },
         password: {
             type: String,
-            required: [true, "Password is required"],
-            minlength: [8, "Password must be at least 8 characters"],
-            maxlength: [100, "Password must not exceed 100 characters"],
+            required: [true, errorMessages.REQUIRED("Password")],
+            minlength: [8, errorMessages.MIN_LENGTH("Password", 8)],
+            maxlength: [100, errorMessages.MAX_LENGTH("Password", 100)],
             validate: {
                 validator: (v) => passwordRegex.test(v),
-                message:
-                    "Password must include at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character",
+                message: errorMessages.PASSWORD_INVALID,
             },
         },
         refreshToken: {
