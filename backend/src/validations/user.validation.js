@@ -5,7 +5,7 @@ import { emailRegex, phoneRegex, usernameRegex, passwordRegex } from "../utils/r
 import { errorMessages } from "../utils/errorMessages.js";
 import { SECURITY_QUESTIONS } from "../constants.js"
 
-const userValidationSchema = Joi.object({
+const registerValidationSchema = Joi.object({
     firstName: Joi.string()
         .min(2)
         .max(50)
@@ -134,4 +134,4 @@ const loginValidationSchema = Joi.object({
         }),
 }).xor("username", "email");  // Ensure user provides either username OR email
 
-export { userValidationSchema, loginValidationSchema };
+export { registerValidationSchema, loginValidationSchema };
