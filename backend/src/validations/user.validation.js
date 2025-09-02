@@ -5,7 +5,7 @@ import { emailRegex, phoneRegex, usernameRegex, passwordRegex } from "../utils/r
 import { errorMessages } from "../utils/errorMessages.js";
 import { SECURITY_QUESTIONS } from "../constants.js"
 
-export const userValidationSchema = Joi.object({
+const userValidationSchema = Joi.object({
     firstName: Joi.string()
         .min(2)
         .max(50)
@@ -98,7 +98,7 @@ export const userValidationSchema = Joi.object({
     refreshToken: Joi.string().optional(),
 });
 
-export const loginValidationSchema = Joi.object({
+const loginValidationSchema = Joi.object({
     email: Joi.string()
         .pattern(emailRegex)
         .trim()
@@ -120,8 +120,8 @@ export const loginValidationSchema = Joi.object({
             "string.min": errorMessages.MIN_LENGTH(fields.username, 3),
             "string.max": errorMessages.MAX_LENGTH(fields.username, 30),
         }),
-        
-        password: Joi.string()
+
+    password: Joi.string()
         .pattern(passwordRegex)
         .min(8)
         .max(100)
@@ -133,3 +133,5 @@ export const loginValidationSchema = Joi.object({
             "string.max": errorMessages.MAX_LENGTH(fields.password, 100),
         }),
 }).xor("username", "email");  // Ensure user provides either username OR email
+
+export { userValidationSchema, loginValidationSchema };
