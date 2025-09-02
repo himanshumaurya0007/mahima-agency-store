@@ -159,9 +159,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
                     firstName: user.firstName,
                     lastName: user.lastName,
                     email: user.email,
-                    phone: user.phone,
                     username: user.username,
-                    securityQuestion: user.securityQuestion,
                 },
                 accessToken,
                 refreshToken,
@@ -171,4 +169,58 @@ const loginUser = asyncHandler(async (req, res, next) => {
     );
 });
 
-export { registerUser, loginUser };
+/**
+ * @desc    Logout user (clear tokens + invalidate refreshToken)
+ * @route   POST /api/v1/user/logout
+ * @access  Private (requires JWT)
+ */
+const logoutUser = asyncHandler(async (req, res, next) => {
+    try {
+        const userId = req.user?._id; // set by verifyJWT middleware
+
+        if (!userId) {
+            throw new ApiError(StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED, ["User not authenticated"]);
+        }
+
+        // Invalidate refreshToken in DB
+        await User.findByIdAndUpdate(
+            userId,
+            { $unset: { refreshToken: "" } }, // remove refreshToken
+            { new: true }
+        );
+
+        logger.info(`User logged out: ${userId}`);
+
+        // Clear cookies
+        const cookieOptions = {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+        };
+
+        return res
+            .status(StatusCodes.OK)
+            .clearCookie("accessToken", cookieOptions)
+            .clearCookie("refreshToken", cookieOptions)
+            .json(
+                new ApiResponse(
+                    StatusCodes.OK,
+                    null,
+                    "Logout successful"
+                )
+            );
+    } catch (error) {
+        logger.error(`User logout failed: ${error.message}`, { stack: error.stack });
+        next(
+            error instanceof ApiError
+                ? error
+                : new ApiError(
+                    StatusCodes.INTERNAL_SERVER_ERROR,
+                    ReasonPhrases.INTERNAL_SERVER_ERROR,
+                    [error.message]
+                )
+        );
+    }
+});
+
+export { registerUser, loginUser, logoutUser };
