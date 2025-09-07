@@ -71,12 +71,14 @@ const userSchema = new Schema(
             required: [true, errorMessages.REQUIRED(fields.securityAnswer)],
             minlength: [3, errorMessages.MIN_LENGTH(fields.securityAnswer, 3)],
             maxlength: [50, errorMessages.MAX_LENGTH(fields.securityAnswer, 50)],
+            trim: true,
         },
         password: {
             type: String,
             required: [true, errorMessages.REQUIRED(fields.password)],
             minlength: [8, errorMessages.MIN_LENGTH(fields.password, 8)],
             maxlength: [100, errorMessages.MAX_LENGTH(fields.password, 100)],
+            trim: true,
             validate: {
                 validator: (v) => passwordRegex.test(v),
                 message: errorMessages.PASSWORD_INVALID,
@@ -89,7 +91,7 @@ const userSchema = new Schema(
     {
         timestamps: true
     }
-)
+);
 
 userSchema.pre("save", async function (next) {
     try {
@@ -125,7 +127,6 @@ userSchema.methods.comparePassword = async function (password) {
 userSchema.methods.compareSecurityAnswer = async function (answer) {
     return await bcrypt.compare(answer, this.securityAnswer);
 };
-
 
 userSchema.methods.generateAccessToken = function () {
     return jwt.sign(

@@ -1,45 +1,40 @@
 import { StatusCodes } from "http-status-codes";
-import { registerValidationSchema, loginValidationSchema } from "../validations/user.validation.js";
+import { registerValidationSchema, loginValidationSchema, securityQuestionValidationSchema, securityAnswerValidationSchema, resetPasswordValidationSchema } from "../validations/user.validation.js";
 import { ApiError } from "../utils/ApiError.js";
 import logger from "../utils/logger.js";
 
-const validateRegister = (req, res, next) => {
-    const { error } = registerValidationSchema.validate(req.body, { abortEarly: false });
+/**
+ * Generic validator middleware
+ * @param {Joi.Schema} schema - Joi validation schema
+ * @param {string} context - Context string for logging
+ */
+const validate = (schema, context = "Request") => {
+    return (req, res, next) => {
+        const { error } = schema.validate(req.body, { abortEarly: false });
 
-    if (error) {
-        logger.warn("User validation failed", { errors: error.details });
+        if (error) {
+            logger.warn(`${context} validation failed`, { errors: error.details });
 
-        // Use ApiError to forward to error middleware
-        return next(
-            new ApiError(
-                StatusCodes.BAD_REQUEST,
-                "Validation failed",
-                error.details.map((detail) => detail.message)
-            )
-        );
-    }
+            return next(
+                new ApiError(
+                    StatusCodes.BAD_REQUEST,
+                    "Validation failed",
+                    error.details.map((detail) => detail.message)
+                )
+            );
+        }
 
-    logger.info("User validation passed");
-    next();
+        logger.info(`${context} validation passed`);
+        next();
+    };
 };
 
-const validateLogin = (req, res, next) => {
-    const { error } = loginValidationSchema.validate(req.body, { abortEarly: false });
 
-    if (error) {
-        logger.warn("User login validation failed", { errors: error.details });
+// Specific validators
+const validateRegister = validate(registerValidationSchema, "Register");
+const validateLogin = validate(loginValidationSchema, "Login");
+const validateSecurityQuestion = validate(securityQuestionValidationSchema, "Security Question");
+const validateSecurityAnswer = validate(securityAnswerValidationSchema, "Security Answer");
+const validateResetPassword = validate(resetPasswordValidationSchema, "Reset Password");
 
-        return next(
-            new ApiError(
-                StatusCodes.BAD_REQUEST,
-                "Validation failed",
-                error.details.map((detail) => detail.message)
-            )
-        );
-    }
-
-    logger.info("User login validation passed");
-    next();
-};
-
-export { validateRegister, validateLogin };
+export { validateRegister, validateLogin, validateSecurityQuestion, validateSecurityAnswer, validateResetPassword };

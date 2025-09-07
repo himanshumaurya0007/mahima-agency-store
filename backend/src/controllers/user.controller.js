@@ -36,9 +36,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
         // Return plain tokens
         return { accessToken, refreshToken };
     } catch (error) {
-        logger.error(`Error generating tokens for userId ${userId}: ${error.message}`, {
-            stack: error.stack,
-        });
+        logger.error(`Error generating tokens for userId ${userId}: ${error.message}`, { stack: error.stack });
         throw new ApiError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             ReasonPhrases.INTERNAL_SERVER_ERROR,
@@ -58,12 +56,9 @@ const registerUser = asyncHandler(async (req, res, next) => {
 
         // 1. Check if user already exists (by email or username)
         const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+
         if (existingUser) {
-            throw new ApiError(
-                StatusCodes.CONFLICT,
-                ReasonPhrases.CONFLICT,
-                [`${fields.email} or ${fields.username} already exists`]
-            );
+            throw new ApiError(StatusCodes.CONFLICT, ReasonPhrases.CONFLICT, [`${fields.email} or ${fields.username} already exists`]);
         }
 
         // 2. Create new user
@@ -80,7 +75,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
 
         logger.info(`New user registered: ${user.email} (id: ${user._id})`);
 
-        // 4. Send response (exclude sensitive fields) [WITHOUT tokens]
+        // 3. Send response (exclude sensitive fields) [WITHOUT tokens]
         return res.status(StatusCodes.CREATED).json(
             new ApiResponse(
                 StatusCodes.CREATED,
@@ -96,8 +91,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
                     },
                 },
                 "User registered successfully. Please login to continue."
-            )
-        );
+            ));
     } catch (error) {
         logger.error(`User registration failed: ${error.message}`, { stack: error.stack });
         next(
@@ -117,56 +111,67 @@ const registerUser = asyncHandler(async (req, res, next) => {
  * @access  Public
  */
 const loginUser = asyncHandler(async (req, res, next) => {
-    const { email, username, password } = req.body;
+    try {
+        const { email, username, password } = req.body;
 
-    // 1. Find user by email OR username
-    const user = await User.findOne({
-        $or: [{ email }, { username }],
-    }).select("+password"); // explicitly select password
+        // 1. Find user by email OR username
+        const user = await User.findOne({
+            $or: [{ email }, { username }],
+        }).select("+password"); // explicitly select password
 
-    if (!user) {
-        throw new ApiError(StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED, ["Invalid credentials"]);
+        if (!user) {
+            throw new ApiError(StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED, ["Invalid credentials"]);
+        }
+
+        // 2. Compare passwords
+        const isPasswordValid = await user.comparePassword(password);
+        if (!isPasswordValid) {
+            throw new ApiError(StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED, ["Invalid credentials"]);
+        }
+
+        // 3. Generate tokens
+        const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
+
+        logger.info(`User logged in: ${user.username}`);
+
+        // 4. Cookie options
+        const cookieOptions = {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production", // secure only in prod
+            sameSite: "strict",
+        };
+
+        // 5. Send response with tokens
+        return res.status(StatusCodes.OK)
+            .cookie("accessToken", accessToken, cookieOptions)
+            .cookie("refreshToken", refreshToken, cookieOptions)
+            .json(
+                new ApiResponse(
+                    StatusCodes.OK,
+                    {
+                        user: {
+                            _id: user._id,
+                            firstName: user.firstName,
+                            lastName: user.lastName,
+                            email: user.email,
+                            username: user.username,
+                        },
+                        accessToken,
+                        refreshToken,
+                    },
+                    "Login successful"
+                ));
+    } catch (error) {
+        logger.error(`User login failed: ${error.message}`, { stack: error.stack });
+        next(
+            error instanceof ApiError
+                ? error
+                : new ApiError(
+                    StatusCodes.INTERNAL_SERVER_ERROR,
+                    ReasonPhrases.INTERNAL_SERVER_ERROR,
+                    [error.message]
+                ));
     }
-
-    // 2. Compare passwords
-    const isPasswordValid = await user.comparePassword(password);
-    if (!isPasswordValid) {
-        throw new ApiError(StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED, ["Invalid credentials"]);
-    }
-
-    // 3. Generate tokens
-    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
-
-    logger.info(`User logged in: ${user.username}`);
-
-    // 4. Cookie options
-    const cookieOptions = {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // secure only in prod
-        sameSite: "strict",
-    };
-
-    // 5. Send response with tokens
-    return res.status(StatusCodes.OK)
-    .cookie("accessToken", accessToken, cookieOptions)
-    .cookie("refreshToken", refreshToken, cookieOptions)
-    .json(
-        new ApiResponse(
-            StatusCodes.OK,
-            {
-                user: {
-                    _id: user._id,
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    email: user.email,
-                    username: user.username,
-                },
-                accessToken,
-                refreshToken,
-            },
-            "Login successful"
-        )
-    );
 });
 
 /**
@@ -176,13 +181,14 @@ const loginUser = asyncHandler(async (req, res, next) => {
  */
 const logoutUser = asyncHandler(async (req, res, next) => {
     try {
+        // 1. Extract authenticated userId from request
         const userId = req.user?._id; // set by verifyJWT middleware
 
         if (!userId) {
             throw new ApiError(StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED, ["User not authenticated"]);
         }
 
-        // Invalidate refreshToken in DB
+        // 2. Invalidate refreshToken in DB (remove from user document)
         await User.findByIdAndUpdate(
             userId,
             { $unset: { refreshToken: "" } }, // remove refreshToken
@@ -191,13 +197,14 @@ const logoutUser = asyncHandler(async (req, res, next) => {
 
         logger.info(`User logged out: ${userId}`);
 
-        // Clear cookies
+        // 3. Cookie options
         const cookieOptions = {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "strict",
         };
 
+        // 4. Send response (Clear access & refresh tokens from cookies)
         return res
             .status(StatusCodes.OK)
             .clearCookie("accessToken", cookieOptions)
@@ -218,130 +225,143 @@ const logoutUser = asyncHandler(async (req, res, next) => {
                     StatusCodes.INTERNAL_SERVER_ERROR,
                     ReasonPhrases.INTERNAL_SERVER_ERROR,
                     [error.message]
-                )
-        );
+                ));
     }
 });
 
 /**
- * @desc    Get security question by username
- * @route   POST /api/v1/user/get-security-question
+ * @desc    Fetch security question for a user (by email or username)
+ * @route   POST /api/v1/user/security-question
  * @access  Public
  */
-const getSecurityQuestion = asyncHandler(async (req, res, next) => {
+const fetchSecurityQuestion = asyncHandler(async (req, res, next) => {
     try {
-        const { username } = req.body;
+        const { email, username } = req.body;
 
-        if (!username?.trim()) {
-            throw new ApiError(StatusCodes.BAD_REQUEST, "Username is required");
-        }
+        // 1. Find user by email or username
+        const user = await User.findOne({
+            $or: [{ email }, { username }],
+        }).select("+securityQuestion");
 
-        const user = await User.findOne({ username: username.trim().toLowerCase() }).select("securityQuestion");
-        
         if (!user) {
-            throw new ApiError(StatusCodes.NOT_FOUND, "Username not found");
+            throw new ApiError(StatusCodes.NOT_FOUND, ReasonPhrases.NOT_FOUND, ["User not found"]);
         }
 
-        logger.info(`Security question retrieved for user: ${username}`);
+        logger.info(`Security question fetched for user: ${email || username}`);
 
-        return res.status(StatusCodes.OK).json(
-            new ApiResponse(
-                StatusCodes.OK,
-                { securityQuestion: user.securityQuestion },
-                "Security question retrieved successfully"
-            )
-        );
+        // 2. Send response (Return only the security question (never answer))
+        return res.status(StatusCodes.OK)
+            .json(
+                new ApiResponse(
+                    StatusCodes.OK,
+                    { securityQuestion: user.securityQuestion },
+                    "Security question fetched successfully"
+                ));
     } catch (error) {
-        logger.error(`Get security question failed: ${error.message}`, { stack: error.stack });
-        next(error instanceof ApiError ? error : new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, "Something went wrong"));
+        logger.error(`Failed to fetch security question: ${error.message}`, { stack: error.stack });
+        next(
+            error instanceof ApiError
+                ? error
+                : new ApiError(
+                    StatusCodes.INTERNAL_SERVER_ERROR,
+                    ReasonPhrases.INTERNAL_SERVER_ERROR,
+                    [error.message]
+                ));
     }
 });
 
 /**
- * @desc    Verify security answer
- * @route   POST /api/v1/user/verify-security-answer
+ * @desc    Validate user’s security answer
+ * @route   POST /api/v1/user/security-answer/verify
  * @access  Public
  */
-const verifySecurityAnswer = asyncHandler(async (req, res, next) => {
+const validateSecurityAnswerController = asyncHandler(async (req, res, next) => {
     try {
-        const { username, securityAnswer } = req.body;
+        const { email, username, securityAnswer } = req.body;
 
-        if (!username?.trim() || !securityAnswer?.trim()) {
-            throw new ApiError(StatusCodes.BAD_REQUEST, "Username and security answer are required");
-        }
+        // 1. Find user
+        const user = await User.findOne({
+            $or: [{ email }, { username }],
+        }).select("+securityAnswer"); // ensure answer is selected
 
-        const user = await User.findOne({ username: username.trim().toLowerCase() }).select("+securityAnswer");
-        
         if (!user) {
-            throw new ApiError(StatusCodes.NOT_FOUND, "Username not found");
+            throw new ApiError(StatusCodes.NOT_FOUND, ReasonPhrases.NOT_FOUND, ["User not found"]);
         }
 
-        const isAnswerValid = await user.compareSecurityAnswer(securityAnswer.trim());
+        // 2. Compare provided answer (case-sensitive)
+        const isAnswerValid = await user.compareSecurityAnswer(securityAnswer);
+
         if (!isAnswerValid) {
-            throw new ApiError(StatusCodes.UNAUTHORIZED, "Incorrect security answer");
+            throw new ApiError(StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED, ["Invalid security answer"]);
         }
 
-        logger.info(`Security answer verified for user: ${username}`);
+        logger.info(`Security answer validated for user: ${email || username}`);
 
-        return res.status(StatusCodes.OK).json(
-            new ApiResponse(
-                StatusCodes.OK,
-                { verified: true },
-                "Security answer verified successfully"
-            )
-        );
+        // 3. Send response (Return success)
+        return res.status(StatusCodes.OK)
+            .json(
+                new ApiResponse(
+                    StatusCodes.OK,
+                    null,
+                    "Security answer validated successfully"
+                ));
     } catch (error) {
-        logger.error(`Security answer verification failed: ${error.message}`, { stack: error.stack });
-        next(error instanceof ApiError ? error : new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, "Something went wrong"));
+        logger.error(`Failed to validate security answer: ${error.message}`, { stack: error.stack });
+        next(
+            error instanceof ApiError
+                ? error
+                : new ApiError(
+                    StatusCodes.INTERNAL_SERVER_ERROR,
+                    ReasonPhrases.INTERNAL_SERVER_ERROR,
+                    [error.message]
+                ));
     }
 });
 
 /**
- * @desc    Reset password
- * @route   POST /api/v1/user/reset-password
+ * @desc    Reset user’s password (after security answer verified)
+ * @route   PATCH /api/v1/user/password/reset
  * @access  Public
  */
-const resetPassword = asyncHandler(async (req, res, next) => {
+const resetUserPassword = asyncHandler(async (req, res, next) => {
     try {
-        const { username, newPassword } = req.body;
+        const { email, username, newPassword } = req.body;
 
-        if (!username?.trim() || !newPassword?.trim()) {
-            throw new ApiError(StatusCodes.BAD_REQUEST, "Username and new password are required");
-        }
+        // 1. Find user
+        const user = await User.findOne({
+            $or: [{ email }, { username }],
+        }).select("+password");
 
-        // Validate new password strength
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,100}$/;
-        if (!passwordRegex.test(newPassword)) {
-            throw new ApiError(
-                StatusCodes.BAD_REQUEST, 
-                "Password must include at least 1 uppercase, 1 lowercase, 1 number, and 1 special character, minimum 8 characters"
-            );
-        }
-
-        const user = await User.findOne({ username: username.trim().toLowerCase() });
-        
         if (!user) {
-            throw new ApiError(StatusCodes.NOT_FOUND, "Username not found");
+            throw new ApiError(StatusCodes.NOT_FOUND, ReasonPhrases.NOT_FOUND, ["User not found"]);
         }
 
-        // Update password (will be hashed by pre-save middleware)
+        // 2. Update password (pre-save hook will hash it)
         user.password = newPassword;
-        await user.save();
+        user.markModified("password"); // ensure password gets rehashed
+        await user.save({ validateModifiedOnly: true });
 
-        logger.info(`Password reset successful for user: ${username}`);
 
+        logger.info(`Password reset successful for user: ${email || username}`);
+
+        // 3. Return success response
         return res.status(StatusCodes.OK).json(
             new ApiResponse(
                 StatusCodes.OK,
                 null,
-                "Password reset successful. You can now login with your new password."
-            )
-        );
+                "Password reset successfully. Please login with your new password."
+            ));
     } catch (error) {
         logger.error(`Password reset failed: ${error.message}`, { stack: error.stack });
-        next(error instanceof ApiError ? error : new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, "Something went wrong"));
+        next(
+            error instanceof ApiError
+                ? error
+                : new ApiError(
+                    StatusCodes.INTERNAL_SERVER_ERROR,
+                    ReasonPhrases.INTERNAL_SERVER_ERROR,
+                    [error.message]
+                ));
     }
 });
 
-
-export { registerUser, loginUser, logoutUser, getSecurityQuestion, verifySecurityAnswer, resetPassword };
+export { registerUser, loginUser, logoutUser, fetchSecurityQuestion, validateSecurityAnswerController, resetUserPassword };
