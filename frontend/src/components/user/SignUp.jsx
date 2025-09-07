@@ -1,184 +1,721 @@
-import { useState } from "react";
-import userApi from "../../services/userApi";
+// import { useState } from "react";
+// import userApi from "../../services/userApi";
+
+// const securityQuestions = [
+//   "What was the name of your first pet?",
+//   "What city were you born in?",
+//   "What was the name of your first school?",
+//   "What is the name of your favorite childhood teacher?",
+//   "What is the title of your favorite book or movie?",
+// ];
+
+// export default function SignUp() {
+//   const [formData, setFormData] = useState({
+//     firstName: "",
+//     lastName: "",
+//     email: "",
+//     phone: "",
+//     username: "",
+//     password: "",
+//     securityQuestion: securityQuestions[0],
+//     securityAnswer: "",
+//   });
+
+//   const [loading, setLoading] = useState(false);
+//   const [message, setMessage] = useState({ type: "", text: "" });
+
+//   const handleChange = (e) => {
+//     const { name, value } = e.target;
+//     setFormData((prev) => ({ ...prev, [name]: value }));
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     setLoading(true);
+//     setMessage({ type: "", text: "" });
+
+//     try {
+//       const res = await userApi.register(formData);
+//       setMessage({ type: "success", text: res.message });
+//       setFormData({
+//         firstName: "",
+//         lastName: "",
+//         email: "",
+//         phone: "",
+//         username: "",
+//         password: "",
+//         securityQuestion: securityQuestions[0],
+//         securityAnswer: "",
+//       });
+//     } catch (err) {
+//       setMessage({
+//         type: "error",
+//         text: err.response?.data?.message || "Registration failed",
+//       });
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   return (
+//     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+//       <div className="w-full max-w-lg bg-white shadow-md rounded-2xl p-8">
+//         <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+//           Create an Account
+//         </h2>
+
+//         {message.text && (
+//           <div
+//             className={`mb-4 p-3 rounded-md text-sm ${
+//               message.type === "success"
+//                 ? "bg-green-100 text-green-700"
+//                 : "bg-red-100 text-red-700"
+//             }`}
+//           >
+//             {message.text}
+//           </div>
+//         )}
+
+//         <form onSubmit={handleSubmit} className="space-y-4">
+//           {/* First Name + Last Name */}
+//           <div className="grid grid-cols-2 gap-4">
+//             <input
+//               type="text"
+//               name="firstName"
+//               placeholder="First Name"
+//               value={formData.firstName}
+//               onChange={handleChange}
+//               className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+//               required
+//             />
+//             <input
+//               type="text"
+//               name="lastName"
+//               placeholder="Last Name"
+//               value={formData.lastName}
+//               onChange={handleChange}
+//               className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+//               required
+//             />
+//           </div>
+
+//           {/* Email */}
+//           <input
+//             type="email"
+//             name="email"
+//             placeholder="Email address"
+//             value={formData.email}
+//             onChange={handleChange}
+//             className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+//             required
+//           />
+
+//           {/* Phone */}
+//           <input
+//             type="text"
+//             name="phone"
+//             placeholder="Phone (10 digits)"
+//             value={formData.phone}
+//             onChange={handleChange}
+//             className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+//             required
+//           />
+
+//           {/* Username */}
+//           <input
+//             type="text"
+//             name="username"
+//             placeholder="Choose a username"
+//             value={formData.username}
+//             onChange={handleChange}
+//             className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+//             required
+//           />
+
+//           {/* Password */}
+//           <input
+//             type="password"
+//             name="password"
+//             placeholder="Create a password"
+//             value={formData.password}
+//             onChange={handleChange}
+//             className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+//             required
+//           />
+
+//           {/* Security Question */}
+//           <select
+//             name="securityQuestion"
+//             value={formData.securityQuestion}
+//             onChange={handleChange}
+//             className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+//             required
+//           >
+//             {securityQuestions.map((q, index) => (
+//               <option key={index} value={q}>
+//                 {q}
+//               </option>
+//             ))}
+//           </select>
+
+//           {/* Security Answer */}
+//           <input
+//             type="text"
+//             name="securityAnswer"
+//             placeholder="Your answer"
+//             value={formData.securityAnswer}
+//             onChange={handleChange}
+//             className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+//             required
+//           />
+
+//           {/* Submit */}
+//           <button
+//             type="submit"
+//             disabled={loading}
+//             className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+//           >
+//             {loading ? "Registering..." : "Sign Up"}
+//           </button>
+//         </form>
+//       </div>
+//     </div>
+//   );
+// }
+
+import React, { useState } from 'react';
+import { Eye, EyeOff, MessageSquare, AlertCircle } from 'lucide-react';
+import userApi from '../../services/userApi';
 
 const securityQuestions = [
-  "What was the name of your first pet?",
-  "What city were you born in?",
-  "What was the name of your first school?",
-  "What is the name of your favorite childhood teacher?",
-  "What is the title of your favorite book or movie?",
+  'What was the name of your first pet?',
+  'What city were you born in?',
+  'What was the name of your first school?',
+  'What is the name of your favorite childhood teacher?',
+  'What is the title of your favorite book or movie?',
 ];
 
-export default function SignUp() {
+const SignUp = () => {
+  // ===== FORM STATE =====
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    username: "",
-    password: "",
-    securityQuestion: securityQuestions[0],
-    securityAnswer: "",
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    username: '',
+    password: '',
+    securityQuestion: '',
+    securityAnswer: '',
   });
 
+  // ===== UI STATE =====
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState({ type: "", text: "" });
+  const [message, setMessage] = useState({ type: '', text: '' });
+  const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showSecurityAnswer, setShowSecurityAnswer] = useState(false);
+  const [focusedField, setFocusedField] = useState('');
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  // ===== PASSWORD VALIDATION HELPER =====
+  const validatePassword = (password) => {
+    if (!password) return 'Required';
+    if (password.length < 8) return 'Minimum 8 characters';
+
+    const missing = [];
+    if (!/[A-Z]/.test(password)) missing.push('uppercase');
+    if (!/[a-z]/.test(password)) missing.push('lowercase');
+    if (!/\d/.test(password)) missing.push('no');
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) missing.push('special char');
+
+    if (missing.length > 0) {
+      return `Missing: ${missing.join(', ')}`;
+    }
+
+    return '';
   };
 
+  // ===== VALIDATION FUNCTIONS =====
+  const validateField = (name, value) => {
+    switch (name) {
+      case 'firstName':
+      case 'lastName':
+        return !value.trim() ? 'Required' : '';
+      case 'email': {
+        const emailRegex = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/;
+        if (!value.trim()) return 'Required';
+        if (!emailRegex.test(value)) return 'Invalid email format';
+        return '';
+      }
+      case 'phone':
+        if (!value.trim()) return 'Required';
+        if (!/^\d{10}$/.test(value.replace(/\s+/g, ''))) return 'Enter 10 digit phone number';
+        return '';
+      case 'username':
+        if (!value.trim()) return 'Required';
+        if (value.length < 3) return 'Minimum 3 characters';
+        if (!/^[a-zA-Z0-9_]+$/.test(value)) return 'Only letters, numbers, underscore';
+        return '';
+      case 'password':
+        return validatePassword(value);
+      case 'securityQuestion':
+        return !value ? 'Please select a question' : '';
+      case 'securityAnswer':
+        return !value.trim() ? 'Required' : '';
+      default:
+        return '';
+    }
+  };
+
+  // ===== HANDLE INPUT CHANGE =====
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    // For phone number, only allow digits
+    if (name === 'phone') {
+      const numericValue = value.replace(/[^\d]/g, '');
+      if (numericValue.length <= 10) {
+        setFormData((prev) => ({ ...prev, [name]: numericValue }));
+        const error = validateField(name, numericValue);
+        setErrors((prev) => ({ ...prev, [name]: error }));
+      }
+      return;
+    }
+
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Real-time validation
+    const error = validateField(name, value);
+    setErrors((prev) => ({
+      ...prev,
+      [name]: error,
+    }));
+  };
+
+  // ===== HANDLE FOCUS =====
+  const handleFocus = (fieldName) => {
+    setFocusedField(fieldName);
+  };
+
+  const handleBlur = () => {
+    setFocusedField('');
+  };
+
+  // ===== FORM SUBMISSION =====
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate all fields
+    const newErrors = {};
+    Object.keys(formData).forEach((key) => {
+      const error = validateField(key, formData[key]);
+      if (error) newErrors[key] = error;
+    });
+    setErrors(newErrors);
+
+    // If validation errors exist, don't submit
+    if (Object.keys(newErrors).length > 0) {
+      return;
+    }
+
     setLoading(true);
-    setMessage({ type: "", text: "" });
+    setMessage({ type: '', text: '' });
 
     try {
       const res = await userApi.register(formData);
-      setMessage({ type: "success", text: res.message });
+      setMessage({ type: 'success', text: res.message });
       setFormData({
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        username: "",
-        password: "",
-        securityQuestion: securityQuestions[0],
-        securityAnswer: "",
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        username: '',
+        password: '',
+        securityQuestion: '',
+        securityAnswer: '',
       });
+      setErrors({});
     } catch (err) {
       setMessage({
-        type: "error",
-        text: err.response?.data?.message || "Registration failed",
+        type: 'error',
+        text: err.response?.data?.message || 'Registration failed',
       });
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-lg bg-white shadow-md rounded-2xl p-8">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-          Create an Account
-        </h2>
+  // ===== ENHANCED SLASHED MESSAGE SQUARE ICON =====
+  const SlashedMessageSquare = ({ size = 20, className = '' }) => (
+    <div className="relative">
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={className}
+      >
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      </svg>
+      {/* Enhanced diagonal slash */}
+      <div
+        className="absolute flex items-center justify-center"
+        style={{
+          background: `linear-gradient(45deg, transparent 46%, currentColor 46%, currentColor 54%, transparent 54%)`,
+          width: `${size}px`,
+          height: `${size}px`,
+          top: '-1.5px',
+        }}
+      />
+    </div>
+  );
 
-        {message.text && (
-          <div
-            className={`mb-4 p-3 rounded-md text-sm ${
-              message.type === "success"
-                ? "bg-green-100 text-green-700"
-                : "bg-red-100 text-red-700"
-            }`}
-          >
-            {message.text}
-          </div>
-        )}
+  // ===== GET FIELD ICON =====
+  const getFieldIcon = (fieldName) => {
+    const isVisible = focusedField === fieldName || formData[fieldName];
+    const iconClass = `absolute right-3 top-4 transition-all duration-500 ease-in-out ${
+      isVisible ? 'opacity-100 transform scale-100' : 'opacity-0 transform scale-75'
+    }`;
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* First Name + Last Name */}
-          <div className="grid grid-cols-2 gap-4">
-            <input
-              type="text"
-              name="firstName"
-              placeholder="First Name"
-              value={formData.firstName}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-            <input
-              type="text"
-              name="lastName"
-              placeholder="Last Name"
-              value={formData.lastName}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          {/* Email */}
-          <input
-            type="email"
-            name="email"
-            placeholder="Email address"
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-
-          {/* Phone */}
-          <input
-            type="text"
-            name="phone"
-            placeholder="Phone (10 digits)"
-            value={formData.phone}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-
-          {/* Username */}
-          <input
-            type="text"
-            name="username"
-            placeholder="Choose a username"
-            value={formData.username}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-
-          {/* Password */}
-          <input
-            type="password"
-            name="password"
-            placeholder="Create a password"
-            value={formData.password}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-
-          {/* Security Question */}
-          <select
-            name="securityQuestion"
-            value={formData.securityQuestion}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          >
-            {securityQuestions.map((q, index) => (
-              <option key={index} value={q}>
-                {q}
-              </option>
-            ))}
-          </select>
-
-          {/* Security Answer */}
-          <input
-            type="text"
-            name="securityAnswer"
-            placeholder="Your answer"
-            value={formData.securityAnswer}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-
-          {/* Submit */}
+    switch (fieldName) {
+      case 'password':
+        return (
           <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+            type="button"
+            className={`${iconClass} z-10 cursor-pointer text-gray-600 hover:text-black`}
+            onClick={() => setShowPassword(!showPassword)}
           >
-            {loading ? "Registering..." : "Sign Up"}
+            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>
-        </form>
+        );
+      case 'securityAnswer':
+        return (
+          <button
+            type="button"
+            className={`${iconClass} z-10 cursor-pointer text-gray-600 hover:text-black`}
+            onClick={() => setShowSecurityAnswer(!showSecurityAnswer)}
+          >
+            <div className="transform transition-all duration-300 ease-in-out">
+              {showSecurityAnswer ? (
+                <SlashedMessageSquare size={22} className="scale-100 transform" />
+              ) : (
+                <MessageSquare size={20} className="scale-100 transform" />
+              )}
+            </div>
+          </button>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="bg-cream flex min-h-screen items-center justify-center">
+      <div className="w-full max-w-[38rem]">
+        <div className="card flex flex-col items-center justify-between">
+          {/* Header Section */}
+          <div className="mb-6 text-center">
+            <h2 className="text-card-title mb-2 text-black">Create Account</h2>
+            <p className="text-caption text-coffee">Join Mahima Agencies Right Now</p>
+          </div>
+
+          {/* Message Display */}
+          {message.text && (
+            <div
+              className={`mb-4 w-full rounded-lg border p-3 text-sm font-medium ${
+                message.type === 'success'
+                  ? 'border-green-200 bg-green-50 text-green-800'
+                  : 'border-red-200 bg-red-50 text-red-800'
+              }`}
+            >
+              <div className="flex items-center">
+                <AlertCircle size={16} className="mr-2 flex-shrink-0" />
+                {message.text}
+              </div>
+            </div>
+          )}
+
+          {/* Form Section */}
+          <form className="w-full space-y-6" onSubmit={handleSubmit}>
+            {/* Personal Information Row */}
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:gap-8">
+              {/* First Name */}
+              <div className="flex justify-center sm:justify-start">
+                <div className="input-container relative">
+                  <input
+                    className="input h-[55px] w-[260px] rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
+                    name="firstName"
+                    type="text"
+                    required
+                    placeholder=" "
+                    autoComplete="given-name"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    onFocus={() => handleFocus('firstName')}
+                    onBlur={handleBlur}
+                  />
+                  <label className="label pointer-events-none absolute top-[13px] left-5 text-xl font-medium text-[#0b2447] transition-all duration-500 ease-in-out">
+                    First Name
+                  </label>
+                  <div className="topline absolute top-0 right-0 h-[1.5px] w-0 bg-black transition-all duration-[400ms] ease-in-out"></div>
+                  {errors.firstName && (
+                    <div className="mt-2 ml-2 flex items-center text-xs font-medium text-red-600">
+                      <AlertCircle size={12} className="mr-1 flex-shrink-0" />
+                      <span>{errors.firstName}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Last Name */}
+              <div className="flex justify-center sm:justify-end">
+                <div className="input-container relative">
+                  <input
+                    className="input h-[55px] w-[260px] rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
+                    name="lastName"
+                    type="text"
+                    required
+                    placeholder=" "
+                    autoComplete="family-name"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    onFocus={() => handleFocus('lastName')}
+                    onBlur={handleBlur}
+                  />
+                  <label className="label pointer-events-none absolute top-[13px] left-5 text-xl font-medium text-[#0b2447] transition-all duration-500 ease-in-out">
+                    Last Name
+                  </label>
+                  <div className="topline absolute top-0 right-0 h-[1.5px] w-0 bg-black transition-all duration-[400ms] ease-in-out"></div>
+                  {errors.lastName && (
+                    <div className="mt-2 ml-2 flex items-center text-xs font-medium text-red-600">
+                      <AlertCircle size={12} className="mr-1 flex-shrink-0" />
+                      <span>{errors.lastName}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Information Row */}
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:gap-8">
+              {/* Email */}
+              <div className="flex justify-center sm:justify-start">
+                <div className="input-container relative">
+                  <input
+                    className="input h-[55px] w-[260px] rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
+                    name="email"
+                    type="email"
+                    required
+                    placeholder=" "
+                    autoComplete="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    onFocus={() => handleFocus('email')}
+                    onBlur={handleBlur}
+                  />
+                  <label className="label pointer-events-none absolute top-[13px] left-5 text-xl font-medium text-[#0b2447] transition-all duration-500 ease-in-out">
+                    Email Address
+                  </label>
+                  <div className="topline absolute top-0 right-0 h-[2px] w-0 bg-black transition-all duration-[400ms] ease-in-out"></div>
+                  {errors.email && (
+                    <div className="mt-2 ml-2 flex items-center text-xs font-medium text-red-600">
+                      <AlertCircle size={12} className="mr-1 flex-shrink-0" />
+                      <span>{errors.email}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Phone */}
+              <div className="flex justify-center sm:justify-end">
+                <div className="input-container relative">
+                  <input
+                    className="input h-[55px] w-[260px] rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
+                    name="phone"
+                    type="tel"
+                    required
+                    placeholder=" "
+                    autoComplete="tel"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    onFocus={() => handleFocus('phone')}
+                    onBlur={handleBlur}
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                  />
+                  <label className="label pointer-events-none absolute top-[13px] left-5 text-xl font-medium text-[#0b2447] transition-all duration-500 ease-in-out">
+                    Phone No.
+                  </label>
+                  <div className="topline absolute top-0 right-0 h-[2px] w-0 bg-black transition-all duration-[400ms] ease-in-out"></div>
+                  {errors.phone && (
+                    <div className="mt-2 ml-2 flex items-center text-xs font-medium text-red-600">
+                      <AlertCircle size={12} className="mr-1 flex-shrink-0" />
+                      <span>{errors.phone}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Account Credentials Row */}
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:gap-8">
+              {/* Username */}
+              <div className="flex justify-center sm:justify-start">
+                <div className="input-container relative">
+                  <input
+                    className="input h-[55px] w-[260px] rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
+                    name="username"
+                    type="text"
+                    required
+                    placeholder=" "
+                    autoComplete="username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    onFocus={() => handleFocus('username')}
+                    onBlur={handleBlur}
+                  />
+                  <label className="label pointer-events-none absolute top-[13px] left-5 text-xl font-medium text-[#0b2447] transition-all duration-500 ease-in-out">
+                    Username
+                  </label>
+                  <div className="topline absolute top-0 right-0 h-[1.5px] w-0 bg-black transition-all duration-[400ms] ease-in-out"></div>
+                  {errors.username && (
+                    <div className="mt-2 ml-2 flex items-center text-xs font-medium text-red-600">
+                      <AlertCircle size={12} className="mr-1 flex-shrink-0" />
+                      <span>{errors.username}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Password */}
+              <div className="flex justify-center sm:justify-end">
+                <div className="input-container relative">
+                  <input
+                    className="input h-[55px] w-[260px] rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 pr-12 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    placeholder=" "
+                    autoComplete="new-password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    onFocus={() => handleFocus('password')}
+                    onBlur={handleBlur}
+                  />
+                  <label className="label pointer-events-none absolute top-[13px] left-5 text-xl font-medium text-[#0b2447] transition-all duration-500 ease-in-out">
+                    Password
+                  </label>
+                  <div className="topline absolute top-0 right-0 h-[1.5px] w-0 bg-black transition-all duration-[400ms] ease-in-out"></div>
+                  {getFieldIcon('password')}
+                  {errors.password && (
+                    <div className="mt-2 ml-2 flex items-center text-xs font-medium text-red-600">
+                      <AlertCircle size={12} className="mr-1 flex-shrink-0" />
+                      <span>{errors.password}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Security Question Section */}
+            <div className="mt-8 space-y-6">
+              {/* Security Question */}
+              <div className="input-container relative">
+                <select
+                  className="input h-[55px] w-full cursor-pointer rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-4 text-xl font-medium tracking-wider text-[#0b2447] transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
+                  name="securityQuestion"
+                  required
+                  value={formData.securityQuestion}
+                  onChange={handleChange}
+                  onFocus={() => handleFocus('securityQuestion')}
+                  onBlur={handleBlur}
+                >
+                  <option value="" disabled hidden>
+                    Select one option
+                  </option>
+                  {securityQuestions.map((question, index) => (
+                    <option
+                      key={index}
+                      value={question}
+                      className="py-3 font-medium text-[#0b2447]"
+                    >
+                      {question}
+                    </option>
+                  ))}
+                </select>
+                <label className="label pointer-events-none absolute top-[13px] left-4 text-xl font-medium text-[#0b2447] transition-all duration-500 ease-in-out">
+                  Security Question
+                </label>
+                <div className="topline absolute top-0 right-0 h-[1.5px] w-0 bg-black transition-all duration-[400ms] ease-in-out"></div>
+              </div>
+
+              {/* Security Answer */}
+              <div className="input-container relative">
+                <input
+                  className="input sec h-[55px] w-full rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-4 pr-12 text-xl font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
+                  name="securityAnswer"
+                  type={showSecurityAnswer ? 'text' : 'password'}
+                  required
+                  placeholder=" "
+                  autoComplete="off"
+                  value={formData.securityAnswer}
+                  onChange={handleChange}
+                  onFocus={() => handleFocus('securityAnswer')}
+                  onBlur={handleBlur}
+                />
+                <label className="label pointer-events-none absolute top-[13px] left-4 text-xl font-medium text-[#0b2447] transition-all duration-500 ease-in-out">
+                  Security Answer
+                </label>
+                <div className="topline absolute top-0 right-0 h-[1.5px] w-0 bg-black transition-all duration-[400ms] ease-in-out"></div>
+                {getFieldIcon('securityAnswer')}
+                {errors.securityAnswer && (
+                  <div className="mt-2 ml-2 flex items-center text-xs font-medium text-red-600">
+                    <AlertCircle size={12} className="mr-1 flex-shrink-0" />
+                    <span>{errors.securityAnswer}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="pt-4">
+              <button
+                type="submit"
+                disabled={loading}
+                className={`h-[55px] w-full ${
+                  loading
+                    ? 'cursor-not-allowed bg-gray-600'
+                    : 'bg-black hover:bg-gray-800 active:bg-gray-900'
+                } focus:ring-offset-cream flex items-center justify-center rounded-lg text-xl font-medium text-white shadow-sm transition-all duration-300 ease-in-out hover:shadow-md focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:outline-none`}
+              >
+                {loading ? (
+                  <>
+                    <div className="mr-2 h-5 w-5 animate-spin rounded-full border-b-2 border-white"></div>
+                    Registering...
+                  </>
+                ) : (
+                  'Sign Up'
+                )}
+              </button>
+            </div>
+
+            {/* Already have account */}
+            <div className="pt-4 text-center">
+              <p className="text-coffee text-sm">
+                Already have an account ?
+                <a href="/login" className="pl-1 font-medium text-black hover:underline">
+                  Sign In
+                </a>
+              </p>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default SignUp;

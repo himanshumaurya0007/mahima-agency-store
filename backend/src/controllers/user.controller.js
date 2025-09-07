@@ -223,4 +223,125 @@ const logoutUser = asyncHandler(async (req, res, next) => {
     }
 });
 
-export { registerUser, loginUser, logoutUser };
+/**
+ * @desc    Get security question by username
+ * @route   POST /api/v1/user/get-security-question
+ * @access  Public
+ */
+const getSecurityQuestion = asyncHandler(async (req, res, next) => {
+    try {
+        const { username } = req.body;
+
+        if (!username?.trim()) {
+            throw new ApiError(StatusCodes.BAD_REQUEST, "Username is required");
+        }
+
+        const user = await User.findOne({ username: username.trim().toLowerCase() }).select("securityQuestion");
+        
+        if (!user) {
+            throw new ApiError(StatusCodes.NOT_FOUND, "Username not found");
+        }
+
+        logger.info(`Security question retrieved for user: ${username}`);
+
+        return res.status(StatusCodes.OK).json(
+            new ApiResponse(
+                StatusCodes.OK,
+                { securityQuestion: user.securityQuestion },
+                "Security question retrieved successfully"
+            )
+        );
+    } catch (error) {
+        logger.error(`Get security question failed: ${error.message}`, { stack: error.stack });
+        next(error instanceof ApiError ? error : new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, "Something went wrong"));
+    }
+});
+
+/**
+ * @desc    Verify security answer
+ * @route   POST /api/v1/user/verify-security-answer
+ * @access  Public
+ */
+const verifySecurityAnswer = asyncHandler(async (req, res, next) => {
+    try {
+        const { username, securityAnswer } = req.body;
+
+        if (!username?.trim() || !securityAnswer?.trim()) {
+            throw new ApiError(StatusCodes.BAD_REQUEST, "Username and security answer are required");
+        }
+
+        const user = await User.findOne({ username: username.trim().toLowerCase() }).select("+securityAnswer");
+        
+        if (!user) {
+            throw new ApiError(StatusCodes.NOT_FOUND, "Username not found");
+        }
+
+        const isAnswerValid = await user.compareSecurityAnswer(securityAnswer.trim());
+        if (!isAnswerValid) {
+            throw new ApiError(StatusCodes.UNAUTHORIZED, "Incorrect security answer");
+        }
+
+        logger.info(`Security answer verified for user: ${username}`);
+
+        return res.status(StatusCodes.OK).json(
+            new ApiResponse(
+                StatusCodes.OK,
+                { verified: true },
+                "Security answer verified successfully"
+            )
+        );
+    } catch (error) {
+        logger.error(`Security answer verification failed: ${error.message}`, { stack: error.stack });
+        next(error instanceof ApiError ? error : new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, "Something went wrong"));
+    }
+});
+
+/**
+ * @desc    Reset password
+ * @route   POST /api/v1/user/reset-password
+ * @access  Public
+ */
+const resetPassword = asyncHandler(async (req, res, next) => {
+    try {
+        const { username, newPassword } = req.body;
+
+        if (!username?.trim() || !newPassword?.trim()) {
+            throw new ApiError(StatusCodes.BAD_REQUEST, "Username and new password are required");
+        }
+
+        // Validate new password strength
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,100}$/;
+        if (!passwordRegex.test(newPassword)) {
+            throw new ApiError(
+                StatusCodes.BAD_REQUEST, 
+                "Password must include at least 1 uppercase, 1 lowercase, 1 number, and 1 special character, minimum 8 characters"
+            );
+        }
+
+        const user = await User.findOne({ username: username.trim().toLowerCase() });
+        
+        if (!user) {
+            throw new ApiError(StatusCodes.NOT_FOUND, "Username not found");
+        }
+
+        // Update password (will be hashed by pre-save middleware)
+        user.password = newPassword;
+        await user.save();
+
+        logger.info(`Password reset successful for user: ${username}`);
+
+        return res.status(StatusCodes.OK).json(
+            new ApiResponse(
+                StatusCodes.OK,
+                null,
+                "Password reset successful. You can now login with your new password."
+            )
+        );
+    } catch (error) {
+        logger.error(`Password reset failed: ${error.message}`, { stack: error.stack });
+        next(error instanceof ApiError ? error : new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, "Something went wrong"));
+    }
+});
+
+
+export { registerUser, loginUser, logoutUser, getSecurityQuestion, verifySecurityAnswer, resetPassword };

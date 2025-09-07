@@ -170,7 +170,7 @@ body {
   letter-spacing: theme(--letter-spacing-wider);
 }
 
-/*  HEADING TAGS DEFAULT STYLING  */
+/*  HEADING TAGS DEFAULT STYLING FOR COMPATIBLE TO TAILWIND */
 h1 {
   font-family: theme(--font-alpino);
   font-size: 2.25rem; /* text-4xl */
