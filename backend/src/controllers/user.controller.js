@@ -231,12 +231,12 @@ const logoutUser = asyncHandler(async (req, res, next) => {
 
 /**
  * @desc    Fetch security question for a user (by email or username)
- * @route   POST /api/v1/user/security-question
+ * @route   GET /api/v1/user/security-question
  * @access  Public
  */
 const fetchSecurityQuestion = asyncHandler(async (req, res, next) => {
     try {
-        const { email, username } = req.body;
+        const { email, username } = req.query;
 
         // 1. Find user by email or username
         const user = await User.findOne({
