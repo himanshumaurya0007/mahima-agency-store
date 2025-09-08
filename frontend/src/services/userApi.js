@@ -7,8 +7,7 @@ import baseApi from "./baseApi";
 
 /**
  * User Authentication & Management APIs
- * These functions wrap API calls for register, login, logout,
- * and account recovery (security Q&A, password reset).
+ * These functions wrap API calls for register, login, logout, and account recovery (security Q&A, password reset).
  */
 const userApi = {
     /**
