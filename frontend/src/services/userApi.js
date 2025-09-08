@@ -1,4 +1,8 @@
 // frontend/src/services/userApi.js
+import ApiResponse from "../utils/ApiResponse";
+import ApiError from "../utils/ApiError";
+import { asyncHandler } from "../utils/asyncHandler";
+
 import baseApi from "./baseApi";
 
 /**
@@ -10,64 +14,64 @@ const userApi = {
     /**
      * Register a new user
      * @param {Object} userData - user registration payload
-     * @returns {Promise<Object>} - response from backend
+     * @returns {Promise<ApiResponse>} - standardized response
      */
-    registerUser: async (userData) => {
+    registerUser: asyncHandler(async (userData) => {
         const response = await baseApi.post("/user/register", userData);
-        return response.data;
-    },
+        return ApiResponse.fromAxios(response);
+    }),
 
     /**
      * Login user
      * @param {Object} credentials - { email OR username, password }
-     * @returns {Promise<Object>} - response with tokens + user info
+     * @returns {Promise<ApiResponse>} - tokens + user info
      */
-    loginUser: async (credentials) => {
+    loginUser: asyncHandler(async (credentials) => {
         const response = await baseApi.post("/user/login", credentials);
-        return response.data;
-    },
+        return ApiResponse.fromAxios(response);
+    }),
 
     /**
      * Logout user
      * Clears refreshToken + cookies
-     * @returns {Promise<Object>} - response with success message
+     * @returns {Promise<ApiResponse>} - success message
      */
-    logoutUser: async () => {
+    logoutUser: asyncHandler(async () => {
         const response = await baseApi.post("/user/logout");
-        return response.data;
-    },
+        return ApiResponse.fromAxios(response);
+    }),
 
     /**
      * Get security question by email or username
      * @param {Object} query - { email OR username }
-     * @returns {Promise<Object>} - Response with security question
+     * @returns {Promise<ApiResponse>} - security question
      */
-    fetchSecurityQuestion: async (query) => {
+    fetchSecurityQuestion: asyncHandler(async (query) => {
         const response = await baseApi.get("/user/security-question", {
-            params: query, // ✅ must send as query params
+            params: query,
         });
-        return response.data;
-    },
+        return ApiResponse.fromAxios(response);
+    }),
 
     /**
      * Verify security answer
      * @param {Object} data - { email OR username, securityAnswer }
-     * @returns {Promise<Object>} - Response with verification result
+     * @returns {Promise<ApiResponse>} - verification result
      */
-    validateSecurityAnswer: async (data) => {
+    validateSecurityAnswer: asyncHandler(async (data) => {
         const response = await baseApi.post("/user/security-answer/verify", data);
-        return response.data;
-    },
+        return ApiResponse.fromAxios(response);
+    }),
 
     /**
      * Reset password
      * @param {Object} data - { email OR username, newPassword }
-     * @returns {Promise<Object>} - Response with reset result
+     * @returns {Promise<ApiResponse>} - reset result
      */
-    resetUserPassword: async (data) => {
+    resetUserPassword: asyncHandler(async (data) => {
         const response = await baseApi.patch("/user/password/reset", data);
-        return response.data;
-    },
+        return ApiResponse.fromAxios(response);
+    }),
 };
 
 export default userApi;
