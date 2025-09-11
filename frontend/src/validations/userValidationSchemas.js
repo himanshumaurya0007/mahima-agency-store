@@ -1,9 +1,9 @@
 // frontend/src/validations/userValidationSchemas.js
 import * as Yup from "yup";
-import { fields } from "./fields";
-import { errorMessages } from "./errorMessages";
-import { emailRegex, phoneRegex, usernameRegex, passwordRegex } from "./regex";
-import { SECURITY_QUESTIONS } from "./constants";
+import { fields } from "../utils/fields";
+import { errorMessages } from "../utils/errorMessages";
+import { emailRegex, phoneRegex, usernameRegex, passwordRegex } from "../utils/regex";
+import { SECURITY_QUESTIONS } from "../utils/constants";
 
 // Register Schema
 export const registerUserValidationSchema = Yup.object().shape({
@@ -48,7 +48,6 @@ export const registerUserValidationSchema = Yup.object().shape({
         .min(3, errorMessages.MIN_LENGTH(fields.securityAnswer, 3))
         .max(50, errorMessages.MAX_LENGTH(fields.securityAnswer, 50))
         .trim()
-        .lowercase()
         .required(errorMessages.REQUIRED(fields.securityAnswer)),
 
     password: Yup.string()
@@ -56,7 +55,6 @@ export const registerUserValidationSchema = Yup.object().shape({
         .min(8, errorMessages.MIN_LENGTH(fields.password, 8))
         .max(100, errorMessages.MAX_LENGTH(fields.password, 100))
         .trim()
-        .lowercase()
         .required(errorMessages.REQUIRED(fields.password)),
 });
 
@@ -74,7 +72,6 @@ export const loginUserValidationSchema = Yup.object().shape({
 
     password: Yup.string()
         .trim()
-        .lowercase()
         .matches(passwordRegex, errorMessages.PASSWORD_INVALID)
         .required(errorMessages.REQUIRED(fields.password)),
 }).test("oneOfRequired", "Either email or username is required", (value) =>

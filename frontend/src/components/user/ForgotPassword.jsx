@@ -1,11 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
-  UserCheck, Search, HelpCircle, MessageSquare, Eye, EyeOff,
-  AlertCircle, CheckCircle, ArrowRight,
+  UserCheck,
+  Search,
+  HelpCircle,
+  MessageSquare,
+  Eye,
+  EyeOff,
+  AlertCircle,
+  CheckCircle,
+  ArrowRight,
+  Mail,
 } from 'lucide-react';
-import userApi from '../../services/userApi';
+import { useNavigate } from 'react-router-dom';
 
-const ForgetPassword = () => {
+import userApi from '../../services/userApi';
+import { validateField } from '../../utils/validate';
+import { validateForm } from '../../middlewares/validateUser.middleware';
+import {
+  securityAnswerValidationSchema,
+  resetPasswordValidationSchema,
+} from '../../validations/userValidationSchemas';
+
+const ForgotPassword = () => {
+  const navigate = useNavigate();
+
   // ===== FORM STATE =====
   const [formData, setFormData] = useState({
     username: '',
@@ -26,35 +44,35 @@ const ForgetPassword = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [securityQuestion, setSecurityQuestion] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [isEmail, setIsEmail] = useState(false);
+
+  // ===== REFS FOR AUTO-FOCUS =====
+  const securityAnswerRef = useRef(null);
+  const newPasswordRef = useRef(null);
+
+  // ===== AUTO-FOCUS EFFECT =====
+  useEffect(() => {
+    if (currentStep === 2 && securityAnswerRef.current) {
+      setTimeout(() => securityAnswerRef.current.focus(), 100);
+    } else if (currentStep === 3 && newPasswordRef.current) {
+      setTimeout(() => newPasswordRef.current.focus(), 100);
+    }
+  }, [currentStep]);
+
+  // ===== DETECT EMAIL FORMAT =====
+  const detectEmailFormat = (value) => {
+    const emailRegex = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/;
+    return emailRegex.test(value);
+  };
 
   // ===== ENHANCED VALIDATION =====
-  const validateField = (name, value) => {
-    switch (name) {
-      case 'username':
-        if (!value.trim()) return 'Required';
-        if (value.length < 3) return 'Min 3 characters';
-        return '';
-
-      case 'securityAnswer':
-        if (!value.trim()) return 'Required';
-        return '';
-
-      case 'newPassword':
-        if (!value) return 'Required';
-        if (value.length < 8) return 'Min 8 characters';
-        if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,100}$/.test(value)) {
-          return 'Need uppercase, lowercase, number, special char';
-        }
-        return '';
-
-      case 'confirmPassword':
-        if (!value) return 'Required';
-        if (value !== formData.newPassword) return 'Passwords do not match';
-        return '';
-
-      default:
-        return '';
+  const validatePasswordMatch = (name, value) => {
+    if (name === 'confirmPassword') {
+      if (!value) return 'Required';
+      if (value !== formData.newPassword) return 'Passwords do not match';
+      return '';
     }
+    return validateField(name, value);
   };
 
   // ===== HANDLE INPUT CHANGE =====
@@ -66,15 +84,26 @@ const ForgetPassword = () => {
       [name]: value,
     }));
 
+    // Track email format for username field
+    if (name === 'username') {
+      setIsEmail(detectEmailFormat(value));
+    }
+
     // Validate on change
-    const error = validateField(name, value);
+    const error =
+      name === 'confirmPassword' ? validatePasswordMatch(name, value) : validateField(name, value);
+
     setErrors((prev) => ({
       ...prev,
       [name]: error,
     }));
+
+    if (message.text) {
+      setMessage({ type: '', text: '' });
+    }
   };
 
-  // ===== HANDLE FOCUS =====
+  // ===== FOCUS HANDLERS =====
   const handleFocus = (fieldName) => {
     setFocusedField(fieldName);
   };
@@ -95,28 +124,44 @@ const ForgetPassword = () => {
     setMessage({ type: '', text: '' });
 
     try {
-      console.log('🔍 Searching for username:', formData.username);
-      
-      const response = await userApi.getSecurityQuestion(formData.username.trim());
-      
-      console.log('✅ Security question retrieved:', response);
-      
-      setSecurityQuestion(response.data.securityQuestion);
-      setCurrentStep(2);
-      setErrors({});
-
-    } catch (error) {
-      console.error('❌ Username search failed:', error);
-      
-      let errorMessage = 'Something went wrong';
-      if (error.response?.status === 404) {
-        errorMessage = 'Username not found';
-      } else if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      } else if (error.message) {
-        errorMessage = error.message;
+      // Prepare query based on input type
+      const query = {};
+      if (isEmail) {
+        query.email = formData.username.trim().toLowerCase();
+      } else {
+        query.username = formData.username.trim().toLowerCase();
       }
-      
+
+      // API Call
+      const response = await userApi.fetchSecurityQuestion(query);
+
+      const securityQuestionText = response?.data?.data?.securityQuestion || '';
+
+      if (securityQuestionText.trim()) {
+        setSecurityQuestion(securityQuestionText);
+        setCurrentStep(2);
+        setErrors({});
+        setMessage({
+          type: 'success',
+          text: 'Security question found! Please answer to continue.',
+        });
+      } else {
+        setErrors({ username: 'No security question found for this account.' });
+      }
+    } catch (error) {
+      console.error('Security question fetch failed:', error.message);
+
+      let errorMessage = 'Something went wrong';
+      if (error.statusCode === 404) {
+        errorMessage = isEmail ? 'Email not found' : 'Username not found';
+      } else if (error.statusCode === 400) {
+        errorMessage = error.errors?.join(', ') || error.message || 'Invalid input';
+      } else if (error.statusCode >= 500) {
+        errorMessage = 'Server error. Please try again later.';
+      } else {
+        errorMessage = error.message || 'Search failed. Please try again.';
+      }
+
       setErrors({ username: errorMessage });
     } finally {
       setIsSearching(false);
@@ -125,40 +170,63 @@ const ForgetPassword = () => {
 
   // ===== STEP 2: VERIFY SECURITY ANSWER =====
   const handleSecurityVerification = async () => {
-    const error = validateField('securityAnswer', formData.securityAnswer);
-    if (error) {
-      setErrors({ securityAnswer: error });
-      return;
-    }
-
     setIsSubmitting(true);
     setMessage({ type: '', text: '' });
 
     try {
-      console.log('🔐 Verifying security answer for:', formData.username);
-      
-      await userApi.verifySecurityAnswer({
-        username: formData.username.trim(),
-        securityAnswer: formData.securityAnswer.trim()
-      });
+      // Prepare validation data
+      const validationData = {
+        securityAnswer: formData.securityAnswer.trim(),
+      };
 
-      console.log('✅ Security answer verified');
+      if (isEmail) {
+        validationData.email = formData.username.trim().toLowerCase();
+      } else {
+        validationData.username = formData.username.trim().toLowerCase();
+      }
 
-      setCurrentStep(3);
+      // Frontend validation
+      const validation = await validateForm(securityAnswerValidationSchema, validationData);
+
+      if (!validation.valid) {
+        setErrors(validation.errors);
+        setMessage({
+          type: 'error',
+          text: 'Please fix the validation errors below.',
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Clear any existing errors
       setErrors({});
 
-    } catch (error) {
-      console.error('❌ Security verification failed:', error);
-      
-      let errorMessage = 'Verification failed';
-      if (error.response?.status === 401) {
-        errorMessage = 'Incorrect answer';
-      } else if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      } else if (error.message) {
-        errorMessage = error.message;
+      // Call backend API
+      const response = await userApi.validateSecurityAnswer(validationData);
+
+      if (response.success) {
+        setCurrentStep(3);
+        setMessage({
+          type: 'success',
+          text: 'Security answer verified successfully!',
+        });
       }
-      
+    } catch (error) {
+      console.error('Security verification failed:', error.message);
+
+      let errorMessage = 'Verification failed';
+      if (error.statusCode === 401) {
+        errorMessage = 'Incorrect security answer. Please try again.';
+      } else if (error.statusCode === 404) {
+        errorMessage = 'User not found. Please start over.';
+      } else if (error.statusCode === 400) {
+        errorMessage = error.errors?.join(', ') || error.message || 'Invalid security answer';
+      } else if (error.statusCode >= 500) {
+        errorMessage = 'Server error. Please try again later.';
+      } else {
+        errorMessage = error.message || 'Verification failed. Please try again.';
+      }
+
       setErrors({ securityAnswer: errorMessage });
     } finally {
       setIsSubmitting(false);
@@ -166,138 +234,80 @@ const ForgetPassword = () => {
   };
 
   // ===== STEP 3: RESET PASSWORD =====
-  // const handlePasswordReset = async (e) => {
-  //   e.preventDefault();
+  const handlePasswordReset = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setMessage({ type: '', text: '' });
 
-  //   // Validate password fields
-  //   const newPasswordError = validateField('newPassword', formData.newPassword);
-  //   const confirmPasswordError = validateField('confirmPassword', formData.confirmPassword);
+    try {
+      // Prepare validation data
+      const validationData = {
+        newPassword: formData.newPassword,
+      };
 
-  //   if (newPasswordError || confirmPasswordError) {
-  //     setErrors({
-  //       newPassword: newPasswordError,
-  //       confirmPassword: confirmPasswordError,
-  //     });
-  //     return;
-  //   }
+      if (isEmail) {
+        validationData.email = formData.username.trim().toLowerCase();
+      } else {
+        validationData.username = formData.username.trim().toLowerCase();
+      }
 
-  //   setIsSubmitting(true);
-  //   setMessage({ type: '', text: '' });
+      const validation = await validateForm(resetPasswordValidationSchema, validationData);
 
-  //   try {
-  //     // console.log('🔄 Resetting password for:', formData.username);
-      
-  //     // const response = await userApi.ForgetPassword({
-  //     //   username: formData.username.trim(),
-  //     //   newPassword: formData.newPassword
-  //     // });
-
-  //       console.log('🔄 Resetting password for:', formData.username);
-  
-  // // ✅ TEMPORARY MOCK - replace with actual API call later
-  // const response = await new Promise((resolve) => {
-  //   setTimeout(() => {
-  //     resolve({
-  //       statusCode: 200,
-  //       message: 'Password reset successful',
-  //       success: true
-  //     });
-  //   }, 1000);
-  // });
-  //     console.log('✅ Password reset successful:', response);
-
-  //     setMessage({
-  //       type: 'success',
-  //       text: 'Password reset successful! Redirecting to login...'
-  //     });
-
-  //     // Redirect to login after success
-  //     setTimeout(() => {
-  //       window.location.href = '/login';
-  //     }, 2000);
-
-  //   } catch (error) {
-  //     console.error('❌ Password reset failed:', error);
-      
-  //     let errorMessage = 'Password reset failed. Please try again.';
-  //     if (error.response?.data?.message) {
-  //       errorMessage = error.response.data.message;
-  //     } else if (error.message) {
-  //       errorMessage = error.message;
-  //     }
-      
-  //     setMessage({
-  //       type: 'error',
-  //       text: errorMessage
-  //     });
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // };
-  // ===== STEP 3: RESET PASSWORD =====
-const handlePasswordReset = async (e) => {
-  e.preventDefault();
-
-  // Validate password fields
-  const newPasswordError = validateField('newPassword', formData.newPassword);
-  const confirmPasswordError = validateField('confirmPassword', formData.confirmPassword);
-
-  if (newPasswordError || confirmPasswordError) {
-    setErrors({
-      newPassword: newPasswordError,
-      confirmPassword: confirmPasswordError,
-    });
-    return;
-  }
-
-  setIsSubmitting(true);
-  setMessage({ type: '', text: '' });
-
-  try {
-    console.log('🔄 Resetting password for:', formData.username);
-    
-    // ✅ TEMPORARY MOCK - replace with actual API call later
-    const response = await new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          statusCode: 200,
-          message: 'Password reset successful',
-          success: true
+      if (!validation.valid) {
+        setErrors(validation.errors);
+        setMessage({
+          type: 'error',
+          text: 'Please fix the validation errors below.',
         });
-      }, 1000);
-    });
+        setIsSubmitting(false);
+        return;
+      }
 
-    console.log('✅ Password reset successful:', response);
+      // Additional password confirmation check
+      if (formData.newPassword !== formData.confirmPassword) {
+        setErrors({ confirmPassword: 'Passwords do not match' });
+        setIsSubmitting(false);
+        return;
+      }
 
-    setMessage({
-      type: 'success',
-      text: 'Password reset successful! Redirecting to login...'
-    });
+      setErrors({});
 
-    // Redirect to login after success
-    setTimeout(() => {
-      window.location.href = '/login';
-    }, 2000);
+      // Call backend API
+      const response = await userApi.resetUserPassword(validationData);
 
-  } catch (error) {
-    console.error('❌ Password reset failed:', error);
-    
-    let errorMessage = 'Password reset failed. Please try again.';
-    if (error.response?.data?.message) {
-      errorMessage = error.response.data.message;
-    } else if (error.message) {
-      errorMessage = error.message;
+      if (response.success) {
+        setMessage({
+          type: 'success',
+          text: response.message || 'Password reset successful! Redirecting to login...',
+        });
+
+        // Redirect to login after success
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Password reset failed:', error.message);
+
+      let errorMessage = 'Password reset failed. Please try again.';
+      if (error.statusCode === 404) {
+        errorMessage = 'User not found. Please start over.';
+      } else if (error.statusCode === 400) {
+        errorMessage = error.errors?.join(', ') || error.message || 'Invalid password data';
+      } else if (error.statusCode >= 500) {
+        errorMessage = 'Server error. Please try again later.';
+      } else {
+        errorMessage = error.message || 'Password reset failed';
+      }
+
+      setMessage({
+        type: 'error',
+        text: errorMessage,
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    setMessage({
-      type: 'error',
-      text: errorMessage
-    });
-  } finally {
-    setIsSubmitting(false);
-  }
-};
-
+  };
 
   // ===== GET FIELD ICON =====
   const getFieldIcon = (fieldName) => {
@@ -308,14 +318,18 @@ const handlePasswordReset = async (e) => {
 
     switch (fieldName) {
       case 'username':
-        return <UserCheck className={`${iconClass} text-gray-600`} size={20} />;
+        return isEmail ? (
+          <Mail className={`${iconClass} text-gray-600`} size={20} />
+        ) : (
+          <UserCheck className={`${iconClass} text-gray-600`} size={20} />
+        );
       case 'securityAnswer':
         return <MessageSquare className={`${iconClass} text-gray-600`} size={20} />;
       case 'newPassword':
         return (
           <button
             type="button"
-            className={`${iconClass} cursor-pointer text-gray-600 hover:text-black z-10`}
+            className={`${iconClass} z-10 cursor-pointer text-gray-600 hover:text-black`}
             onClick={() => setShowNewPassword(!showNewPassword)}
           >
             {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -325,7 +339,7 @@ const handlePasswordReset = async (e) => {
         return (
           <button
             type="button"
-            className={`${iconClass} cursor-pointer text-gray-600 hover:text-black z-10`}
+            className={`${iconClass} z-10 cursor-pointer text-gray-600 hover:text-black`}
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
           >
             {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -344,7 +358,7 @@ const handlePasswordReset = async (e) => {
           <div className="mb-6 text-center">
             <h2 className="text-card-title mb-2 text-black">Reset Password</h2>
             <p className="text-caption text-coffee">
-              {currentStep === 1 && 'Enter your username to continue'}
+              {currentStep === 1 && 'Enter your username or email to continue'}
               {currentStep === 2 && 'Answer your security question'}
               {currentStep === 3 && 'Create a new password'}
             </p>
@@ -353,10 +367,10 @@ const handlePasswordReset = async (e) => {
           {/* Message Display */}
           {message.text && (
             <div
-              className={`mb-4 p-3 rounded-lg text-sm font-medium border w-full ${
-                message.type === "success"
-                  ? "bg-green-50 text-green-800 border-green-200"
-                  : "bg-red-50 text-red-800 border-red-200"
+              className={`mb-4 w-full rounded-lg border p-3 text-sm font-medium ${
+                message.type === 'success'
+                  ? 'border-green-200 bg-green-50 text-green-800'
+                  : 'border-red-200 bg-red-50 text-red-800'
               }`}
             >
               <div className="flex items-center">
@@ -417,7 +431,7 @@ const handlePasswordReset = async (e) => {
                   onBlur={handleBlur}
                 />
                 <label className="label pointer-events-none absolute top-[13px] left-5 text-xl font-medium text-[#0b2447] transition-all duration-500 ease-in-out">
-                  Username
+                  {isEmail ? 'Email Address' : 'Username or Email'}
                 </label>
                 <div className="topline absolute top-0 right-0 h-[2px] w-0 bg-black transition-all duration-[400ms] ease-in-out"></div>
 
@@ -436,7 +450,7 @@ const handlePasswordReset = async (e) => {
                 </button>
 
                 {errors.username && (
-                  <div className="mt-2 ml-2 flex items-center text-xs text-red-600 font-medium">
+                  <div className="mt-2 ml-2 flex items-center text-xs font-medium text-red-600">
                     <AlertCircle size={12} className="mr-1 flex-shrink-0" />
                     <span>{errors.username}</span>
                   </div>
@@ -453,13 +467,22 @@ const handlePasswordReset = async (e) => {
                     <HelpCircle className="mr-2 text-gray-600" size={18} />
                     <span className="text-coffee text-sm font-medium">Security Question:</span>
                   </div>
-                  <p className="font-medium text-black">{securityQuestion}</p>
+
+                  {securityQuestion ? (
+                    <p className="font-medium text-black">{securityQuestion}</p>
+                  ) : (
+                    <div className="flex items-center text-amber-600">
+                      <AlertCircle size={16} className="mr-2" />
+                      <span className="font-medium">Loading security question...</span>
+                    </div>
+                  )}
                 </div>
 
-                {/* Security Answer Input */}
+                {/* Security Answer Input with Auto-Focus */}
                 <div className="input-container relative">
                   <input
-                    className="input h-[55px] w-full rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
+                    ref={securityAnswerRef}
+                    className="input h-[55px] w-full rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 pr-12 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
                     name="securityAnswer"
                     type="text"
                     required
@@ -476,7 +499,7 @@ const handlePasswordReset = async (e) => {
                   <div className="topline absolute top-0 right-0 h-[2px] w-0 bg-black transition-all duration-[400ms] ease-in-out"></div>
                   {getFieldIcon('securityAnswer')}
                   {errors.securityAnswer && (
-                    <div className="mt-2 ml-2 flex items-center text-xs text-red-600 font-medium">
+                    <div className="mt-2 ml-2 flex items-center text-xs font-medium text-red-600">
                       <AlertCircle size={12} className="mr-1 flex-shrink-0" />
                       <span>{errors.securityAnswer}</span>
                     </div>
@@ -485,9 +508,9 @@ const handlePasswordReset = async (e) => {
 
                 <button
                   onClick={handleSecurityVerification}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !securityQuestion}
                   className={`h-[55px] w-full ${
-                    isSubmitting
+                    isSubmitting || !securityQuestion
                       ? 'cursor-not-allowed bg-gray-600'
                       : 'bg-black hover:bg-gray-800 active:bg-gray-900'
                   } flex items-center justify-center rounded-lg text-xl font-medium text-white transition-all duration-300 ease-in-out`}
@@ -523,6 +546,7 @@ const handlePasswordReset = async (e) => {
                 {/* New Password */}
                 <div className="input-container relative">
                   <input
+                    ref={newPasswordRef}
                     className="input h-[55px] w-full rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 pr-12 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
                     name="newPassword"
                     type={showNewPassword ? 'text' : 'password'}
@@ -540,7 +564,7 @@ const handlePasswordReset = async (e) => {
                   <div className="topline absolute top-0 right-0 h-[2px] w-0 bg-black transition-all duration-[400ms] ease-in-out"></div>
                   {getFieldIcon('newPassword')}
                   {errors.newPassword && (
-                    <div className="mt-2 ml-2 flex items-center text-xs text-red-600 font-medium">
+                    <div className="mt-2 ml-2 flex items-center text-xs font-medium text-red-600">
                       <AlertCircle size={12} className="mr-1 flex-shrink-0" />
                       <span>{errors.newPassword}</span>
                     </div>
@@ -569,13 +593,13 @@ const handlePasswordReset = async (e) => {
                   {formData.confirmPassword &&
                     formData.newPassword &&
                     formData.confirmPassword === formData.newPassword && (
-                      <div className="mt-2 ml-2 flex items-center text-xs text-green-500 font-medium">
+                      <div className="mt-2 ml-2 flex items-center text-xs font-medium text-green-500">
                         <CheckCircle size={12} className="mr-1 flex-shrink-0" />
                         <span>Passwords match</span>
                       </div>
                     )}
                   {errors.confirmPassword && (
-                    <div className="mt-2 ml-2 flex items-center text-xs text-red-600 font-medium">
+                    <div className="mt-2 ml-2 flex items-center text-xs font-medium text-red-600">
                       <AlertCircle size={12} className="mr-1 flex-shrink-0" />
                       <span>{errors.confirmPassword}</span>
                     </div>
@@ -608,9 +632,21 @@ const handlePasswordReset = async (e) => {
             <div className="pt-4 text-center">
               <p className="text-coffee text-sm">
                 Remember your password?{' '}
-                <a href="/login" className="font-medium text-black hover:underline">Sign In</a>
+                <button
+                  type="button"
+                  onClick={() => navigate('/login')}
+                  className="font-medium text-black hover:underline focus:outline-none"
+                >
+                  Sign In
+                </button>
                 {' | '}
-                <a href="/signup" className="font-medium text-black hover:underline">Sign Up</a>
+                <button
+                  type="button"
+                  onClick={() => navigate('/signup')}
+                  className="font-medium text-black hover:underline focus:outline-none"
+                >
+                  Sign Up
+                </button>
               </p>
             </div>
           </div>
@@ -620,4 +656,4 @@ const handlePasswordReset = async (e) => {
   );
 };
 
-export default ForgetPassword;
+export default ForgotPassword;

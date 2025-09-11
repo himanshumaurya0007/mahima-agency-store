@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 
 const Dashboard = () => {
+  // eslint-disable-next-line no-unused-vars
   const [user, setUser] = useState(null);
 
   useEffect(() => {
     // Get user data from localStorage to confirm login success
-    const userData = localStorage.getItem('userData');
-    if (userData) {
-      setUser(JSON.parse(userData));
-    }
+    // const userData = localStorage.getItem('userData');
+    // if (userData) {
+    //   setUser(JSON.parse(userData));
+    // }
   }, []);
 
   return (

@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
-import { UserCheck, Eye, EyeOff, AlertCircle } from 'lucide-react';
-import userApi from '../../services/userApi';
+import { UserCheck, Eye, EyeOff, AlertCircle, Mail } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-const SignIn = () => {
+import userApi from '../../services/userApi';
+import { validateField } from '../../utils/validate';
+import { validateForm } from '../../middlewares/validateUser.middleware';
+import { loginUserValidationSchema } from '../../validations/userValidationSchemas';
+
+const Login = () => {
+  const navigate = useNavigate();
+
   // ===== FORM STATE =====
   const [formData, setFormData] = useState({
-    username: '',
+    username: '', // Can be username OR email
     password: '',
   });
 
@@ -15,23 +22,12 @@ const SignIn = () => {
   const [focusedField, setFocusedField] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [isEmail, setIsEmail] = useState(false); // Track if input is email format
 
-  // ===== VALIDATION =====
-  const validateField = (name, value) => {
-    switch (name) {
-      case 'username':
-        if (!value.trim()) return 'Required';
-        if (value.length < 3) return 'Min 3 characters';
-        return '';
-
-      case 'password':
-        if (!value) return 'Required';
-        if (value.length < 8) return 'Min 8 characters';
-        return '';
-
-      default:
-        return '';
-    }
+  // ===== DETECT EMAIL FORMAT =====
+  const detectEmailFormat = (value) => {
+    const emailRegex = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/;
+    return emailRegex.test(value);
   };
 
   // ===== HANDLE INPUT CHANGE =====
@@ -43,15 +39,25 @@ const SignIn = () => {
       [name]: value,
     }));
 
-    // Real-time validation
+    // Detect if input is email format
+    if (name === 'username') {
+      setIsEmail(detectEmailFormat(value));
+    }
+
+    // Real-time validation using validation utility
     const error = validateField(name, value);
     setErrors((prev) => ({
       ...prev,
       [name]: error,
     }));
+
+    // Clear messages when user starts typing
+    if (message.text) {
+      setMessage({ type: '', text: '' });
+    }
   };
 
-  // ===== HANDLE FOCUS =====
+  // ===== FOCUS HANDLERS =====
   const handleFocus = (fieldName) => {
     setFocusedField(fieldName);
   };
@@ -60,88 +66,113 @@ const SignIn = () => {
     setFocusedField('');
   };
 
-  // ===== FORM SUBMISSION =====
+  // ===== FORM SUBMISSION WITH BACKEND INTEGRATION =====
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Validate all fields
-    const newErrors = {};
-    Object.keys(formData).forEach((key) => {
-      const error = validateField(key, formData[key]);
-      if (error) newErrors[key] = error;
-    });
-    setErrors(newErrors);
-
-    // If validation errors exist, don't submit
-    if (Object.keys(newErrors).length > 0) {
-      return;
-    }
-
     setLoading(true);
     setMessage({ type: '', text: '' });
 
     try {
-      console.log('🔄 Attempting login with:', { username: formData.username });
+      // Prepare login data based on input type
+      const loginData = {};
+      
+      if (isEmail) {
+        loginData.email = formData.username.trim().toLowerCase();
+      } else {
+        loginData.username = formData.username.trim().toLowerCase();
+      }
+      
+      loginData.password = formData.password;
 
-      const res = await userApi.login({
-        username: formData.username.trim(),
-        password: formData.password,
-      });
-
-      console.log('✅ Login response:', res);
-
-      // Store authentication data
-      if (res.data && res.data.accessToken) {
-        localStorage.setItem('authToken', res.data.accessToken);
-        localStorage.setItem('refreshToken', res.data.refreshToken);
-        localStorage.setItem('userData', JSON.stringify(res.data.user));
-
-        console.log('💾 Tokens stored successfully');
+      // 1. Frontend validation using validation middleware
+      const validation = await validateForm(loginUserValidationSchema, loginData);
+      
+      if (!validation.valid) {
+        setErrors(validation.errors);
+        setMessage({ 
+          type: 'error', 
+          text: 'Please fix the validation errors below.' 
+        });
+        setLoading(false);
+        return;
       }
 
-      setMessage({
-        type: 'success',
-        text: 'Login successful! Redirecting to dashboard...',
-      });
-
-      // Clear form
-      setFormData({ username: '', password: '' });
+      // 2. Clear any existing errors
       setErrors({});
 
-      console.log('🚀 Redirecting to dashboard...');
+      // 3. Call backend API using userApi service
+      const response = await userApi.loginUser(loginData);
 
-      // Redirect to dashboard after a short delay
-      setTimeout(() => {
-        window.location.href = '/dashboard';
-      }, 1500);
-    } catch (err) {
-      console.error('❌ Login failed:', err);
+      // 4. Handle successful login
+      if (response.success && response.data) {
+        const { user, accessToken, refreshToken } = response.data;
 
-      let errorMessage = 'Login failed. Please try again.';
+        // Store authentication data
+        localStorage.setItem('authToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+        localStorage.setItem('userData', JSON.stringify(user));
 
-      if (err.response) {
-        console.error('Backend error response:', err.response.data);
+        setMessage({
+          type: 'success',
+          text: response.message || 'Login successful! Redirecting to dashboard...',
+        });
 
-        if (err.response.status === 401) {
-          errorMessage = 'Invalid username or password';
-        } else if (err.response.status === 404) {
-          errorMessage = 'Account not found. Please sign up first.';
-        } else if (err.response.data?.message) {
-          errorMessage = err.response.data.message;
-        } else if (err.response.data?.errors?.length > 0) {
-          errorMessage = err.response.data.errors[0];
-        }
-      } else if (err.code === 'NETWORK_ERROR' || err.message.includes('Network Error')) {
-        errorMessage =
-          'Cannot connect to server. Please check if backend is running on http://localhost:5000';
-      } else if (err.message) {
-        errorMessage = err.message;
+        // Clear form
+        setFormData({ username: '', password: '' });
+        setErrors({});
+
+        // Redirect to dashboard after short delay
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 1500);
       }
 
-      setMessage({
-        type: 'error',
-        text: errorMessage,
-      });
+    } catch (error) {
+      // Handle different types of errors using your ApiError structure
+      if (error.statusCode === 401) {
+        // Invalid credentials
+        setMessage({
+          type: 'error',
+          text: 'Invalid credentials. Please check your username/email and password.',
+        });
+      } else if (error.statusCode === 404) {
+        // User not found
+        setMessage({
+          type: 'error',
+          text: 'Account not found. Please check your credentials or sign up.',
+        });
+      } else if (error.statusCode === 400) {
+        // Validation errors from backend
+        if (error.errors && error.errors.length > 0) {
+          setMessage({
+            type: 'error',
+            text: 'Validation failed: ' + error.errors.join(', '),
+          });
+        } else {
+          setMessage({
+            type: 'error',
+            text: error.message || 'Invalid login data. Please check your information.',
+          });
+        }
+      } else if (error.statusCode >= 500) {
+        // Server errors
+        setMessage({
+          type: 'error',
+          text: 'Server error. Please try again later.',
+        });
+      } else if (error.statusCode === 503) {
+        // Network errors
+        setMessage({
+          type: 'error',
+          text: 'Cannot connect to server. Please check if backend is running.',
+        });
+      } else {
+        // Other errors
+        setMessage({
+          type: 'error',
+          text: error.message || 'Login failed. Please check your connection and try again.',
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -156,7 +187,11 @@ const SignIn = () => {
 
     switch (fieldName) {
       case 'username':
-        return <UserCheck className={`${iconClass} text-gray-600`} size={20} />;
+        return isEmail ? (
+          <Mail className={`${iconClass} text-gray-600`} size={20} />
+        ) : (
+          <UserCheck className={`${iconClass} text-gray-600`} size={20} />
+        );
       case 'password':
         return (
           <button
@@ -200,10 +235,10 @@ const SignIn = () => {
 
           {/* Form Section */}
           <form className="w-full space-y-6" onSubmit={handleSubmit}>
-            {/* Username Field */}
+            {/* Username/Email Field */}
             <div className="input-container relative">
               <input
-                className="input h-[55px] w-full rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
+                className="input h-[55px] w-full rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 pr-12 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
                 name="username"
                 type="text"
                 required
@@ -215,7 +250,7 @@ const SignIn = () => {
                 onBlur={handleBlur}
               />
               <label className="label pointer-events-none absolute top-[13px] left-5 text-xl font-medium text-[#0b2447] transition-all duration-500 ease-in-out">
-                Username
+                {isEmail ? 'Email' : 'Username'}
               </label>
               <div className="topline absolute top-0 right-0 h-[2px] w-0 bg-black transition-all duration-[400ms] ease-in-out"></div>
               {getFieldIcon('username')}
@@ -223,6 +258,12 @@ const SignIn = () => {
                 <div className="mt-2 ml-2 flex items-center text-xs font-medium text-red-600">
                   <AlertCircle size={12} className="mr-1 flex-shrink-0" />
                   <span>{errors.username}</span>
+                </div>
+              )}
+              {errors.email && (
+                <div className="mt-2 ml-2 flex items-center text-xs font-medium text-red-600">
+                  <AlertCircle size={12} className="mr-1 flex-shrink-0" />
+                  <span>{errors.email}</span>
                 </div>
               )}
             </div>
@@ -258,8 +299,8 @@ const SignIn = () => {
             <div className="text-right">
               <button
                 type="button"
-                className="text-sm text-black hover:underline"
-                onClick={() => (window.location.href = '/reset-password')} // Update this line
+                className="text-sm text-black hover:underline focus:outline-none"
+                onClick={() => navigate('/reset-password')}
               >
                 Forgot password?
               </button>
@@ -291,9 +332,13 @@ const SignIn = () => {
             <div className="pt-4 text-center">
               <p className="text-coffee text-sm">
                 Don't have an account?{' '}
-                <a href="/signup" className="font-medium text-black hover:underline">
+                <button
+                  type="button"
+                  onClick={() => navigate('/signup')}
+                  className="font-medium text-black hover:underline focus:outline-none"
+                >
                   Sign Up
-                </a>
+                </button>
               </p>
             </div>
           </form>
@@ -303,4 +348,4 @@ const SignIn = () => {
   );
 };
 
-export default SignIn;
+export default Login;

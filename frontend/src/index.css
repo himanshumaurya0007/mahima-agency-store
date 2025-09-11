@@ -560,23 +560,27 @@ p {
   }
 }
 
-/* SCROLLBAR STYLING */
+/* Minimal Scrollbar Styling */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: theme(--color-cream);
+  background: white;
+  border-radius: 12px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: theme(--color-gray-400);
-  border-radius: 4px;
+  background: rgb(233, 185, 97);
+  border-radius: 12px;
+  transition: background 0.3s ease-in-out;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: theme(--color-gray-500);
+  background: rgb(230, 136, 102);
 }
+
 
 /* Input Styles For SignUp */
 

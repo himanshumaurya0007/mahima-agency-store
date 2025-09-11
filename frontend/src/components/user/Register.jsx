@@ -1,201 +1,16 @@
-// import { useState } from "react";
-// import userApi from "../../services/userApi";
-
-// const securityQuestions = [
-//   "What was the name of your first pet?",
-//   "What city were you born in?",
-//   "What was the name of your first school?",
-//   "What is the name of your favorite childhood teacher?",
-//   "What is the title of your favorite book or movie?",
-// ];
-
-// export default function SignUp() {
-//   const [formData, setFormData] = useState({
-//     firstName: "",
-//     lastName: "",
-//     email: "",
-//     phone: "",
-//     username: "",
-//     password: "",
-//     securityQuestion: securityQuestions[0],
-//     securityAnswer: "",
-//   });
-
-//   const [loading, setLoading] = useState(false);
-//   const [message, setMessage] = useState({ type: "", text: "" });
-
-//   const handleChange = (e) => {
-//     const { name, value } = e.target;
-//     setFormData((prev) => ({ ...prev, [name]: value }));
-//   };
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     setLoading(true);
-//     setMessage({ type: "", text: "" });
-
-//     try {
-//       const res = await userApi.register(formData);
-//       setMessage({ type: "success", text: res.message });
-//       setFormData({
-//         firstName: "",
-//         lastName: "",
-//         email: "",
-//         phone: "",
-//         username: "",
-//         password: "",
-//         securityQuestion: securityQuestions[0],
-//         securityAnswer: "",
-//       });
-//     } catch (err) {
-//       setMessage({
-//         type: "error",
-//         text: err.response?.data?.message || "Registration failed",
-//       });
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   return (
-//     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-//       <div className="w-full max-w-lg bg-white shadow-md rounded-2xl p-8">
-//         <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-//           Create an Account
-//         </h2>
-
-//         {message.text && (
-//           <div
-//             className={`mb-4 p-3 rounded-md text-sm ${
-//               message.type === "success"
-//                 ? "bg-green-100 text-green-700"
-//                 : "bg-red-100 text-red-700"
-//             }`}
-//           >
-//             {message.text}
-//           </div>
-//         )}
-
-//         <form onSubmit={handleSubmit} className="space-y-4">
-//           {/* First Name + Last Name */}
-//           <div className="grid grid-cols-2 gap-4">
-//             <input
-//               type="text"
-//               name="firstName"
-//               placeholder="First Name"
-//               value={formData.firstName}
-//               onChange={handleChange}
-//               className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-//               required
-//             />
-//             <input
-//               type="text"
-//               name="lastName"
-//               placeholder="Last Name"
-//               value={formData.lastName}
-//               onChange={handleChange}
-//               className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-//               required
-//             />
-//           </div>
-
-//           {/* Email */}
-//           <input
-//             type="email"
-//             name="email"
-//             placeholder="Email address"
-//             value={formData.email}
-//             onChange={handleChange}
-//             className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-//             required
-//           />
-
-//           {/* Phone */}
-//           <input
-//             type="text"
-//             name="phone"
-//             placeholder="Phone (10 digits)"
-//             value={formData.phone}
-//             onChange={handleChange}
-//             className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-//             required
-//           />
-
-//           {/* Username */}
-//           <input
-//             type="text"
-//             name="username"
-//             placeholder="Choose a username"
-//             value={formData.username}
-//             onChange={handleChange}
-//             className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-//             required
-//           />
-
-//           {/* Password */}
-//           <input
-//             type="password"
-//             name="password"
-//             placeholder="Create a password"
-//             value={formData.password}
-//             onChange={handleChange}
-//             className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-//             required
-//           />
-
-//           {/* Security Question */}
-//           <select
-//             name="securityQuestion"
-//             value={formData.securityQuestion}
-//             onChange={handleChange}
-//             className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-//             required
-//           >
-//             {securityQuestions.map((q, index) => (
-//               <option key={index} value={q}>
-//                 {q}
-//               </option>
-//             ))}
-//           </select>
-
-//           {/* Security Answer */}
-//           <input
-//             type="text"
-//             name="securityAnswer"
-//             placeholder="Your answer"
-//             value={formData.securityAnswer}
-//             onChange={handleChange}
-//             className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-//             required
-//           />
-
-//           {/* Submit */}
-//           <button
-//             type="submit"
-//             disabled={loading}
-//             className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-//           >
-//             {loading ? "Registering..." : "Sign Up"}
-//           </button>
-//         </form>
-//       </div>
-//     </div>
-//   );
-// }
-
 import React, { useState } from 'react';
 import { Eye, EyeOff, MessageSquare, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
 import userApi from '../../services/userApi';
+import { SECURITY_QUESTIONS } from '../../utils/constants';
+import { validateField } from '../../utils/validate';
+import { validateForm } from '../../middlewares/validateUser.middleware';
+import { registerUserValidationSchema } from '../../validations/userValidationSchemas';
 
-const securityQuestions = [
-  'What was the name of your first pet?',
-  'What city were you born in?',
-  'What was the name of your first school?',
-  'What is the name of your favorite childhood teacher?',
-  'What is the title of your favorite book or movie?',
-];
+const Register = () => {
+  const navigate = useNavigate();
 
-const SignUp = () => {
   // ===== FORM STATE =====
   const [formData, setFormData] = useState({
     firstName: '',
@@ -216,82 +31,34 @@ const SignUp = () => {
   const [showSecurityAnswer, setShowSecurityAnswer] = useState(false);
   const [focusedField, setFocusedField] = useState('');
 
-  // ===== PASSWORD VALIDATION HELPER =====
-  const validatePassword = (password) => {
-    if (!password) return 'Required';
-    if (password.length < 8) return 'Minimum 8 characters';
-
-    const missing = [];
-    if (!/[A-Z]/.test(password)) missing.push('uppercase');
-    if (!/[a-z]/.test(password)) missing.push('lowercase');
-    if (!/\d/.test(password)) missing.push('no');
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) missing.push('special char');
-
-    if (missing.length > 0) {
-      return `Missing: ${missing.join(', ')}`;
-    }
-
-    return '';
-  };
-
-  // ===== VALIDATION FUNCTIONS =====
-  const validateField = (name, value) => {
-    switch (name) {
-      case 'firstName':
-      case 'lastName':
-        return !value.trim() ? 'Required' : '';
-      case 'email': {
-        const emailRegex = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/;
-        if (!value.trim()) return 'Required';
-        if (!emailRegex.test(value)) return 'Invalid email format';
-        return '';
-      }
-      case 'phone':
-        if (!value.trim()) return 'Required';
-        if (!/^\d{10}$/.test(value.replace(/\s+/g, ''))) return 'Enter 10 digit phone number';
-        return '';
-      case 'username':
-        if (!value.trim()) return 'Required';
-        if (value.length < 3) return 'Minimum 3 characters';
-        if (!/^[a-zA-Z0-9_]+$/.test(value)) return 'Only letters, numbers, underscore';
-        return '';
-      case 'password':
-        return validatePassword(value);
-      case 'securityQuestion':
-        return !value ? 'Please select a question' : '';
-      case 'securityAnswer':
-        return !value.trim() ? 'Required' : '';
-      default:
-        return '';
-    }
-  };
-
-  // ===== HANDLE INPUT CHANGE =====
+  // ===== REAL-TIME VALIDATION =====
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // For phone number, only allow digits
+    // Special handling for phone number - only digits
     if (name === 'phone') {
       const numericValue = value.replace(/[^\d]/g, '');
       if (numericValue.length <= 10) {
         setFormData((prev) => ({ ...prev, [name]: numericValue }));
+
         const error = validateField(name, numericValue);
         setErrors((prev) => ({ ...prev, [name]: error }));
       }
       return;
     }
 
+    // Update form data
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    // Real-time validation
     const error = validateField(name, value);
-    setErrors((prev) => ({
-      ...prev,
-      [name]: error,
-    }));
+    setErrors((prev) => ({ ...prev, [name]: error }));
+
+    if (message.text) {
+      setMessage({ type: '', text: '' });
+    }
   };
 
-  // ===== HANDLE FOCUS =====
+  // ===== FOCUS HANDLERS =====
   const handleFocus = (fieldName) => {
     setFocusedField(fieldName);
   };
@@ -300,45 +67,92 @@ const SignUp = () => {
     setFocusedField('');
   };
 
-  // ===== FORM SUBMISSION =====
+  // ===== FORM SUBMISSION WITH BACKEND INTEGRATION =====
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Validate all fields
-    const newErrors = {};
-    Object.keys(formData).forEach((key) => {
-      const error = validateField(key, formData[key]);
-      if (error) newErrors[key] = error;
-    });
-    setErrors(newErrors);
-
-    // If validation errors exist, don't submit
-    if (Object.keys(newErrors).length > 0) {
-      return;
-    }
-
     setLoading(true);
     setMessage({ type: '', text: '' });
 
     try {
-      const res = await userApi.register(formData);
-      setMessage({ type: 'success', text: res.message });
-      setFormData({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        username: '',
-        password: '',
-        securityQuestion: '',
-        securityAnswer: '',
-      });
+      // 1. Frontend validation using validation middleware
+      const validation = await validateForm(registerUserValidationSchema, formData);
+
+      if (!validation.valid) {
+        setErrors(validation.errors);
+        setMessage({
+          type: 'error',
+          text: 'Please fix the validation errors below.',
+        });
+        setLoading(false);
+        return;
+      }
+
+      // 2. Clear any existing errors
       setErrors({});
-    } catch (err) {
-      setMessage({
-        type: 'error',
-        text: err.response?.data?.message || 'Registration failed',
-      });
+
+      // 3. Call backend API using userApi service
+      const response = await userApi.registerUser(formData);
+
+      // 4. Handle successful registration
+      if (response.success) {
+        setMessage({
+          type: 'success',
+          text: response.message || 'Registration successful! Please login to continue.',
+        });
+
+        // 5. Reset form
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          phone: '',
+          username: '',
+          password: '',
+          securityQuestion: '',
+          securityAnswer: '',
+        });
+
+        // 6. Redirect to login after 1.5 seconds
+        setTimeout(() => {
+          navigate('/login');
+        }, 1500);
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+
+      // Handle different types of errors using your ApiError structure
+      if (error.statusCode === 409) {
+        // User already exists
+        setMessage({
+          type: 'error',
+          text: 'User with this email or username already exists. Please try different credentials.',
+        });
+      } else if (error.statusCode === 400) {
+        // Validation errors from backend
+        if (error.errors && error.errors.length > 0) {
+          setMessage({
+            type: 'error',
+            text: 'Validation failed: ' + error.errors.join(', '),
+          });
+        } else {
+          setMessage({
+            type: 'error',
+            text: error.message || 'Invalid input data. Please check your information.',
+          });
+        }
+      } else if (error.statusCode >= 500) {
+        // Server errors
+        setMessage({
+          type: 'error',
+          text: 'Server error. Please try again later.',
+        });
+      } else {
+        // Network or other errors
+        setMessage({
+          type: 'error',
+          text: error.message || 'Registration failed. Please check your connection and try again.',
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -360,7 +174,6 @@ const SignUp = () => {
       >
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
       </svg>
-      {/* Enhanced diagonal slash */}
       <div
         className="absolute flex items-center justify-center"
         style={{
@@ -414,7 +227,7 @@ const SignUp = () => {
 
   return (
     <div className="bg-cream flex min-h-screen items-center justify-center">
-      <div className="w-full max-w-[38rem]">
+      <div className="w-full max-w-[41rem]">
         <div className="card flex flex-col items-center justify-between">
           {/* Header Section */}
           <div className="mb-6 text-center">
@@ -446,7 +259,7 @@ const SignUp = () => {
               <div className="flex justify-center sm:justify-start">
                 <div className="input-container relative">
                   <input
-                    className="input h-[55px] w-[260px] rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
+                    className="input h-[55px] w-[285px] rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
                     name="firstName"
                     type="text"
                     required
@@ -474,7 +287,7 @@ const SignUp = () => {
               <div className="flex justify-center sm:justify-end">
                 <div className="input-container relative">
                   <input
-                    className="input h-[55px] w-[260px] rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
+                    className="input h-[55px] w-[285px] rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
                     name="lastName"
                     type="text"
                     required
@@ -505,7 +318,7 @@ const SignUp = () => {
               <div className="flex justify-center sm:justify-start">
                 <div className="input-container relative">
                   <input
-                    className="input h-[55px] w-[260px] rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
+                    className="input h-[55px] w-[285px] rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 text-[17px] font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
                     name="email"
                     type="email"
                     required
@@ -533,7 +346,7 @@ const SignUp = () => {
               <div className="flex justify-center sm:justify-end">
                 <div className="input-container relative">
                   <input
-                    className="input h-[55px] w-[260px] rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
+                    className="input h-[55px] w-[285px] rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
                     name="phone"
                     type="tel"
                     required
@@ -566,7 +379,7 @@ const SignUp = () => {
               <div className="flex justify-center sm:justify-start">
                 <div className="input-container relative">
                   <input
-                    className="input h-[55px] w-[260px] rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
+                    className="input h-[55px] w-[285px] rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
                     name="username"
                     type="text"
                     required
@@ -594,7 +407,7 @@ const SignUp = () => {
               <div className="flex justify-center sm:justify-end">
                 <div className="input-container relative">
                   <input
-                    className="input h-[55px] w-[260px] rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 pr-12 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
+                    className="input h-[55px] w-[285px] rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 pr-12 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
                     name="password"
                     type={showPassword ? 'text' : 'password'}
                     required
@@ -636,7 +449,7 @@ const SignUp = () => {
                   <option value="" disabled hidden>
                     Select one option
                   </option>
-                  {securityQuestions.map((question, index) => (
+                  {SECURITY_QUESTIONS.map((question, index) => (
                     <option
                       key={index}
                       value={question}
@@ -650,6 +463,12 @@ const SignUp = () => {
                   Security Question
                 </label>
                 <div className="topline absolute top-0 right-0 h-[1.5px] w-0 bg-black transition-all duration-[400ms] ease-in-out"></div>
+                {errors.securityQuestion && (
+                  <div className="mt-2 ml-2 flex items-center text-xs font-medium text-red-600">
+                    <AlertCircle size={12} className="mr-1 flex-shrink-0" />
+                    <span>{errors.securityQuestion}</span>
+                  </div>
+                )}
               </div>
 
               {/* Security Answer */}
@@ -697,7 +516,7 @@ const SignUp = () => {
                     Registering...
                   </>
                 ) : (
-                  'Sign Up'
+                  'Create Account'
                 )}
               </button>
             </div>
@@ -705,10 +524,14 @@ const SignUp = () => {
             {/* Already have account */}
             <div className="pt-4 text-center">
               <p className="text-coffee text-sm">
-                Already have an account ?
-                <a href="/login" className="pl-1 font-medium text-black hover:underline">
+                Already have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => navigate('/login')}
+                  className="font-medium text-black hover:underline focus:outline-none"
+                >
                   Sign In
-                </a>
+                </button>
               </p>
             </div>
           </form>
@@ -718,4 +541,4 @@ const SignUp = () => {
   );
 };
 
-export default SignUp;
+export default Register;
