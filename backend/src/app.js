@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import { StatusCodes } from "http-status-codes";
+import cookieParser from 'cookie-parser';
 
 import healthCheckRouter from "./routes/healthCheck.route.js";
 import userRouter from "./routes/user.route.js";
@@ -12,7 +13,6 @@ import { errorMiddleware } from "./middlewares/error.middleware.js";
 
 const app = express();
 
-logger.info(`Environment: ${process.env.CORS_ORIGIN}`);
 // Middlewares
 app.use(cors({
     origin: process.env.CORS_ORIGIN || "http://localhost:5173",
@@ -20,9 +20,9 @@ app.use(cors({
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
 }));
-logger.info(`Environment: ${process.env.CORS_ORIGIN}`);
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+app.use(cookieParser());
 
 // Logging middleware
 if (process.env.NODE_ENV === "development") {

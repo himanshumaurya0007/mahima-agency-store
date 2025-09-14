@@ -1,4 +1,5 @@
 import { StatusCodes, ReasonPhrases } from "http-status-codes";
+import jwt from "jsonwebtoken";
 
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -364,4 +365,78 @@ const resetUserPassword = asyncHandler(async (req, res, next) => {
     }
 });
 
-export { registerUser, loginUser, logoutUser, fetchSecurityQuestion, validateSecurityAnswerController, resetUserPassword };
+/**
+ * @desc    Refresh access token using refresh token
+ * @route   POST /api/v1/user/tokens
+ * @access  Public
+ */
+const refreshTokens = asyncHandler(async (req, res, next) => {
+    try {
+        // 1. Extract refresh token (from cookie or body)
+        const incomingRefreshToken = req.cookies.refreshToken || req.body?.refreshToken;
+
+        if (!incomingRefreshToken) {
+            throw new ApiError(StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED, ["Refresh token missing"]);
+        }
+
+        // 2. Verify refresh token signature
+        let decodedToken;
+        try {
+            decodedToken = jwt.verify(
+                incomingRefreshToken,
+                process.env.REFRESH_TOKEN_SECRET
+            );
+        } catch (err) {
+            throw new ApiError(StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED, ["Invalid or expired refresh token"]);
+        }
+
+        // 3. Find user & check stored refresh token
+        const user = await User.findById(decodedToken?._id);
+        if (!user) {
+            throw new ApiError(StatusCodes.NOT_FOUND, ReasonPhrases.NOT_FOUND, ["User not found"]);
+        }
+
+        if (user.refreshToken !== incomingRefreshToken) {
+            throw new ApiError(StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED, ["Refresh token mismatch or already used"]);
+        }
+
+        // 4. Generate new access & refresh tokens
+        const { accessToken, refreshToken: newRefreshToken } = await generateAccessAndRefreshTokens(user._id);
+
+        logger.info(`Access token refreshed for user: ${user.username}`);
+
+        // 5. Cookie options
+        const cookieOptions = {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+        };
+
+        // 6. Send response
+        return res
+            .status(StatusCodes.OK)
+            .cookie("accessToken", accessToken, cookieOptions)
+            .cookie("refreshToken", newRefreshToken, cookieOptions)
+            .json(
+                new ApiResponse(
+                    StatusCodes.OK,
+                    {
+                        accessToken,
+                        refreshToken: newRefreshToken,
+                    },
+                    "Access token refreshed successfully"
+                ));
+    } catch (error) {
+        logger.error(`Access token refresh failed: ${error.message}`, { stack: error.stack });
+        next(
+            error instanceof ApiError
+                ? error
+                : new ApiError(
+                    StatusCodes.INTERNAL_SERVER_ERROR,
+                    ReasonPhrases.INTERNAL_SERVER_ERROR,
+                    [error.message]
+                ));
+    }
+});
+
+export { registerUser, loginUser, logoutUser, fetchSecurityQuestion, validateSecurityAnswerController, resetUserPassword, refreshTokens };
