@@ -15,50 +15,42 @@ const Dashboard = () => {
   return (
     <div className="bg-cream min-h-screen">
       <div className="container mx-auto px-4 py-8">
-        <div className="card max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <h1 className="text-hero text-black mb-4">Welcome to Dashboard</h1>
+        <div className="card mx-auto max-w-4xl">
+          <div className="mb-8 text-center">
+            <h1 className="text-hero mb-4 text-black">Welcome to Dashboard</h1>
             <p className="text-section text-coffee">
               🎉 Login Successful! Welcome to Mahima Agencies
             </p>
           </div>
 
           {user && (
-            <div className="bg-vanilla rounded-lg p-6 mb-6 border border-peach">
-              <h2 className="text-card-title text-black mb-4">User Information</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-vanilla border-peach mb-6 rounded-lg border p-6">
+              <h2 className="text-card-title mb-4 text-black">User Information</h2>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <p className="text-caption text-coffee">First Name:</p>
-                  <p className="text-body text-black font-medium capitalize">
-                    {user.firstName}
-                  </p>
+                  <p className="text-body font-medium text-black capitalize">{user.firstName}</p>
                 </div>
                 <div>
                   <p className="text-caption text-coffee">Last Name:</p>
-                  <p className="text-body text-black font-medium capitalize">
-                    {user.lastName}
-                  </p>
+                  <p className="text-body font-medium text-black capitalize">{user.lastName}</p>
                 </div>
                 <div>
                   <p className="text-caption text-coffee">Email:</p>
-                  <p className="text-body text-black font-medium">
-                    {user.email}
-                  </p>
+                  <p className="text-body font-medium text-black">{user.email}</p>
                 </div>
                 <div>
                   <p className="text-caption text-coffee">Username:</p>
-                  <p className="text-body text-black font-medium">
-                    {user.username}
-                  </p>
+                  <p className="text-body font-medium text-black">{user.username}</p>
                 </div>
               </div>
             </div>
           )}
 
           <div className="text-center">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <div className="mb-6 rounded-lg border border-green-200 bg-green-50 p-4">
               <div className="flex items-center justify-center">
-                <div className="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">
+                <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-green-500 text-white">
                   ✓
                 </div>
                 <div>
@@ -77,7 +69,7 @@ const Dashboard = () => {
                 localStorage.clear();
                 window.location.href = '/signin';
               }}
-              className="btn-secondary px-6 py-3 rounded-lg font-medium"
+              className="btn-secondary rounded-lg px-6 py-3 font-medium"
             >
               Logout
             </button>

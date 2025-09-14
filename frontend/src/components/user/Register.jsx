@@ -1,7 +1,10 @@
+// src/components/user/Register.jsx
 import React, { useState } from 'react';
 import { Eye, EyeOff, MessageSquare, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
+// ✅ Centralized imports - Using your existing system
 import userApi from '../../services/userApi';
 import { SECURITY_QUESTIONS } from '../../utils/constants';
 import { validateField } from '../../utils/validate';
@@ -11,7 +14,7 @@ import { registerUserValidationSchema } from '../../validations/userValidationSc
 const Register = () => {
   const navigate = useNavigate();
 
-  // ===== FORM STATE =====
+  // ===== STATE MANAGEMENT =====
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -23,84 +26,60 @@ const Register = () => {
     securityAnswer: '',
   });
 
-  // ===== UI STATE =====
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState({ type: '', text: '' });
   const [errors, setErrors] = useState({});
+  const [focusedField, setFocusedField] = useState('');
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showSecurityAnswer, setShowSecurityAnswer] = useState(false);
-  const [focusedField, setFocusedField] = useState('');
 
-  // ===== REAL-TIME VALIDATION =====
+  // ===== FORM HANDLERS =====
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // Special handling for phone number - only digits
+    // ✅ Phone validation using centralized regex
     if (name === 'phone') {
       const numericValue = value.replace(/[^\d]/g, '');
       if (numericValue.length <= 10) {
         setFormData((prev) => ({ ...prev, [name]: numericValue }));
-
+        // Use centralized validation
         const error = validateField(name, numericValue);
         setErrors((prev) => ({ ...prev, [name]: error }));
       }
       return;
     }
 
-    // Update form data
+    // All other fields using centralized validation
     setFormData((prev) => ({ ...prev, [name]: value }));
-
     const error = validateField(name, value);
     setErrors((prev) => ({ ...prev, [name]: error }));
-
-    if (message.text) {
-      setMessage({ type: '', text: '' });
-    }
   };
 
-  // ===== FOCUS HANDLERS =====
-  const handleFocus = (fieldName) => {
-    setFocusedField(fieldName);
-  };
+  const handleFocus = (fieldName) => setFocusedField(fieldName);
+  const handleBlur = () => setFocusedField('');
 
-  const handleBlur = () => {
-    setFocusedField('');
-  };
-
-  // ===== FORM SUBMISSION WITH BACKEND INTEGRATION =====
+  // ===== FORM SUBMISSION =====
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage({ type: '', text: '' });
 
     try {
-      // 1. Frontend validation using validation middleware
+      // ✅ Use centralized form validation
       const validation = await validateForm(registerUserValidationSchema, formData);
-
       if (!validation.valid) {
         setErrors(validation.errors);
-        setMessage({
-          type: 'error',
-          text: 'Please fix the validation errors below.',
-        });
-        setLoading(false);
+        toast.error('Please fix form errors');
         return;
       }
 
-      // 2. Clear any existing errors
       setErrors({});
 
-      // 3. Call backend API using userApi service
+      // Submit registration
       const response = await userApi.registerUser(formData);
 
-      // 4. Handle successful registration
       if (response.success) {
-        setMessage({
-          type: 'success',
-          text: response.message || 'Registration successful! Please login to continue.',
-        });
+        toast.success(response.message || 'Account created successfully!');
 
-        // 5. Reset form
+        // Reset form
         setFormData({
           firstName: '',
           lastName: '',
@@ -112,85 +91,28 @@ const Register = () => {
           securityAnswer: '',
         });
 
-        // 6. Redirect to login after 1.5 seconds
-        setTimeout(() => {
-          navigate('/login');
-        }, 1500);
+        // Redirect to login
+        setTimeout(() => navigate('/login'), 1500);
       }
     } catch (error) {
-      console.error('Registration error:', error);
+      // ✅ Concise error messages using centralized approach
+      let errorMsg = 'Registration failed';
 
-      // Handle different types of errors using your ApiError structure
-      if (error.statusCode === 409) {
-        // User already exists
-        setMessage({
-          type: 'error',
-          text: 'User with this email or username already exists. Please try different credentials.',
-        });
-      } else if (error.statusCode === 400) {
-        // Validation errors from backend
-        if (error.errors && error.errors.length > 0) {
-          setMessage({
-            type: 'error',
-            text: 'Validation failed: ' + error.errors.join(', '),
-          });
-        } else {
-          setMessage({
-            type: 'error',
-            text: error.message || 'Invalid input data. Please check your information.',
-          });
-        }
-      } else if (error.statusCode >= 500) {
-        // Server errors
-        setMessage({
-          type: 'error',
-          text: 'Server error. Please try again later.',
-        });
-      } else {
-        // Network or other errors
-        setMessage({
-          type: 'error',
-          text: error.message || 'Registration failed. Please check your connection and try again.',
-        });
-      }
+      if (error.statusCode === 409) errorMsg = 'User already exists';
+      else if (error.statusCode === 400 && error.errors?.length) errorMsg = error.errors[0];
+      else if (error.statusCode >= 500) errorMsg = 'Server error';
+
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
   };
 
-  // ===== ENHANCED SLASHED MESSAGE SQUARE ICON =====
-  const SlashedMessageSquare = ({ size = 20, className = '' }) => (
-    <div className="relative">
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className={className}
-      >
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-      </svg>
-      <div
-        className="absolute flex items-center justify-center"
-        style={{
-          background: `linear-gradient(45deg, transparent 46%, currentColor 46%, currentColor 54%, transparent 54%)`,
-          width: `${size}px`,
-          height: `${size}px`,
-          top: '-1.5px',
-        }}
-      />
-    </div>
-  );
-
-  // ===== GET FIELD ICON =====
+  // ===== UTILITY FUNCTIONS =====
   const getFieldIcon = (fieldName) => {
     const isVisible = focusedField === fieldName || formData[fieldName];
-    const iconClass = `absolute right-3 top-4 transition-all duration-500 ease-in-out ${
-      isVisible ? 'opacity-100 transform scale-100' : 'opacity-0 transform scale-75'
+    const iconClass = `absolute right-3 top-4 transition-opacity duration-500 z-10 cursor-pointer text-gray-600 hover:text-black ${
+      isVisible ? 'opacity-100' : 'opacity-0'
     }`;
 
     switch (fieldName) {
@@ -198,7 +120,7 @@ const Register = () => {
         return (
           <button
             type="button"
-            className={`${iconClass} z-10 cursor-pointer text-gray-600 hover:text-black`}
+            className={iconClass}
             onClick={() => setShowPassword(!showPassword)}
           >
             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -208,16 +130,10 @@ const Register = () => {
         return (
           <button
             type="button"
-            className={`${iconClass} z-10 cursor-pointer text-gray-600 hover:text-black`}
+            className={iconClass}
             onClick={() => setShowSecurityAnswer(!showSecurityAnswer)}
           >
-            <div className="transform transition-all duration-300 ease-in-out">
-              {showSecurityAnswer ? (
-                <SlashedMessageSquare size={22} className="scale-100 transform" />
-              ) : (
-                <MessageSquare size={20} className="scale-100 transform" />
-              )}
-            </div>
+            <MessageSquare size={20} />
           </button>
         );
       default:
@@ -225,215 +141,87 @@ const Register = () => {
     }
   };
 
+  const renderInputField = (name, type, label, options = {}) => (
+    <div className="input-container relative">
+      <input
+        className={`input h-[55px] w-[285px] rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 ${
+          name === 'password' || name === 'securityAnswer' ? 'pr-12' : ''
+        } text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm`}
+        name={name}
+        type={type}
+        required
+        placeholder=" "
+        autoComplete={options.autoComplete || name}
+        value={formData[name]}
+        onChange={handleChange}
+        onFocus={() => handleFocus(name)}
+        onBlur={handleBlur}
+        {...options.inputProps}
+      />
+      <label className="label pointer-events-none absolute top-[13px] left-5 text-xl font-medium text-[#0b2447] transition-all duration-500 ease-in-out">
+        {label}
+      </label>
+      <div className="topline absolute top-0 right-0 h-[1.5px] w-0 bg-black transition-all duration-[400ms] ease-in-out"></div>
+      {getFieldIcon(name)}
+      {errors[name] && (
+        <div className="mt-2 ml-2 flex items-center text-xs font-medium text-red-600">
+          <AlertCircle size={12} className="mr-1 flex-shrink-0" />
+          <span>{errors[name]}</span>
+        </div>
+      )}
+    </div>
+  );
+
+  // ===== RENDER =====
   return (
     <div className="bg-cream flex min-h-screen items-center justify-center">
       <div className="w-full max-w-[41rem]">
         <div className="card flex flex-col items-center justify-between">
-          {/* Header Section */}
+          {/* Header */}
           <div className="mb-6 text-center">
             <h2 className="text-card-title mb-2 text-black">Create Account</h2>
             <p className="text-caption text-coffee">Join Mahima Agencies Right Now</p>
           </div>
 
-          {/* Message Display */}
-          {message.text && (
-            <div
-              className={`mb-4 w-full rounded-lg border p-3 text-sm font-medium ${
-                message.type === 'success'
-                  ? 'border-green-200 bg-green-50 text-green-800'
-                  : 'border-red-200 bg-red-50 text-red-800'
-              }`}
-            >
-              <div className="flex items-center">
-                <AlertCircle size={16} className="mr-2 flex-shrink-0" />
-                {message.text}
-              </div>
-            </div>
-          )}
-
-          {/* Form Section */}
+          {/* Form */}
           <form className="w-full space-y-6" onSubmit={handleSubmit}>
-            {/* Personal Information Row */}
+            {/* Personal Information */}
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:gap-8">
-              {/* First Name */}
               <div className="flex justify-center sm:justify-start">
-                <div className="input-container relative">
-                  <input
-                    className="input h-[55px] w-[285px] rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
-                    name="firstName"
-                    type="text"
-                    required
-                    placeholder=" "
-                    autoComplete="given-name"
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    onFocus={() => handleFocus('firstName')}
-                    onBlur={handleBlur}
-                  />
-                  <label className="label pointer-events-none absolute top-[13px] left-5 text-xl font-medium text-[#0b2447] transition-all duration-500 ease-in-out">
-                    First Name
-                  </label>
-                  <div className="topline absolute top-0 right-0 h-[1.5px] w-0 bg-black transition-all duration-[400ms] ease-in-out"></div>
-                  {errors.firstName && (
-                    <div className="mt-2 ml-2 flex items-center text-xs font-medium text-red-600">
-                      <AlertCircle size={12} className="mr-1 flex-shrink-0" />
-                      <span>{errors.firstName}</span>
-                    </div>
-                  )}
-                </div>
+                {renderInputField('firstName', 'text', 'First Name', {
+                  autoComplete: 'given-name',
+                })}
               </div>
-
-              {/* Last Name */}
               <div className="flex justify-center sm:justify-end">
-                <div className="input-container relative">
-                  <input
-                    className="input h-[55px] w-[285px] rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
-                    name="lastName"
-                    type="text"
-                    required
-                    placeholder=" "
-                    autoComplete="family-name"
-                    value={formData.lastName}
-                    onChange={handleChange}
-                    onFocus={() => handleFocus('lastName')}
-                    onBlur={handleBlur}
-                  />
-                  <label className="label pointer-events-none absolute top-[13px] left-5 text-xl font-medium text-[#0b2447] transition-all duration-500 ease-in-out">
-                    Last Name
-                  </label>
-                  <div className="topline absolute top-0 right-0 h-[1.5px] w-0 bg-black transition-all duration-[400ms] ease-in-out"></div>
-                  {errors.lastName && (
-                    <div className="mt-2 ml-2 flex items-center text-xs font-medium text-red-600">
-                      <AlertCircle size={12} className="mr-1 flex-shrink-0" />
-                      <span>{errors.lastName}</span>
-                    </div>
-                  )}
-                </div>
+                {renderInputField('lastName', 'text', 'Last Name', { autoComplete: 'family-name' })}
               </div>
             </div>
 
-            {/* Contact Information Row */}
+            {/* Contact Information */}
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:gap-8">
-              {/* Email */}
               <div className="flex justify-center sm:justify-start">
-                <div className="input-container relative">
-                  <input
-                    className="input h-[55px] w-[285px] rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 text-[17px] font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
-                    name="email"
-                    type="email"
-                    required
-                    placeholder=" "
-                    autoComplete="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    onFocus={() => handleFocus('email')}
-                    onBlur={handleBlur}
-                  />
-                  <label className="label pointer-events-none absolute top-[13px] left-5 text-xl font-medium text-[#0b2447] transition-all duration-500 ease-in-out">
-                    Email Address
-                  </label>
-                  <div className="topline absolute top-0 right-0 h-[2px] w-0 bg-black transition-all duration-[400ms] ease-in-out"></div>
-                  {errors.email && (
-                    <div className="mt-2 ml-2 flex items-center text-xs font-medium text-red-600">
-                      <AlertCircle size={12} className="mr-1 flex-shrink-0" />
-                      <span>{errors.email}</span>
-                    </div>
-                  )}
-                </div>
+                {renderInputField('email', 'email', 'Email Address')}
               </div>
-
-              {/* Phone */}
               <div className="flex justify-center sm:justify-end">
-                <div className="input-container relative">
-                  <input
-                    className="input h-[55px] w-[285px] rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
-                    name="phone"
-                    type="tel"
-                    required
-                    placeholder=" "
-                    autoComplete="tel"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    onFocus={() => handleFocus('phone')}
-                    onBlur={handleBlur}
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                  />
-                  <label className="label pointer-events-none absolute top-[13px] left-5 text-xl font-medium text-[#0b2447] transition-all duration-500 ease-in-out">
-                    Phone No.
-                  </label>
-                  <div className="topline absolute top-0 right-0 h-[2px] w-0 bg-black transition-all duration-[400ms] ease-in-out"></div>
-                  {errors.phone && (
-                    <div className="mt-2 ml-2 flex items-center text-xs font-medium text-red-600">
-                      <AlertCircle size={12} className="mr-1 flex-shrink-0" />
-                      <span>{errors.phone}</span>
-                    </div>
-                  )}
-                </div>
+                {renderInputField('phone', 'tel', 'Phone No.', {
+                  inputProps: { inputMode: 'numeric', pattern: '[0-9]*' },
+                })}
               </div>
             </div>
 
-            {/* Account Credentials Row */}
+            {/* Account Credentials */}
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:gap-8">
-              {/* Username */}
               <div className="flex justify-center sm:justify-start">
-                <div className="input-container relative">
-                  <input
-                    className="input h-[55px] w-[285px] rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
-                    name="username"
-                    type="text"
-                    required
-                    placeholder=" "
-                    autoComplete="username"
-                    value={formData.username}
-                    onChange={handleChange}
-                    onFocus={() => handleFocus('username')}
-                    onBlur={handleBlur}
-                  />
-                  <label className="label pointer-events-none absolute top-[13px] left-5 text-xl font-medium text-[#0b2447] transition-all duration-500 ease-in-out">
-                    Username
-                  </label>
-                  <div className="topline absolute top-0 right-0 h-[1.5px] w-0 bg-black transition-all duration-[400ms] ease-in-out"></div>
-                  {errors.username && (
-                    <div className="mt-2 ml-2 flex items-center text-xs font-medium text-red-600">
-                      <AlertCircle size={12} className="mr-1 flex-shrink-0" />
-                      <span>{errors.username}</span>
-                    </div>
-                  )}
-                </div>
+                {renderInputField('username', 'text', 'Username')}
               </div>
-
-              {/* Password */}
               <div className="flex justify-center sm:justify-end">
-                <div className="input-container relative">
-                  <input
-                    className="input h-[55px] w-[285px] rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 pr-12 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
-                    name="password"
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    placeholder=" "
-                    autoComplete="new-password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    onFocus={() => handleFocus('password')}
-                    onBlur={handleBlur}
-                  />
-                  <label className="label pointer-events-none absolute top-[13px] left-5 text-xl font-medium text-[#0b2447] transition-all duration-500 ease-in-out">
-                    Password
-                  </label>
-                  <div className="topline absolute top-0 right-0 h-[1.5px] w-0 bg-black transition-all duration-[400ms] ease-in-out"></div>
-                  {getFieldIcon('password')}
-                  {errors.password && (
-                    <div className="mt-2 ml-2 flex items-center text-xs font-medium text-red-600">
-                      <AlertCircle size={12} className="mr-1 flex-shrink-0" />
-                      <span>{errors.password}</span>
-                    </div>
-                  )}
-                </div>
+                {renderInputField('password', showPassword ? 'text' : 'password', 'Password', {
+                  autoComplete: 'new-password',
+                })}
               </div>
             </div>
 
-            {/* Security Question Section */}
+            {/* Security Section */}
             <div className="mt-8 space-y-6">
               {/* Security Question */}
               <div className="input-container relative">
@@ -513,7 +301,7 @@ const Register = () => {
                 {loading ? (
                   <>
                     <div className="mr-2 h-5 w-5 animate-spin rounded-full border-b-2 border-white"></div>
-                    Registering...
+                    Creating Account...
                   </>
                 ) : (
                   'Create Account'
@@ -521,7 +309,7 @@ const Register = () => {
               </button>
             </div>
 
-            {/* Already have account */}
+            {/* Login Link */}
             <div className="pt-4 text-center">
               <p className="text-coffee text-sm">
                 Already have an account?{' '}

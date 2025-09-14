@@ -407,11 +407,11 @@ p {
     transition: all 0.2s ease;
   }
 
-  .card:hover {
+  /* .card:hover {
     box-shadow: theme(--shadow-hover);
     transform: translateY(-2px);
     border-color: theme(--color-gray-500);
-  }
+  } */
 
   .card-highlight {
     background-color: theme(--color-vanilla);
@@ -581,7 +581,6 @@ p {
   background: rgb(230, 136, 102);
 }
 
-
 /* Input Styles For SignUp */
 
 .input-container input[type='text']:focus ~ .label,
@@ -654,4 +653,79 @@ p {
 .input-container input.sec:not(:focus):placeholder-shown ~ .topline,
 .input-container select:not(:focus)[value=''] ~ .topline {
   width: 100%;
+}
+
+
+/* ===== INPUT CONTAINER ===== */
+.input-container {
+  position: relative;
+}
+
+/* ===== MAIN INPUT FIELD ===== */
+.input-field {
+  height: 55px;
+  width: 285px;
+  border-bottom-right-radius: 10px;
+  border-right: 2px solid black;
+  border-bottom: 2px solid black;
+  border-left: 2px solid black;
+  border-top: transparent;
+  background-color: transparent;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+  font-size: 1.125rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  transition: all 400ms ease-in;
+  outline: none;
+}
+
+/* ===== PASSWORD FIELD EXTRA PADDING ===== */
+.input-field.password-field {
+  padding-right: 3rem;
+}
+
+/* ===== INPUT FOCUS STATE ===== */
+.input-field:focus {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* ===== LABEL ===== */
+.input-label {
+  pointer-events: none;
+  position: absolute;
+  top: 13px;
+  left: 1.25rem;
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #0b2447;
+  transition: all 500ms ease-in-out;
+}
+
+/* ===== TOPLINE ANIMATION ===== */
+.input-topline {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 2px;
+  width: 0;
+  background-color: black;
+  transition: all 400ms ease-in-out;
+}
+
+/* ===== ERROR MESSAGE CONTAINER ===== */
+.error-message {
+  margin-top: 0.5rem;
+  margin-left: 0.5rem;
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #dc2626;
+}
+
+/* ===== ERROR ICON ===== */
+.error-icon {
+  margin-right: 0.25rem;
+  flex-shrink: 0;
 }
