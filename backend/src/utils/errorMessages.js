@@ -13,4 +13,10 @@ export const errorMessages = {
     USERNAME_INVALID: "Username may only contain letters, numbers, and underscores",
     PASSWORD_INVALID:
         "Password must include at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character",
+
+    CUSTOMER_ID_INVALID: "Customer ID must be a valid Havmor Platform Customer ID",
+    PAN_CARD_INVALID: "PAN Card number must be a valid Indian PAN (e.g., ABCDE1234F)",
+    GSTIN_NUMBER_INVALID: "GSTIN number must be a valid Indian GSTIN (15 characters)",
+
+    PINCODE_INVALID: "PIN code must be a valid Indian PIN code (6 digits)",
 };

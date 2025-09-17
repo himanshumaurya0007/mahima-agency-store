@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 
 import healthCheckRouter from "./routes/healthCheck.route.js";
 import userRouter from "./routes/user.route.js";
+import customerRouter from "./routes/customer.route.js";
 
 import logger from "./utils/logger.js";
 import { ApiError } from "./utils/ApiError.js";
@@ -42,6 +43,7 @@ if (process.env.NODE_ENV === "development") {
 // Routes
 app.use("/api/v1/health-check", healthCheckRouter);
 app.use("/api/v1/user", userRouter);
+app.use("/api/v1/customer", customerRouter);
 
 // Handle 404s
 app.use((req, res, next) => {
