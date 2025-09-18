@@ -165,5 +165,57 @@ const getAllCustomers = asyncHandler(async (req, res, next) => {
     }
 });
 
+/**
+ * @desc Get a single customer by ID (only if owned by the authenticated user)
+ * @route GET /api/v1/customer/:id
+ * @access Private
+ */
+const getCustomerById = asyncHandler(async (req, res, next) => {
+    try {
+        const userId = req.user?._id;
+        if (!userId) {
+            throw new ApiError(StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED, [
+                "User not authenticated",
+            ]);
+        }
 
-export { addCustomer, getAllCustomers };
+        const { id } = req.params;
+
+        // Validate ObjectId
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            throw new ApiError(StatusCodes.BAD_REQUEST, ReasonPhrases.BAD_REQUEST, [
+                "Invalid customer ID format",
+            ]);
+        }
+
+        // Find customer belonging to this user
+        const customer = await Customer.findOne({ _id: id, userId })
+            .populate("customerAddress")
+            .lean()
+            .exec();
+
+        if (!customer) {
+            throw new ApiError(StatusCodes.NOT_FOUND, ReasonPhrases.NOT_FOUND, [
+                "Customer not found or not accessible",
+            ]);
+        }
+
+        return res.status(StatusCodes.OK).json(
+            new ApiResponse(StatusCodes.OK, { customer }, "Customer fetched successfully")
+        );
+    } catch (error) {
+        logger.error(`Get customer by ID failed: ${error.message}`, { stack: error.stack });
+        next(
+            error instanceof ApiError
+                ? error
+                : new ApiError(
+                    StatusCodes.INTERNAL_SERVER_ERROR,
+                    ReasonPhrases.INTERNAL_SERVER_ERROR,
+                    [error.message]
+                )
+        );
+    }
+});
+
+
+export { addCustomer, getAllCustomers, getCustomerById };
