@@ -217,5 +217,75 @@ const getCustomerById = asyncHandler(async (req, res, next) => {
     }
 });
 
+/**
+ * @desc Delete a customer (and its associated address) owned by the authenticated user
+ * @route DELETE /api/v1/customer/:id
+ * @access Private
+ */
+const deleteCustomer = asyncHandler(async (req, res, next) => {
+    let session;
+    try {
+        const userId = req.user?._id;
+        if (!userId) {
+            throw new ApiError(StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED, [
+                "User not authenticated",
+            ]);
+        }
 
-export { addCustomer, getAllCustomers, getCustomerById };
+        const { id } = req.params;
+
+        // Validate ObjectId
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            throw new ApiError(StatusCodes.BAD_REQUEST, ReasonPhrases.BAD_REQUEST, [
+                "Invalid customer ID format",
+            ]);
+        }
+
+        // Start transaction
+        session = await mongoose.startSession();
+        session.startTransaction();
+
+        // Find the customer belonging to this user
+        const customer = await Customer.findOne({ _id: id, userId }).session(session);
+        if (!customer) {
+            throw new ApiError(StatusCodes.NOT_FOUND, ReasonPhrases.NOT_FOUND, [
+                "Customer not found or not accessible",
+            ]);
+        }
+
+        // Delete address if present
+        if (customer.customerAddress) {
+            await Address.deleteOne({ _id: customer.customerAddress }).session(session);
+        }
+
+        // Delete customer
+        await Customer.deleteOne({ _id: id, userId }).session(session);
+
+        await session.commitTransaction();
+        session.endSession();
+
+        logger.info(`Customer deleted for user ${userId}: ${id}`);
+
+        return res.status(StatusCodes.OK).json(
+            new ApiResponse(StatusCodes.OK, null, "Customer deleted successfully")
+        );
+    } catch (error) {
+        if (session) {
+            await session.abortTransaction();
+            session.endSession();
+        }
+
+        logger.error(`Delete customer failed: ${error.message}`, { stack: error.stack });
+        next(
+            error instanceof ApiError
+                ? error
+                : new ApiError(
+                    StatusCodes.INTERNAL_SERVER_ERROR,
+                    ReasonPhrases.INTERNAL_SERVER_ERROR,
+                    [error.message]
+                )
+        );
+    }
+});
+
+export { addCustomer, getAllCustomers, getCustomerById, deleteCustomer };
