@@ -218,6 +218,148 @@ const getCustomerById = asyncHandler(async (req, res, next) => {
 });
 
 /**
+ * @desc Update an existing customer (and its address) owned by the authenticated user
+ * @route PUT /api/v1/customer/:id
+ * @access Private
+ */
+const updateCustomer = asyncHandler(async (req, res, next) => {
+    let session;
+    try {
+        const userId = req.user?._id;
+        if (!userId) {
+            throw new ApiError(StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED, [
+                "User not authenticated",
+            ]);
+        }
+
+        const { id } = req.params;
+
+        // Validate ObjectId format
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            throw new ApiError(StatusCodes.BAD_REQUEST, ReasonPhrases.BAD_REQUEST, [
+                "Invalid customer ID format",
+            ]);
+        }
+
+        // Extract address separately
+        const { customerAddress, ...customerData } = req.body;
+
+        // Start transaction
+        session = await mongoose.startSession();
+        session.startTransaction();
+
+        // Find the customer owned by this user
+        const customer = await Customer.findOne({ _id: id, userId }).session(session);
+        if (!customer) {
+            throw new ApiError(StatusCodes.NOT_FOUND, ReasonPhrases.NOT_FOUND, [
+                "Customer not found or not accessible",
+            ]);
+        }
+
+        // Check for duplicates (other than the current customer)
+        if (
+            customerData.havmorPlatformCustomerId ||
+            customerData.phone
+        ) {
+            const phoneToCheck = customerData.phone
+                ? customerData.phone.startsWith("+91")
+                    ? customerData.phone
+                    : `+91${customerData.phone}`
+                : undefined;
+
+            const duplicate = await Customer.findOne({
+                userId,
+                _id: { $ne: id },
+                $or: [
+                    customerData.havmorPlatformCustomerId
+                        ? { havmorPlatformCustomerId: customerData.havmorPlatformCustomerId }
+                        : {},
+                    phoneToCheck ? { phone: phoneToCheck } : {},
+                ],
+            }).session(session);
+
+            if (duplicate) {
+                await session.abortTransaction();
+                session.endSession();
+
+                return res.status(StatusCodes.CONFLICT).json(
+                    new ApiResponse(StatusCodes.CONFLICT, {
+                        duplicateCustomer: duplicate,
+                    }, "Another customer with same havmorPlatformCustomerId or phone already exists")
+                );
+            }
+
+            if (phoneToCheck) customerData.phone = phoneToCheck;
+        }
+
+        // Update address if provided
+        if (customerAddress && customer.customerAddress) {
+            await Address.updateOne(
+                { _id: customer.customerAddress },
+                { $set: customerAddress },
+                { session }
+            );
+        }
+
+        // Update customer data
+        await Customer.updateOne(
+            { _id: id, userId },
+            { $set: customerData },
+            { session }
+        );
+
+        // Fetch the updated customer with populated address
+        const updatedCustomer = await Customer.findOne({ _id: id, userId })
+            .populate("customerAddress")
+            .session(session);
+
+        await session.commitTransaction();
+        session.endSession();
+
+        logger.info(`Customer updated for user ${userId}: ${id}`);
+
+        return res.status(StatusCodes.OK).json(
+            new ApiResponse(StatusCodes.OK, { customer: updatedCustomer }, "Customer updated successfully")
+        );
+    } catch (error) {
+        if (session) {
+            await session.abortTransaction();
+            session.endSession();
+        }
+
+        // Handle duplicate key errors from MongoDB
+        if (error?.code === 11000) {
+            const duplicateField =
+                Object.keys(error.keyPattern || {})[1] ||
+                Object.keys(error.keyPattern || {})[0];
+            let message;
+            if (duplicateField === "havmorPlatformCustomerId") {
+                message = `Duplicate ${fields.havmorPlatformCustomerId}: This ID already exists for this user.`;
+            } else if (duplicateField === "phone") {
+                message = `Duplicate ${fields.phone}: This phone already exists for this user.`;
+            } else {
+                message = "Duplicate key error.";
+            }
+            logger.warn(`Duplicate customer update for user: ${req.user?._id} - ${message}`);
+            return next(
+                new ApiError(StatusCodes.CONFLICT, ReasonPhrases.CONFLICT, [message])
+            );
+        }
+
+        logger.error(`Update customer failed: ${error.message}`, { stack: error.stack });
+        next(
+            error instanceof ApiError
+                ? error
+                : new ApiError(
+                    StatusCodes.INTERNAL_SERVER_ERROR,
+                    ReasonPhrases.INTERNAL_SERVER_ERROR,
+                    [error.message]
+                )
+        );
+    }
+});
+
+/**
  * @desc Delete a customer (and its associated address) owned by the authenticated user
  * @route DELETE /api/v1/customer/:id
  * @access Private
@@ -288,4 +430,4 @@ const deleteCustomer = asyncHandler(async (req, res, next) => {
     }
 });
 
-export { addCustomer, getAllCustomers, getCustomerById, deleteCustomer };
+export { addCustomer, getAllCustomers, getCustomerById, updateCustomer, deleteCustomer };
