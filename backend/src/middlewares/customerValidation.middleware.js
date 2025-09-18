@@ -3,17 +3,17 @@ import { StatusCodes } from "http-status-codes";
 import { ApiError } from "../utils/ApiError.js";
 import logger from "../utils/logger.js";
 
-import { registerValidationSchema, loginValidationSchema, securityQuestionValidationSchema, securityAnswerValidationSchema, resetPasswordValidationSchema } from "../validations/user.validation.js";
+import { customerValidationSchema } from "../validations/customer.validation.js";
 
 /**
- * Generic validator middleware
+ * Generic validator middleware (reused for Customer)
  * @param {Joi.Schema} schema - Joi validation schema
  * @param {string} context - Context string for logging
  * @param {"body" | "query" | "params"} source - Request data source
  */
 const validate = (schema, context = "Request", source = "body") => {
     return (req, res, next) => {
-        const data = req[source]; // pick correct source
+        const data = req[source];
 
         const { error } = schema.validate(data, { abortEarly: false });
 
@@ -34,12 +34,7 @@ const validate = (schema, context = "Request", source = "body") => {
     };
 };
 
+// Specific validator for customer
+const validateCustomer = validate(customerValidationSchema, "Customer");
 
-// Specific validators
-const validateRegister = validate(registerValidationSchema, "Register");
-const validateLogin = validate(loginValidationSchema, "Login");
-const validateSecurityQuestion = validate(securityQuestionValidationSchema, "Security Question", "query");
-const validateSecurityAnswer = validate(securityAnswerValidationSchema, "Security Answer");
-const validateResetPassword = validate(resetPasswordValidationSchema, "Reset Password");
-
-export { validateRegister, validateLogin, validateSecurityQuestion, validateSecurityAnswer, validateResetPassword };
+export { validateCustomer };

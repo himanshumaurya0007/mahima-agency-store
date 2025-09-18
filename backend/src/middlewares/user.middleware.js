@@ -4,6 +4,7 @@ import { StatusCodes, ReasonPhrases } from 'http-status-codes';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import logger from "../utils/logger.js";
+
 import { User } from "../models/user.model.js";
 
 const verifyJWT = asyncHandler(async (req, res, next) => {

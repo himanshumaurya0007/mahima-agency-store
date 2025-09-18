@@ -1,27 +1,12 @@
-import mongoose from "mongoose";
 import Joi from "joi";
 
 import { fields } from "../utils/fields.js";
 import { havmorPlatformCustomerIdRegex, emailRegex, phoneRegex, panCardRegex, gstinNumberRegex } from "../utils/regex.js";
 import { errorMessages } from "../utils/errorMessages.js";
 
-// Custom Joi validator for MongoDB ObjectId
-const objectId = () =>
-    Joi.string().custom((value, helpers) => {
-        if (!mongoose.Types.ObjectId.isValid(value)) {
-            return helpers.error("any.invalid");
-        }
-        return value;
-    }, "ObjectId validation");
+import { addressValidationSchema } from "./address.validation.js";
 
 const customerValidationSchema = Joi.object({
-    userId: objectId()
-        .required()
-        .messages({
-            "any.required": errorMessages.REQUIRED(fields.userId),
-            "any.invalid": `${fields.userId} must be a valid ObjectId`,
-        }),
-
     havmorPlatformCustomerId: Joi.string()
         .pattern(havmorPlatformCustomerIdRegex)
         .trim()
@@ -106,7 +91,7 @@ const customerValidationSchema = Joi.object({
             "string.pattern.base": errorMessages.GSTIN_NUMBER_INVALID,
         }),
 
-    customerAddress: objectId()
+    customerAddress: addressValidationSchema
         .required()
         .messages({
             "any.required": errorMessages.REQUIRED(fields.customerAddress),

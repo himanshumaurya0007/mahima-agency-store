@@ -1,8 +1,9 @@
 import { Router } from 'express';
 
 import { validateRegister, validateLogin, validateSecurityQuestion, validateSecurityAnswer, validateResetPassword } from '../middlewares/validateUser.middleware.js';
-import { registerUser, loginUser, logoutUser, fetchSecurityQuestion, validateSecurityAnswerController, resetUserPassword, refreshTokens } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middlewares/user.middleware.js";
+
+import { registerUser, loginUser, logoutUser, fetchSecurityQuestion, validateSecurityAnswerController, resetUserPassword, refreshTokens } from "../controllers/user.controller.js";
 
 const router = Router();
 

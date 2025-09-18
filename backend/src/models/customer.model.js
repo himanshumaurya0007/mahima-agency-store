@@ -10,6 +10,7 @@ const customerSchema = new Schema(
             type: Schema.Types.ObjectId, 
             ref: 'User',
             required: [true, errorMessages.REQUIRED(fields.userId)],
+            index: true,
         },
         havmorPlatformCustomerId: {
             type: String,
@@ -30,7 +31,6 @@ const customerSchema = new Schema(
         },
         firstName: {
             type: String,
-            required: false,
             trim: true,
             lowercase: true,
             validate: [
@@ -53,7 +53,6 @@ const customerSchema = new Schema(
         },
         lastName: {
             type: String,
-            required: false,
             trim: true,
             lowercase: true,
             validate: [
@@ -76,10 +75,8 @@ const customerSchema = new Schema(
         },
         email: {
             type: String,
-            required: false,
             trim: true,
             lowercase: true,
-            unique: true,
             validate: [
                 {
                     validator: function (value) {
@@ -102,10 +99,8 @@ const customerSchema = new Schema(
         },
         panCardNumber: {
             type: String,
-            required: false,
             trim: true,
             uppercase: true,
-            unique: true,
             validate: [
                 {
                     validator: function (value) {
@@ -119,10 +114,8 @@ const customerSchema = new Schema(
         },
         gstinNumber: {
             type: String,
-            required: false,
             trim: true,
             uppercase: true,
-            unique: true,
             validate: [
                 {
                     validator: function (value) {
@@ -143,6 +136,16 @@ const customerSchema = new Schema(
     {
         timestamps: true
     }
+);
+
+customerSchema.index(
+    { userId: 1, havmorPlatformCustomerId: 1 },
+    { unique: true }
+);
+
+customerSchema.index(
+    { userId: 1, phone: 1 },
+    { unique: true }
 );
 
 customerSchema.pre("save", async function (next) {

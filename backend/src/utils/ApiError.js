@@ -1,4 +1,5 @@
 import { StatusCodes, ReasonPhrases } from "http-status-codes";
+
 import logger from "./logger.js";
 
 class ApiError extends Error {

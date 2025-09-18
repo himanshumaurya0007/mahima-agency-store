@@ -4,13 +4,13 @@ import morgan from "morgan";
 import { StatusCodes } from "http-status-codes";
 import cookieParser from 'cookie-parser';
 
-import healthCheckRouter from "./routes/healthCheck.route.js";
-import userRouter from "./routes/user.route.js";
-import customerRouter from "./routes/customer.route.js";
-
 import logger from "./utils/logger.js";
 import { ApiError } from "./utils/ApiError.js";
 import { errorMiddleware } from "./middlewares/error.middleware.js";
+
+import healthCheckRouter from "./routes/healthCheck.route.js";
+import userRouter from "./routes/user.route.js";
+import customerRouter from "./routes/customer.route.js";
 
 const app = express();
 

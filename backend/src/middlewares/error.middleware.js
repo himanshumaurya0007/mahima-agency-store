@@ -1,6 +1,7 @@
+import { StatusCodes, ReasonPhrases } from "http-status-codes";
+
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { StatusCodes, ReasonPhrases } from "http-status-codes";
 import logger from "../utils/logger.js";
 
 export const errorMiddleware = (err, req, res, next) => {
