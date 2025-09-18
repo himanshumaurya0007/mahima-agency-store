@@ -124,4 +124,46 @@ const addCustomer = asyncHandler(async (req, res, next) => {
     }
 });
 
-export { addCustomer };
+/**
+ * @desc Get all customers of the authenticated user
+ * @route GET /api/v1/customer
+ * @access Private
+ */
+const getAllCustomers = asyncHandler(async (req, res, next) => {
+    try {
+        const userId = req.user?._id;
+        if (!userId) {
+            throw new ApiError(StatusCodes.UNAUTHORIZED, ReasonPhrases.UNAUTHORIZED, [
+                "User not authenticated",
+            ]);
+        }
+
+        // Fetch all customers of this user, populate address
+        const customers = await Customer.find({ userId })
+            .populate("customerAddress") // includes address info
+            .lean()
+            .exec();
+
+        // Optional: sort customers by createdAt descending
+        // .sort({ createdAt: -1 })
+
+        return res.status(StatusCodes.OK).json(
+            new ApiResponse(StatusCodes.OK, { customers }, "Customers fetched successfully")
+        );
+    } catch (error) {
+        logger.error(`Get all customers failed: ${error.message}`, { stack: error.stack });
+
+        next(
+            error instanceof ApiError
+                ? error
+                : new ApiError(
+                    StatusCodes.INTERNAL_SERVER_ERROR,
+                    ReasonPhrases.INTERNAL_SERVER_ERROR,
+                    [error.message]
+                )
+        );
+    }
+});
+
+
+export { addCustomer, getAllCustomers };
