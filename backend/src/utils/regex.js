@@ -16,6 +16,9 @@ export const passwordRegex =
 // Havmor Platform Customer ID validation
 export const havmorPlatformCustomerIdRegex = /^[0-9]{8}$/;
 
+// Temporary Customer ID validation
+export const temporaryCustomerIdRegex = /^[0-9]{8}$/;
+
 // PAN Card Number validation (e.g., ABCDE1234F)
 export const panCardRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 

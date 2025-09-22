@@ -53,3 +53,8 @@ export const INDIAN_STATES_WITH_ABBREVIATIONS = [
 // Derived arrays for Mongoose validation:
 export const INDIAN_STATE_NAMES = INDIAN_STATES_WITH_ABBREVIATIONS.map(s => s.name);
 export const INDIAN_STATE_CODES = INDIAN_STATES_WITH_ABBREVIATIONS.map(s => s.code);
+
+export const CUSTOMER_STATUS = [
+    "TEMPORARY",
+    "PERMANENT"
+];
