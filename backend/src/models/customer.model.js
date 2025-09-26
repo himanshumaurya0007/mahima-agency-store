@@ -1,25 +1,52 @@
 import mongoose, { Schema } from "mongoose";
+import { StatusCodes, ReasonPhrases } from "http-status-codes";
 
 import { fields } from "../utils/fields.js";
-import { havmorPlatformCustomerIdRegex, emailRegex, phoneRegex, panCardRegex, gstinNumberRegex } from "../utils/regex.js";
+import { temporaryCustomerIdRegex, havmorPlatformCustomerIdRegex, emailRegex, phoneRegex, panCardRegex, gstinNumberRegex, } from "../utils/regex.js";
 import { errorMessages } from "../utils/errorMessages.js";
+import { CUSTOMER_STATUS } from "../constants.js";
+import { ApiError } from "../utils/ApiError.js";
 
 const customerSchema = new Schema(
     {
-        userId: { 
-            type: Schema.Types.ObjectId, 
-            ref: 'User',
+        userId: {
+            type: Schema.Types.ObjectId,
+            ref: "User",
             required: [true, errorMessages.REQUIRED(fields.userId)],
             index: true,
         },
-        havmorPlatformCustomerId: {
+        customerStatus: {
             type: String,
-            required: [true, errorMessages.REQUIRED(fields.havmorPlatformCustomerId)],
+            trim: true,
+            uppercase: true,
+            enum: {
+                values: CUSTOMER_STATUS,
+                message: `Invalid ${fields.customerStatus}`,
+            },
+            required: [true, errorMessages.REQUIRED(fields.customerStatus)],
+            default: "TEMPORARY",
+        },
+        temporaryCustomerId: {
+            type: String,
             trim: true,
             validate: {
-                validator: (v) => havmorPlatformCustomerIdRegex.test(v),
-                message: errorMessages.CUSTOMER_ID_INVALID,
+                validator: (value) => !value || temporaryCustomerIdRegex.test(value),
+                message: errorMessages.TEMPORARY_CUSTOMER_ID_INVALID,
             },
+            sparse: true,
+            unique: true,
+        },
+        havmorPlatformCustomerId: {
+            type: String,
+            trim: true,
+            validate: [
+                {
+                    validator: (value) => !value || havmorPlatformCustomerIdRegex.test(value),
+                    message: errorMessages.CUSTOMER_ID_INVALID,
+                },
+            ],
+            sparse: true,
+            unique: true,
         },
         shopName: {
             type: String,
@@ -35,18 +62,11 @@ const customerSchema = new Schema(
             lowercase: true,
             validate: [
                 {
-                    validator: function (value) {
-                        // Skip validation if empty (null or undefined)
-                        if (!value) return true;
-                        return value.length >= 2;
-                    },
+                    validator: (value) => !value || value.length >= 2,
                     message: errorMessages.MIN_LENGTH(fields.firstName, 2),
                 },
                 {
-                    validator: function (value) {
-                        if (!value) return true;
-                        return value.length <= 50;
-                    },
+                    validator: (value) => !value || value.length <= 50,
                     message: errorMessages.MAX_LENGTH(fields.firstName, 50),
                 },
             ],
@@ -57,18 +77,11 @@ const customerSchema = new Schema(
             lowercase: true,
             validate: [
                 {
-                    validator: function (value) {
-                        // Skip validation if empty (null or undefined)
-                        if (!value) return true;
-                        return value.length >= 2;
-                    },
+                    validator: (value) => !value || value.length >= 2,
                     message: errorMessages.MIN_LENGTH(fields.lastName, 2),
                 },
                 {
-                    validator: function (value) {
-                        if (!value) return true;
-                        return value.length <= 50;
-                    },
+                    validator: (value) => !value || value.length <= 50,
                     message: errorMessages.MAX_LENGTH(fields.lastName, 50),
                 },
             ],
@@ -79,23 +92,36 @@ const customerSchema = new Schema(
             lowercase: true,
             validate: [
                 {
-                    validator: function (value) {
-                        // Skip validation if email is empty (null/undefined)
-                        if (!value) return true;
-                        return emailRegex.test(value);
-                    },
+                    validator: (value) => !value || emailRegex.test(value),
                     message: errorMessages.EMAIL_INVALID,
                 },
             ],
         },
+        /**
+         * PHONE: Schema-level normalization + validation
+         * - Stores with +91 prefix in DB
+         * - Returns 10 digits in JSON/Object outputs
+         */
         phone: {
             type: String,
             required: [true, errorMessages.REQUIRED(fields.phone)],
             trim: true,
-            validate: {
-                validator: (v) => phoneRegex.test(v),
-                message: errorMessages.PHONE_INVALID,
+            set: (value) => {
+                // Normalize value to 10 digits
+                const digits = value?.startsWith("+91") ? value.slice(3) : value;
+
+                // Validate using regex
+                if (!phoneRegex.test(digits)) {
+                    // Instead of plain Error, throw ApiError
+                    throw new ApiError(
+                        StatusCodes.BAD_REQUEST,
+                        errorMessages.PHONE_INVALID
+                    );
+                }
+
+                return `+91${digits}`;
             },
+            get: (value) => (value?.startsWith("+91") ? value.slice(3) : value),
         },
         panCardNumber: {
             type: String,
@@ -103,11 +129,7 @@ const customerSchema = new Schema(
             uppercase: true,
             validate: [
                 {
-                    validator: function (value) {
-                        // Skip validation if pan card is empty (null/undefined)
-                        if (!value) return true;
-                        return panCardRegex.test(value);
-                    },
+                    validator: (value) => !value || panCardRegex.test(value),
                     message: errorMessages.PAN_CARD_INVALID,
                 },
             ],
@@ -118,50 +140,71 @@ const customerSchema = new Schema(
             uppercase: true,
             validate: [
                 {
-                    validator: function (value) {
-                        // Skip validation if GSTIN number is empty (null/undefined)
-                        if (!value) return true;
-                        return gstinNumberRegex.test(value);
-                    },
+                    validator: (value) => !value || gstinNumberRegex.test(value),
                     message: errorMessages.GSTIN_NUMBER_INVALID,
                 },
             ],
         },
         customerAddress: {
             type: Schema.Types.ObjectId,
-            ref: 'Address',
+            ref: "Address",
             required: [true, errorMessages.REQUIRED(fields.customerAddress)],
         },
     },
     {
-        timestamps: true
+        timestamps: true,
     }
 );
 
-customerSchema.index(
-    { userId: 1, havmorPlatformCustomerId: 1 },
-    { unique: true }
-);
+// Enable getters when converting to JSON or plain objects
+customerSchema.set("toJSON", { getters: true });
+customerSchema.set("toObject", { getters: true });
 
-customerSchema.index(
-    { userId: 1, phone: 1 },
-    { unique: true }
-);
+// Indexes
+customerSchema.index({ userId: 1, temporaryCustomerId: 1 });
+customerSchema.index({ userId: 1, havmorPlatformCustomerId: 1 });
 
+// Middleware
 customerSchema.pre("save", async function (next) {
     try {
-        const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS) || 10;
+        // Handle temporary customers – generate unique temporaryCustomerId only if missing or modified
+        if (
+            this.customerStatus === "TEMPORARY" &&
+            (!this.temporaryCustomerId || this.isModified("temporaryCustomerId"))
+        ) {
+            let newCode;
+            let exists = true;
 
-        // Normalize phone → always store as +91XXXXXXXXXX
-        if (this.isModified("phone")) {
-            if (!this.phone.startsWith("+91")) {
-                this.phone = `+91${this.phone}`;
-            }
+            do {
+                // Generate an 8-digit random number
+                newCode = Math.floor(10000000 + Math.random() * 90000000).toString();
+
+                // Check against other customers
+                const clash = await mongoose.models.Customer.findOne({
+                    $or: [
+                        { temporaryCustomerId: newCode },
+                        { havmorPlatformCustomerId: newCode },
+                    ],
+                });
+
+                // Also ensure it’s not equal to this doc’s own havmorPlatformCustomerId
+                if (
+                    this.havmorPlatformCustomerId === newCode ||
+                    this.temporaryCustomerId === newCode
+                ) {
+                    exists = true;
+                } else {
+                    exists = !!clash;
+                }
+            } while (exists);
+
+            // Assign the unique code
+            this.temporaryCustomerId = newCode;
         }
 
         next();
     } catch (err) {
-        next(err); // pass error to mongoose
+        next(err);
     }
 });
 

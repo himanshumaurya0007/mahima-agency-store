@@ -1,18 +1,37 @@
 import Joi from "joi";
+import mongoose from "mongoose";
 
 import { fields } from "../utils/fields.js";
-import { havmorPlatformCustomerIdRegex, emailRegex, phoneRegex, panCardRegex, gstinNumberRegex } from "../utils/regex.js";
+import { temporaryCustomerIdRegex, havmorPlatformCustomerIdRegex, emailRegex, phoneRegex, panCardRegex, gstinNumberRegex, } from "../utils/regex.js";
 import { errorMessages } from "../utils/errorMessages.js";
+import { CUSTOMER_STATUS } from "../constants.js";
 
 import { addressValidationSchema } from "./address.validation.js";
 
 const customerValidationSchema = Joi.object({
+    customerStatus: Joi.string()
+        .valid(...CUSTOMER_STATUS)
+        .uppercase()
+        .default("TEMPORARY")
+        .messages({
+            "any.only": `Invalid ${fields.customerStatus}`,
+        }),
+
+    temporaryCustomerId: Joi.string()
+        .pattern(temporaryCustomerIdRegex)
+        .trim()
+        .optional()
+        .allow(null, "")
+        .messages({
+            "string.pattern.base": errorMessages.TEMPORARY_CUSTOMER_ID_INVALID,
+        }),
+
     havmorPlatformCustomerId: Joi.string()
         .pattern(havmorPlatformCustomerIdRegex)
         .trim()
-        .required()
+        .optional() // Optional — required only for permanent customers
+        .allow(null, "")
         .messages({
-            "string.empty": errorMessages.REQUIRED(fields.havmorPlatformCustomerId),
             "string.pattern.base": errorMessages.CUSTOMER_ID_INVALID,
         }),
 
@@ -91,12 +110,18 @@ const customerValidationSchema = Joi.object({
             "string.pattern.base": errorMessages.GSTIN_NUMBER_INVALID,
         }),
 
-    customerAddress: addressValidationSchema
-        .required()
-        .messages({
-            "any.required": errorMessages.REQUIRED(fields.customerAddress),
-            "any.invalid": `${fields.customerAddress} must be a valid ObjectId`,
-        }),
-});
+    customerAddress: addressValidationSchema.required().messages({
+        "any.required": errorMessages.REQUIRED(fields.customerAddress),
+        "any.invalid": `${fields.customerAddress} must be a valid ObjectId`,
+    }),
+}).custom((obj, helpers) => {
+    // Conditional validation: havmorPlatformCustomerId required if status is PERMANENT
+    if (obj.customerStatus === "PERMANENT" && !obj.havmorPlatformCustomerId) {
+        return helpers.error("any.custom", {
+            message: errorMessages.REQUIRED(fields.havmorPlatformCustomerId),
+        });
+    }
+    return obj;
+}, "Conditional validation for havmorPlatformCustomerId");
 
 export { customerValidationSchema };

@@ -12,6 +12,8 @@ export const fields = {
     refreshToken: "Refresh token",
 
     userId: "User ID",
+    customerStatus: "Customer status",
+    temporaryCustomerId: "Temporary Customer ID",
     havmorPlatformCustomerId: "Havmor Platform Customer ID",
     shopName: "Shop name",
     panCardNumber: "PAN Card number",
