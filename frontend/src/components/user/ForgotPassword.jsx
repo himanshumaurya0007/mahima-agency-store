@@ -218,8 +218,8 @@ const ForgotPassword = () => {
       const response = await userApi.resetUserPassword(validationData);
 
       if (response.success) {
-        toast.success('Password reset successful! Redirecting...');
-        setTimeout(() => navigate('/login'), 2000);
+        toast.success('Password reset successful !');
+        setTimeout(() => navigate('/login', { replace: true }), 2000);
       }
     } catch (error) {
       let errorMsg = 'Password reset failed';
@@ -324,8 +324,8 @@ const ForgotPassword = () => {
 
   // ===== RENDER =====
   return (
-    <div className="forgot-password bg-cream flex min-h-screen items-center justify-center px-4 py-8">
-      <div className="w-full max-w-[28rem]">
+    <div className="bg-cream flex min-h-screen items-center justify-center px-4 py-8">
+      <div className="forgot-password w-full max-w-[28rem]">
         <div className="card flex flex-col items-center justify-between">
           {/* Header */}
           <div className="mb-6 text-center">
@@ -369,6 +369,7 @@ const ForgotPassword = () => {
           <div className="w-full space-y-6">
             {/* STEP 1: USERNAME SEARCH */}
             {currentStep === 1 && (
+              <div className="step-1">
               <div className="input-container relative">
                 <input
                   className="input h-[55px] w-full rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
@@ -407,12 +408,15 @@ const ForgotPassword = () => {
                   </div>
                 )}
               </div>
+              </div>
             )}
 
             {/* STEP 2: SECURITY QUESTION */}
             {currentStep === 2 && (
               <>
-                <div className="bg-vanilla border-peach rounded-lg border p-4">
+              <div className='step-2 space-y-6'>
+
+                <div className=" bg-vanilla border-peach rounded-lg border p-4">
                   <div className="mb-2 flex items-center">
                     <HelpCircle className="mr-2 text-gray-600" size={18} />
                     <span className="text-coffee text-sm font-medium">Security Question:</span>
@@ -436,7 +440,7 @@ const ForgotPassword = () => {
                     loading || !securityQuestion
                       ? 'cursor-not-allowed bg-gray-600'
                       : 'bg-black hover:bg-gray-800 active:bg-gray-900'
-                  } flex items-center justify-center rounded-lg text-xl font-medium text-white transition-all duration-300 ease-in-out`}
+                    } flex items-center justify-center rounded-lg text-xl font-medium text-white transition-all duration-300 ease-in-out`}
                 >
                   {loading ? (
                     <>
@@ -450,12 +454,13 @@ const ForgotPassword = () => {
                     </>
                   )}
                 </button>
+              </div>
               </>
             )}
 
             {/* STEP 3: NEW PASSWORD */}
             {currentStep === 3 && (
-              <form onSubmit={handlePasswordReset} className="space-y-6">
+              <form onSubmit={handlePasswordReset} className="space-y-6 step-3 ">
                 {renderInputField(
                   'newPassword',
                   showNewPassword ? 'text' : 'password',

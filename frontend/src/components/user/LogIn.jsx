@@ -1,4 +1,3 @@
-// src/components/user/Login.jsx
 import React, { useState } from 'react';
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -43,7 +42,6 @@ const Login = () => {
 
     if (name === 'username') {
       setIsEmail(detectEmailFormat(value));
-
       if (showUsernameEmailError) {
         setShowUsernameEmailError(false);
         setErrors((prev) => ({ ...prev, username: '', email: '' }));
@@ -111,13 +109,13 @@ const Login = () => {
         setShowUsernameEmailError(false);
         setFormData({ username: '', password: '' });
 
-        setTimeout(() => navigate('/dashboard'), 1000);
+        // Redirect to dashboard using replace: true
+        setTimeout(() => navigate('/dashboard', { replace: true }), 1000);
       }
     } catch (error) {
       // Increment attempt count on failure
       setAttemptCount((prev) => prev + 1);
 
-      // Handle different error scenarios
       let errorMsg = 'Login failed';
 
       if (error.statusCode === 401) {
@@ -165,7 +163,7 @@ const Login = () => {
   // ===== RENDER =====
   return (
     <div className="bg-cream flex min-h-screen items-center justify-center px-4 py-8">
-      <div className="w-full max-w-[26rem]">
+      <div className="login w-full max-w-[26rem]">
         <div className="card flex flex-col items-center justify-between">
           {/* Header */}
           <div className="mb-6 text-center">

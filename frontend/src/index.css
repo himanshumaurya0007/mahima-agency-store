@@ -581,28 +581,10 @@ p {
   background: rgb(230, 136, 102);
 }
 
-/* Input Styles For SignUp */
+/* Default Label CSS For All Three Pages */
 
-.input-container input[type='text']:focus ~ .label,
-.input-container input[type='text']:not(:placeholder-shown) ~ .label {
-  top: -15px;
-  font-size: 20px;
-}
-
-.input-container input[type='email']:focus ~ .label,
-.input-container input[type='email']:not(:placeholder-shown) ~ .label {
-  top: -15px;
-  font-size: 20px;
-}
-
-.input-container input[type='tel']:focus ~ .label,
-.input-container input[type='tel']:not(:placeholder-shown) ~ .label {
-  top: -15px;
-  font-size: 20px;
-}
-
-.input-container input[type='password']:focus ~ .label,
-.input-container input[type='password']:not(:placeholder-shown) ~ .label {
+.input-container input:focus ~ .label,
+.input-container input:not(:placeholder-shown) ~ .label {
   top: -15px;
   font-size: 20px;
 }
@@ -611,38 +593,6 @@ p {
 .input-container select:not([value='']) ~ .label {
   top: -15px;
   font-size: 20px;
-}
-
-/* Topline widths for focused/filled states */
-
-.input-container input[type='text']:focus ~ .topline,
-.input-container input[type='text']:not(:placeholder-shown) ~ .topline {
-  width: 50%;
-}
-
-.input-container input.sec:focus ~ .topline,
-.input-container input.sec:not(:placeholder-shown) ~ .topline {
-  width: 67%;
-}
-
-.input-container input[type='email']:focus ~ .topline,
-.input-container input[type='email']:not(:placeholder-shown) ~ .topline {
-  width: 37%;
-}
-
-.input-container input[type='tel']:focus ~ .topline,
-.input-container input[type='tel']:not(:placeholder-shown) ~ .topline {
-  width: 53%;
-}
-
-.input-container input[type='password']:focus ~ .topline,
-.input-container input[type='password']:not(:placeholder-shown) ~ .topline {
-  width: 52%;
-}
-
-.input-container select:focus ~ .topline,
-.input-container select:not([value='']) ~ .topline {
-  width: 65%;
 }
 
 /* Default state - full width topline when empty and unfocused */
@@ -655,77 +605,84 @@ p {
   width: 100%;
 }
 
+/* Topline widths for Register*/
 
-/* ===== INPUT CONTAINER ===== */
-.input-container {
-  position: relative;
+.register .input-container input[type='text']:focus ~ .topline,
+.register .input-container input[type='text']:not(:placeholder-shown) ~ .topline {
+  width: 50%;
 }
 
-/* ===== MAIN INPUT FIELD ===== */
-.input-field {
-  height: 55px;
-  width: 285px;
-  border-bottom-right-radius: 10px;
-  border-right: 2px solid black;
-  border-bottom: 2px solid black;
-  border-left: 2px solid black;
-  border-top: transparent;
-  background-color: transparent;
-  padding-left: 1.25rem;
-  padding-right: 1.25rem;
-  font-size: 1.125rem;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  transition: all 400ms ease-in;
-  outline: none;
+.register .input-container input.sec:focus ~ .topline,
+.register .input-container input.sec:not(:placeholder-shown) ~ .topline {
+  width: 67%;
 }
 
-/* ===== PASSWORD FIELD EXTRA PADDING ===== */
-.input-field.password-field {
-  padding-right: 3rem;
+.register .input-container input[type='email']:focus ~ .topline,
+.register .input-container input[type='email']:not(:placeholder-shown) ~ .topline {
+  width: 37%;
 }
 
-/* ===== INPUT FOCUS STATE ===== */
-.input-field:focus {
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+.register .input-container input[type='tel']:focus ~ .topline,
+.register .input-container input[type='tel']:not(:placeholder-shown) ~ .topline {
+  width: 53%;
 }
 
-/* ===== LABEL ===== */
-.input-label {
-  pointer-events: none;
-  position: absolute;
-  top: 13px;
-  left: 1.25rem;
-  font-size: 1.25rem;
-  font-weight: 500;
-  color: #0b2447;
-  transition: all 500ms ease-in-out;
+.register .input-container input[type='password']:focus ~ .topline,
+.register .input-container input[type='password']:not(:placeholder-shown) ~ .topline {
+  width: 52%;
 }
 
-/* ===== TOPLINE ANIMATION ===== */
-.input-topline {
-  position: absolute;
-  top: 0;
-  right: 0;
-  height: 2px;
-  width: 0;
-  background-color: black;
-  transition: all 400ms ease-in-out;
+.register .input-container select:focus ~ .topline,
+.register .input-container select:not([value='']) ~ .topline {
+  width: 65%;
 }
 
-/* ===== ERROR MESSAGE CONTAINER ===== */
-.error-message {
-  margin-top: 0.5rem;
-  margin-left: 0.5rem;
-  display: flex;
-  align-items: center;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #dc2626;
+/* Topline Width For Login */
+
+.login .input-container input[type='text']:focus ~ .topline,
+.login .input-container input[type='text']:not(:placeholder-shown) ~ .topline {
+  width: 47%;
 }
 
-/* ===== ERROR ICON ===== */
-.error-icon {
-  margin-right: 0.25rem;
-  flex-shrink: 0;
+.login .input-container input[type='email']:focus ~ .topline,
+.login .input-container input[type='email']:not(:placeholder-shown) ~ .topline {
+  width: 37%;
+}
+
+.login .input-container input[type='password']:focus ~ .topline,
+.login .input-container input[type='password']:not(:placeholder-shown) ~ .topline {
+  width: 66%;
+}
+
+/* Topline Width For Forgot Password */
+
+/* For Step 1 */
+
+.forgot-password .step-1 .input-container input[type='text']:focus ~ .topline,
+.forgot-password .step-1 .input-container input[type='text']:not(:placeholder-shown) ~ .topline {
+  width: 47%;
+}
+
+.forgot-password .step-1 .input-container input[type='email']:focus ~ .topline,
+.forgot-password .step-1 .input-container input[type='email']:not(:placeholder-shown) ~ .topline {
+  width: 37%;
+}
+
+/* For Step 2 */
+
+.forgot-password .step-2 .input-container:nth-child(1) input[type='password']:focus ~ .topline,
+.forgot-password .step-2 .input-container:nth-child(1) input[type='password']:not(:placeholder-shown) ~ .topline {
+  width: 45%;
+}
+
+/* For Step 3 */
+
+.forgot-password .step-3 .input-container input[type='text']:focus ~ .topline,
+.forgot-password .step-3 .input-container input[type='text']:not(:placeholder-shown) ~ .topline {
+  width: 55%;
+}
+
+.forgot-password .step-3 .input-container:nth-child(2) input[type='password']:focus ~ .topline,
+.forgot-password .step-3 .input-container:nth-child(2) input[type='password']:not(:placeholder-shown) ~ .topline {
+  width: 45%;
 }

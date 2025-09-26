@@ -37,3 +37,6 @@ Icon?
 # custom ignores
 /*.py
 /*.txt
+
+# Adding a Test.jsx page
+/Test.jsx

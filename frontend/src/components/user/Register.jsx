@@ -1,10 +1,8 @@
-// src/components/user/Register.jsx
 import React, { useState } from 'react';
 import { Eye, EyeOff, MessageSquare, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 
-// ✅ Centralized imports - Using your existing system
 import userApi from '../../services/userApi';
 import { SECURITY_QUESTIONS } from '../../utils/constants';
 import { validateField } from '../../utils/validate';
@@ -36,19 +34,16 @@ const Register = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // ✅ Phone validation using centralized regex
     if (name === 'phone') {
       const numericValue = value.replace(/[^\d]/g, '');
       if (numericValue.length <= 10) {
         setFormData((prev) => ({ ...prev, [name]: numericValue }));
-        // Use centralized validation
         const error = validateField(name, numericValue);
         setErrors((prev) => ({ ...prev, [name]: error }));
       }
       return;
     }
 
-    // All other fields using centralized validation
     setFormData((prev) => ({ ...prev, [name]: value }));
     const error = validateField(name, value);
     setErrors((prev) => ({ ...prev, [name]: error }));
@@ -63,7 +58,6 @@ const Register = () => {
     setLoading(true);
 
     try {
-      // ✅ Use centralized form validation
       const validation = await validateForm(registerUserValidationSchema, formData);
       if (!validation.valid) {
         setErrors(validation.errors);
@@ -91,11 +85,10 @@ const Register = () => {
           securityAnswer: '',
         });
 
-        // Redirect to login
-        setTimeout(() => navigate('/login'), 1500);
+        // Redirect to login - now using replace: true
+        setTimeout(() => navigate('/login', { replace: true }), 1500);
       }
     } catch (error) {
-      // ✅ Concise error messages using centralized approach
       let errorMsg = 'Registration failed';
 
       if (error.statusCode === 409) errorMsg = 'User already exists';
@@ -175,7 +168,7 @@ const Register = () => {
   // ===== RENDER =====
   return (
     <div className="bg-cream flex min-h-screen items-center justify-center">
-      <div className="w-full max-w-[41rem]">
+      <div className="register w-full max-w-[41rem]">
         <div className="card flex flex-col items-center justify-between">
           {/* Header */}
           <div className="mb-6 text-center">
@@ -312,13 +305,13 @@ const Register = () => {
             {/* Login Link */}
             <div className="pt-4 text-center">
               <p className="text-coffee text-sm">
-                Already have an account?{' '}
+                Already have an account ?
                 <button
                   type="button"
                   onClick={() => navigate('/login')}
-                  className="font-medium text-black hover:underline focus:outline-none"
+                  className="font-medium text-black hover:underline focus:outline-none ml-1.5"
                 >
-                  Sign In
+                  Login...
                 </button>
               </p>
             </div>
