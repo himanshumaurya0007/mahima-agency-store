@@ -1,16 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 
-import userApi from '../../services/userApi';
 import { validateField } from '../../utils/validate';
 import { validateForm } from '../../middlewares/validateUser.middleware';
 import { loginUserValidationSchema } from '../../validations/userValidationSchemas';
+import authService from '../../services/authService';
 import { emailRegex } from '../../utils/regex';
 
 const Login = () => {
   const navigate = useNavigate();
+
+  // ===== AUTH PROTECTION =====
+  useEffect(() => {
+    if (authService.isAuthenticated()) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [navigate]);
 
   // ===== STATE MANAGEMENT =====
   const [formData, setFormData] = useState({
@@ -70,15 +77,13 @@ const Login = () => {
       loginData.password = formData.password;
 
       const validation = await validateForm(loginUserValidationSchema, loginData);
-
-      // Only show validation errors after MAX_ATTEMPTS
+      
       if (!validation.valid) {
         if (attemptCount >= MAX_ATTEMPTS) {
           setErrors(validation.errors);
           setShowUsernameEmailError(true);
           toast.error('Please fix the highlighted errors');
         } else {
-          // Only show password errors before MAX_ATTEMPTS
           const passwordError = validation.errors.password;
           setErrors({ password: passwordError });
           if (passwordError) {
@@ -88,38 +93,29 @@ const Login = () => {
         return;
       }
 
-      // Clear errors on successful validation
       setErrors({});
 
-      // Submit login
-      const response = await userApi.loginUser(loginData);
-
-      if (response.success && response.data) {
-        const { user, accessToken, refreshToken } = response.data;
-
-        // Store authentication data
-        localStorage.setItem('authToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
-        localStorage.setItem('userData', JSON.stringify(user));
-
-        toast.success(response.message || 'Login successful! Redirecting...');
-
-        // Reset attempt count and form
+      const result = await authService.login(loginData);
+      
+      if (result && result.success) {
         setAttemptCount(0);
         setShowUsernameEmailError(false);
         setFormData({ username: '', password: '' });
-
-        // Redirect to dashboard using replace: true
-        setTimeout(() => navigate('/dashboard', { replace: true }), 1000);
+        
+        navigate('/dashboard', { replace: true });
+      } else {
+        toast.error('Login failed. Please try again.');
       }
+
     } catch (error) {
-      // Increment attempt count on failure
-      setAttemptCount((prev) => prev + 1);
+      console.error('Login failed:', error.message);
+      setAttemptCount(prev => prev + 1);
 
       let errorMsg = 'Login failed';
 
-      if (error.statusCode === 401) {
-        // Invalid credentials
+      if (error.message?.includes('Invalid response')) {
+        errorMsg = 'Server error. Please try again.';
+      } else if (error.statusCode === 401) {
         if (attemptCount + 1 >= MAX_ATTEMPTS) {
           errorMsg = 'Please check your username/email and password again.';
           setShowUsernameEmailError(true);
@@ -127,7 +123,6 @@ const Login = () => {
           errorMsg = 'Invalid credentials';
         }
       } else if (error.statusCode === 404) {
-        // User not found
         if (attemptCount + 1 >= MAX_ATTEMPTS) {
           errorMsg = 'Account not found. Please check your username/email.';
           setShowUsernameEmailError(true);
@@ -206,7 +201,7 @@ const Login = () => {
               )}
             </div>
 
-            {/* Password Field - With Icon */}
+            {/* Password Field */}
             <div className="input-container relative">
               <input
                 className="input h-[55px] w-full rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 pr-12 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
@@ -271,10 +266,10 @@ const Login = () => {
             {/* Sign Up Link */}
             <div className="pt-4 text-center">
               <p className="text-coffee text-sm">
-                Don't have an account ?
+                Don't have an account?
                 <button
                   type="button"
-                  onClick={() => navigate('/register')}
+                  onClick={() => navigate('/register', { replace: true })}
                   className="pl-1.5 font-medium text-black hover:underline focus:outline-none"
                 >
                   Register

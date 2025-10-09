@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, MessageSquare, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 
-import userApi from '../../services/userApi';
+import authService from '../../services/authService';
 import { SECURITY_QUESTIONS } from '../../utils/constants';
 import { validateField } from '../../utils/validate';
 import { validateForm } from '../../middlewares/validateUser.middleware';
@@ -11,6 +11,13 @@ import { registerUserValidationSchema } from '../../validations/userValidationSc
 
 const Register = () => {
   const navigate = useNavigate();
+
+  // ===== AUTH PROTECTION =====
+  useEffect(() => {
+    if (authService.isAuthenticated()) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [navigate]);
 
   // ===== STATE MANAGEMENT =====
   const [formData, setFormData] = useState({
@@ -67,28 +74,21 @@ const Register = () => {
 
       setErrors({});
 
-      // Submit registration
-      const response = await userApi.registerUser(formData);
-
-      if (response.success) {
-        toast.success(response.message || 'Account created successfully!');
-
-        // Reset form
+      const result = await authService.register(formData);
+      
+      if (result && result.success) {
         setFormData({
-          firstName: '',
-          lastName: '',
-          email: '',
-          phone: '',
-          username: '',
-          password: '',
-          securityQuestion: '',
-          securityAnswer: '',
+          firstName: '', lastName: '', email: '', phone: '', 
+          username: '', password: '', securityQuestion: '', securityAnswer: ''
         });
 
-        // Redirect to login - now using replace: true
-        setTimeout(() => navigate('/login', { replace: true }), 1500);
+        navigate('/login', { replace: true });
+      } else {
+        toast.error('Registration failed. Please try again.');
       }
+
     } catch (error) {
+      console.error('Registration failed:', error.message);
       let errorMsg = 'Registration failed';
 
       if (error.statusCode === 409) errorMsg = 'User already exists';
@@ -126,7 +126,7 @@ const Register = () => {
             className={iconClass}
             onClick={() => setShowSecurityAnswer(!showSecurityAnswer)}
           >
-            <MessageSquare size={20} />
+            {showSecurityAnswer ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>
         );
       default:
@@ -305,10 +305,10 @@ const Register = () => {
             {/* Login Link */}
             <div className="pt-4 text-center">
               <p className="text-coffee text-sm">
-                Already have an account ?
+                Already have an account?
                 <button
                   type="button"
-                  onClick={() => navigate('/login')}
+                  onClick={() => navigate('/login', { replace: true })}
                   className="font-medium text-black hover:underline focus:outline-none ml-1.5"
                 >
                   Login...

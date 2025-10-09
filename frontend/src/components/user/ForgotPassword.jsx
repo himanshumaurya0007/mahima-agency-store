@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 
 import userApi from '../../services/userApi';
+import authService from '../../services/authService';
 import { fields } from '../../utils/fields';
 import { errorMessages } from '../../utils/errorMessages';
 import { emailRegex } from '../../utils/regex';
@@ -24,6 +25,13 @@ import {
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
+
+  // ===== AUTH PROTECTION =====
+  useEffect(() => {
+    if (authService.isAuthenticated()) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [navigate]);
 
   // ===== STATE MANAGEMENT =====
   const [formData, setFormData] = useState({
@@ -66,7 +74,6 @@ const ForgotPassword = () => {
 
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    // Track email format for username field
     if (name === 'username') {
       setIsEmail(detectEmailFormat(value));
     }
@@ -125,6 +132,7 @@ const ForgotPassword = () => {
         toast.error('No security question found');
       }
     } catch (error) {
+      console.error('Security question fetch failed:', error.message);
       let errorMsg = 'Something went wrong';
       if (error.statusCode === 404) {
         errorMsg = isEmail ? 'Email not found' : 'Username not found';
@@ -171,6 +179,7 @@ const ForgotPassword = () => {
         toast.success('Security answer verified!');
       }
     } catch (error) {
+      console.error('Security verification failed:', error.message);
       let errorMsg = 'Verification failed';
       if (error.statusCode === 401) {
         errorMsg = 'Incorrect security answer';
@@ -218,10 +227,11 @@ const ForgotPassword = () => {
       const response = await userApi.resetUserPassword(validationData);
 
       if (response.success) {
-        toast.success('Password reset successful !');
+        toast.success('Password reset successful!');
         setTimeout(() => navigate('/login', { replace: true }), 2000);
       }
     } catch (error) {
+      console.error('Password reset failed:', error.message);
       let errorMsg = 'Password reset failed';
       if (error.statusCode === 400) {
         errorMsg = error.errors?.join(', ') || 'Invalid password data';
@@ -370,53 +380,51 @@ const ForgotPassword = () => {
             {/* STEP 1: USERNAME SEARCH */}
             {currentStep === 1 && (
               <div className="step-1">
-              <div className="input-container relative">
-                <input
-                  className="input h-[55px] w-full rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
-                  name="username"
-                  type="text"
-                  required
-                  placeholder=" "
-                  autoComplete="username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  onFocus={() => handleFocus('username')}
-                  onBlur={handleBlur}
-                />
-                <label className="label pointer-events-none absolute top-[13px] left-5 text-xl font-medium text-[#0b2447] transition-all duration-500 ease-in-out">
-                  Username or Email
-                </label>
-                <div className="topline absolute top-0 right-0 h-[2px] w-0 bg-black transition-all duration-[400ms] ease-in-out"></div>
+                <div className="input-container relative">
+                  <input
+                    className="input h-[55px] w-full rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm"
+                    name="username"
+                    type="text"
+                    required
+                    placeholder=" "
+                    autoComplete="username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    onFocus={() => handleFocus('username')}
+                    onBlur={handleBlur}
+                  />
+                  <label className="label pointer-events-none absolute top-[13px] left-5 text-xl font-medium text-[#0b2447] transition-all duration-500 ease-in-out">
+                    Username or Email
+                  </label>
+                  <div className="topline absolute top-0 right-0 h-[2px] w-0 bg-black transition-all duration-[400ms] ease-in-out"></div>
 
-                <button
-                  type="button"
-                  onClick={handleUsernameSearch}
-                  disabled={loading}
-                  className="absolute top-0.5 right-0.5 h-[51px] rounded-br-lg bg-black px-3 text-white transition-colors hover:bg-gray-800 disabled:bg-gray-600"
-                >
-                  {loading ? (
-                    <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-white"></div>
-                  ) : (
-                    <Search size={18} />
+                  <button
+                    type="button"
+                    onClick={handleUsernameSearch}
+                    disabled={loading}
+                    className="absolute top-0.5 right-0.5 h-[51px] rounded-br-lg bg-black px-3 text-white transition-colors hover:bg-gray-800 disabled:bg-gray-600"
+                  >
+                    {loading ? (
+                      <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-white"></div>
+                    ) : (
+                      <Search size={18} />
+                    )}
+                  </button>
+
+                  {errors.username && (
+                    <div className="mt-2 ml-2 flex items-center text-xs font-medium text-red-600">
+                      <AlertCircle size={12} className="mr-1 flex-shrink-0" />
+                      <span>{errors.username}</span>
+                    </div>
                   )}
-                </button>
-
-                {errors.username && (
-                  <div className="mt-2 ml-2 flex items-center text-xs font-medium text-red-600">
-                    <AlertCircle size={12} className="mr-1 flex-shrink-0" />
-                    <span>{errors.username}</span>
-                  </div>
-                )}
-              </div>
+                </div>
               </div>
             )}
 
             {/* STEP 2: SECURITY QUESTION */}
             {currentStep === 2 && (
-              <>
               <div className='step-2 space-y-6'>
-
-                <div className=" bg-vanilla border-peach rounded-lg border p-4">
+                <div className="bg-vanilla border-peach rounded-lg border p-4">
                   <div className="mb-2 flex items-center">
                     <HelpCircle className="mr-2 text-gray-600" size={18} />
                     <span className="text-coffee text-sm font-medium">Security Question:</span>
@@ -455,12 +463,11 @@ const ForgotPassword = () => {
                   )}
                 </button>
               </div>
-              </>
             )}
 
             {/* STEP 3: NEW PASSWORD */}
             {currentStep === 3 && (
-              <form onSubmit={handlePasswordReset} className="space-y-6 step-3 ">
+              <form onSubmit={handlePasswordReset} className="space-y-6 step-3">
                 {renderInputField(
                   'newPassword',
                   showNewPassword ? 'text' : 'password',
@@ -504,10 +511,10 @@ const ForgotPassword = () => {
             {/* Back to Login */}
             <div className="pt-4 text-center">
               <p className="text-coffee text-sm">
-                Remember your password ?
+                Remember your password?
                 <button
                   type="button"
-                  onClick={() => navigate('/login')}
+                  onClick={() => navigate('/login', { replace: true })}
                   className="pl-1.5 font-medium text-black hover:underline focus:outline-none"
                 >
                   Login
@@ -515,7 +522,7 @@ const ForgotPassword = () => {
                 {' | '}
                 <button
                   type="button"
-                  onClick={() => navigate('/register')}
+                  onClick={() => navigate('/register', { replace: true })}
                   className="font-medium text-black hover:underline focus:outline-none"
                 >
                   Register
