@@ -1,41 +1,79 @@
+// src/middlewares/error.middleware.js
 import { StatusCodes, ReasonPhrases } from "http-status-codes";
+import { ApiError, ApiResponse, mongooseErrorHandler, logger } from "../utils/core/index.js";
 
-import { ApiError } from "../utils/ApiError.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
-import logger from "../utils/logger.js";
-
+/**
+ * Global centralized error-handling middleware.
+ * - Handles all thrown/rejected errors
+ * - Interprets Mongoose errors
+ * - Normalizes unknown exceptions into ApiError
+ * - Logs structured diagnostic data
+ */
 export const errorMiddleware = (err, req, res, next) => {
     if (res.headersSent) {
         return next(err);
     }
 
-    const statusCode = err instanceof ApiError
-        ? err.statusCode
-        : StatusCodes.INTERNAL_SERVER_ERROR;
+    // -----------------------------
+    // 1️⃣ Attempt to interpret known Mongoose errors
+    // -----------------------------
+    const mongooseInterpreted = mongooseErrorHandler(err);
+    if (mongooseInterpreted) err = mongooseInterpreted;
 
-    // Final structured error logging
-    logger.error("Error caught by middleware", {
-        message: err.message,
-        stack: err.stack,
+    // -----------------------------
+    // 2️⃣ Normalize to ApiError (if not already)
+    // -----------------------------
+    const normalizedError = err instanceof ApiError
+        ? err
+        : ApiError.fromUnknown(err, {
+            route: req.originalUrl,
+            method: req.method,
+            body: req.body,
+            params: req.params,
+            query: req.query,
+        });
+
+    const { statusCode, message, errors, stack } = normalizedError;
+
+    // -----------------------------
+    // 3️⃣ Structured logging
+    // -----------------------------
+    logger.error(`[GlobalErrorMiddleware] ${message}`, {
         statusCode,
+        method: req.method,
+        url: req.originalUrl,
+        ip: req.ip,
+        userAgent: req.headers["user-agent"],
+        referrer: req.headers.referer || "N/A",
+        body: req.body,
+        params: req.params,
+        query: req.query,
+        errors,
+        stack,
     });
 
-    // Build standardized response
+    // -----------------------------
+    // 4️⃣ Build standardized ApiResponse
+    // -----------------------------
     const response = new ApiResponse(
         statusCode,
         null,
-        err instanceof ApiError ? err.message : ReasonPhrases.INTERNAL_SERVER_ERROR
+        message || ReasonPhrases.INTERNAL_SERVER_ERROR
     );
 
-    // Include validation / field errors if present
-    if (err instanceof ApiError && err.errors?.length) {
-        response.errors = err.errors;
-    }
+    // Attach additional metadata for debugging
+    if (errors?.length) response.errors = errors;
 
-    // Only attach stack in development
     if (process.env.NODE_ENV === "development") {
-        response.stack = err.stack;
+        response.stack = stack;
+        response.context = {
+            route: req.originalUrl,
+            method: req.method,
+        };
     }
 
-    return res.status(statusCode).json(response);
+    // -----------------------------
+    // 5️⃣ Return safe response
+    // -----------------------------
+    return res.status(statusCode || StatusCodes.INTERNAL_SERVER_ERROR).json(response);
 };

@@ -1,5 +1,9 @@
+// utils/core/ApiResponse.js
 import { StatusCodes } from "http-status-codes";
 
+/**
+ * Unified API success response object.
+ */
 class ApiResponse {
     constructor(
         statusCode = StatusCodes.OK,
@@ -7,9 +11,10 @@ class ApiResponse {
         message = "Request successful"
     ) {
         this.statusCode = statusCode;
-        this.data = data;
-        this.message = message;
         this.success = statusCode >= StatusCodes.OK && statusCode < StatusCodes.BAD_REQUEST;
+        this.message = message;
+        this.data = data;
+        this.timestamp = new Date().toISOString();
     }
 }
 
