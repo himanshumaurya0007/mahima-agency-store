@@ -139,6 +139,21 @@ class AuthService {
       toast.success('Logged out successfully');
     }
   }
+
+//   // Validate The Access Token 
+//   async validateToken() {
+//   try {
+//     const token = this.getAccessToken();
+//     if (!token) return false;
+    
+//     // Make a lightweight API call to verify token
+//     const response = await baseApi.get('/user/verify-token');
+//     return response.data.success;
+//   // eslint-disable-next-line no-unused-vars
+//   } catch (error) {
+//     return false;
+//   }
+// }
 }
 
 export default new AuthService();

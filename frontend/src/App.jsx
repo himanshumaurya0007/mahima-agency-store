@@ -4,8 +4,12 @@ import { Toaster } from 'react-hot-toast';
 
 import Register from './components/user/Register';
 import LogIn from './components/user/LogIn';
-import Dashboard from './components/user/Dashboard'; // Add this import
+import Dashboard from './components/user/Dashboard';
 import ForgetPassword from './components/user/ForgotPassword';
+import CustomersList from './components/customer/CustomersList';
+import AddCustomer from './components/customer/AddCustomer';
+import UpdateCustomer from './components/customer/UpdateCustomer';
+import Test from './Test';
 
 const App = () => {
   return (
@@ -13,20 +17,27 @@ const App = () => {
       <Routes>
         {/* Redirect root → /register */}
         <Route path="/" element={<Navigate to="/register" replace />} />
-        {/* Register page */}
+
+        {/* User Routes */}
         <Route path="/register" element={<Register />} />
-        {/* Sign In page */}
         <Route path="/login" element={<LogIn />} />
-        {/* Dashboard page - ADD THIS ROUTE */}
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/reset-password" element={<ForgetPassword />} /> {/* Add this route */}
+        <Route path="/reset-password" element={<ForgetPassword />} />
+
+        {/* Customer Routes */}
+        <Route path="/customers" element={<CustomersList />} />
+        <Route path="/customers/add" element={<AddCustomer />} />
+        <Route path="/customers/edit/:customerId" element={<UpdateCustomer />} />
+
+        {/* Test Route */}
+        <Route path="/test" element={<Test />} />
+
         {/* Catch all other routes - redirect to login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
 
       {/* Toast Notification */}
-
-           <Toaster
+      <Toaster
         position="top-right"
         toastOptions={{
           duration: 3000,

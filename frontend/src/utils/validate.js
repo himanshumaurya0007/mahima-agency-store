@@ -52,3 +52,75 @@ export const validateField = (name, value) => {
       return '';
   }
 };
+
+
+/**
+ * Validate customer field
+ * @param {string} fieldName - Field name (supports nested paths like 'customerAddress.city')
+ * @param {any} value - Field value
+ * @param {Object} formData - Complete form data for cross-field validation
+ * @param {Object} schema - Validation schema
+ * @returns {string} Error message or empty string
+ */
+export const validateCustomerField = (fieldName, value, formData = {}, schema) => {
+  // Schema must be passed from the calling component
+  if (!schema) {
+    console.error('Validation schema is required for validateCustomerField');
+    return '';
+  }
+
+  const fieldSchema = schema[fieldName];
+  if (!fieldSchema) return '';
+
+  // Check if field is required
+  if (fieldSchema.required) {
+    const isRequired = typeof fieldSchema.required === 'function' 
+      ? fieldSchema.required(formData) 
+      : fieldSchema.required;
+    
+    if (isRequired && (!value || (typeof value === 'string' && !value.trim()))) {
+      const displayName = fieldName.includes('.') 
+        ? fieldName.split('.').pop() 
+        : fieldName;
+      return `${displayName.charAt(0).toUpperCase() + displayName.slice(1)} is required`;
+    }
+  }
+
+  // Run validation function
+  if (fieldSchema.validate) {
+    return fieldSchema.validate(value, formData);
+  }
+
+  return '';
+};
+
+/**
+ * Validate entire customer form
+ * @param {Object} formData - Complete form data
+ * @param {Object} schema - Validation schema
+ * @returns {Object} { valid: boolean, errors: Object }
+ */
+export const validateCustomerForm = (formData, schema) => {
+  if (!schema) {
+    console.error('Validation schema is required for validateCustomerForm');
+    return { valid: false, errors: { _form: 'Validation schema missing' } };
+  }
+
+  const errors = {};
+  let valid = true;
+
+  Object.keys(schema).forEach((fieldName) => {
+    // Get nested field value (e.g., 'customerAddress.city')
+    const value = fieldName.includes('.') 
+      ? fieldName.split('.').reduce((obj, key) => obj?.[key], formData)
+      : formData[fieldName];
+
+    const error = validateCustomerField(fieldName, value, formData, schema);
+    if (error) {
+      errors[fieldName] = error;
+      valid = false;
+    }
+  });
+
+  return { valid, errors };
+};
