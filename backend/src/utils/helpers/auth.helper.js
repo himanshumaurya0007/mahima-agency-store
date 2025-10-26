@@ -1,9 +1,9 @@
 import { StatusCodes, ReasonPhrases } from "http-status-codes";
 
-import { ApiError } from "../core";
+import { ApiError } from "../core/index.js";
 
 export const ensureAuthenticated = (req) => {
-    const userId = req.userId?._id;
+    const userId = req.user?._id;
 
     if (!userId) {
         throw new ApiError(
