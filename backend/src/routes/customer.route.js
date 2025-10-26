@@ -13,10 +13,20 @@ import {
 
 const router = Router();
 
-router.route('/').post(verifyJWT, validateCustomer, addCustomer);
-router.route('/').get(verifyJWT, getAllCustomers);
-router.route('/:id').get(verifyJWT, getCustomerById);
-router.route('/:id').put(verifyJWT, validateCustomer, updateCustomer);
-router.route('/:id').delete(verifyJWT, deleteCustomer);
+// ===============================
+// 🔐 PROTECTED ROUTES (JWT Required)
+// ===============================
+router.use(verifyJWT); // Protect all routes below this line
+
+router
+    .route('/')
+    .get(getAllCustomers)
+    .post(validateCustomer, addCustomer);
+
+router
+    .route('/:id')
+    .get(getCustomerById)
+    .put(validateCustomer, updateCustomer)
+    .delete(deleteCustomer);
 
 export default router;
