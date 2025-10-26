@@ -13,4 +13,4 @@ export * from "./constants/index.js";
 // --------------------
 // HELPERS (optional future utilities)
 // --------------------
-// export * from "./helpers/index.js"; // Keep this even if currently empty (scalable structure)
+export * from "./helpers/index.js"; // Keep this even if currently empty (scalable structure)
