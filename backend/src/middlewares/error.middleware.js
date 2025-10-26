@@ -9,41 +9,46 @@ import {
 } from "../utils/index.js";
 
 /**
- * Global centralized error-handling middleware.
- * - Handles all thrown/rejected errors
- * - Interprets Mongoose errors
- * - Normalizes unknown exceptions into ApiError
- * - Logs structured diagnostic data
+ * 🌐 Global centralized error-handling middleware.
+ * ------------------------------------------------------------------------
+ * Responsibilities:
+ * - Normalize all thrown/rejected errors.
+ * - Delegate Mongoose/MongoDB errors to mongooseErrorHandler.
+ * - Convert unknown errors into structured ApiError instances.
+ * - Log comprehensive, contextual diagnostics.
+ * - Send safe and standardized ApiResponse to the client.
+ * ------------------------------------------------------------------------
  */
 export const errorMiddleware = (err, req, res, next) => {
-    if (res.headersSent) {
-        return next(err);
-    }
+    // Defensive: if headers already sent, delegate to Express default handler
+    if (res.headersSent) return next(err);
 
-    // -----------------------------
-    // 1️⃣ Attempt to interpret known Mongoose errors
-    // -----------------------------
-    const mongooseInterpreted = mongooseErrorHandler(err);
-    if (mongooseInterpreted) err = mongooseInterpreted;
+    // Short alias
+    const isDev = process.env.NODE_ENV === "development";
 
-    // -----------------------------
-    // 2️⃣ Normalize to ApiError (if not already)
-    // -----------------------------
-    const normalizedError = err instanceof ApiError
-        ? err
-        : ApiError.fromUnknown(err, {
-            route: req.originalUrl,
-            method: req.method,
-            body: req.body,
-            params: req.params,
-            query: req.query,
-        });
+    // Step 1️⃣ → Mongoose/MongoDB specific error normalization
+    const mongooseHandledError = mongooseErrorHandler(err);
+    const normalizedError =
+        mongooseHandledError ||
+        (ApiError.isApiError?.(err)
+            ? err
+            : ApiError.fromUnknown(err, {
+                route: req.originalUrl,
+                method: req.method,
+                body: req.body,
+                params: req.params,
+                query: req.query,
+            }));
 
-    const { statusCode, message, errors, stack } = normalizedError;
+    const {
+        statusCode = StatusCodes.INTERNAL_SERVER_ERROR,
+        message = ReasonPhrases.INTERNAL_SERVER_ERROR,
+        errors = [],
+        stack,
+        details,
+    } = normalizedError;
 
-    // -----------------------------
-    // 3️⃣ Structured logging
-    // -----------------------------
+    // Step 2️⃣ → Structured diagnostic logging
     logger.error(`[GlobalErrorMiddleware] ${message}`, {
         statusCode,
         method: req.method,
@@ -51,35 +56,33 @@ export const errorMiddleware = (err, req, res, next) => {
         ip: req.ip,
         userAgent: req.headers["user-agent"],
         referrer: req.headers.referer || "N/A",
+        errors,
+        details,
         body: req.body,
         params: req.params,
         query: req.query,
-        errors,
         stack,
     });
 
-    // -----------------------------
-    // 4️⃣ Build standardized ApiResponse
-    // -----------------------------
-    const response = new ApiResponse(
-        statusCode,
-        null,
-        message || ReasonPhrases.INTERNAL_SERVER_ERROR
-    );
+    // Step 3️⃣ → Build standardized API response
+    const response = new ApiResponse(statusCode, null, message);
 
-    // Attach additional metadata for debugging
-    if (errors?.length) response.errors = errors;
+    // Always include error list if present
+    if (errors.length) response.errors = errors;
 
-    if (process.env.NODE_ENV === "development") {
-        response.stack = stack;
-        response.context = {
+    // Attach diagnostic info only in development mode
+    if (isDev) {
+        response.debug = {
             route: req.originalUrl,
             method: req.method,
+            ip: req.ip,
+            details,
         };
+        response.stack = stack;
     }
 
-    // -----------------------------
-    // 5️⃣ Return safe response
-    // -----------------------------
-    return res.status(statusCode || StatusCodes.INTERNAL_SERVER_ERROR).json(response);
+    // Step 4️⃣ → Send response
+    return res
+        .status(statusCode)
+        .json(response);
 };

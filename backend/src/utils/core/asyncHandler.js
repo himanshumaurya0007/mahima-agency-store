@@ -3,8 +3,9 @@ import { ApiError } from "./ApiError.js";
 import logger from "./logger.js";
 
 /**
- * Wraps async Express handlers to automatically catch and pass errors.
- * Enriches with request context for enhanced debugging in dev mode.
+ * 🧠 asyncHandler
+ * Wraps async Express route handlers to auto-catch and forward errors.
+ * Adds contextual request info for richer debugging.
  */
 const asyncHandler = (requestHandler) => {
     return async (req, res, next) => {
@@ -17,6 +18,8 @@ const asyncHandler = (requestHandler) => {
                 body: req.body,
                 params: req.params,
                 query: req.query,
+                ip: req.ip,
+                userAgent: req.headers["user-agent"],
             };
 
             const enrichedError = ApiError.fromUnknown(error, context);
