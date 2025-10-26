@@ -1,7 +1,9 @@
 import { StatusCodes } from "http-status-codes";
 
-import { ApiError } from "../utils/ApiError.js";
-import logger from "../utils/logger.js";
+import {
+    ApiError,
+    logger
+} from "../utils/index.js";
 
 import { customerValidationSchema } from "../validations/customer.validation.js";
 

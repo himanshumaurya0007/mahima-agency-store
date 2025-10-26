@@ -1,25 +1,27 @@
 import mongoose, { Schema } from "mongoose";
 
-import { fields } from "../utils/fields.js";
-import { pinCodeRegex } from "../utils/regex.js";
-import { errorMessages } from "../utils/errorMessages.js";
-import { INDIAN_STATE_NAMES, INDIAN_STATE_CODES } from "../constants.js";
+import {
+    FIELDS,
+    REGEX,
+    MESSAGES
+} from "../utils/index.js";
+import { INDIAN_STATE_NAMES, INDIAN_STATE_CODES } from "../utils/constants/enums.js";
 
 const addressSchema = new Schema(
     {
         place: {
             type: String,
-            required: [true, errorMessages.REQUIRED(fields.place)],
-            minlength: [3, errorMessages.MIN_LENGTH(fields.place, 3)],
-            maxlength: [50, errorMessages.MAX_LENGTH(fields.place, 50)],
+            required: [true, MESSAGES.REQUIRED(FIELDS.PLACE)],
+            minlength: [3, MESSAGES.MIN_LENGTH(FIELDS.PLACE, 3)],
+            maxlength: [50, MESSAGES.MAX_LENGTH(FIELDS.PLACE, 50)],
             trim: true,
             lowercase: true,
         },
         city: {
             type: String,
-            required: [true, errorMessages.REQUIRED(fields.city)],
-            minlength: [2, errorMessages.MIN_LENGTH(fields.city, 2)],
-            maxlength: [50, errorMessages.MAX_LENGTH(fields.city, 50)],
+            required: [true, MESSAGES.REQUIRED(FIELDS.CITY)],
+            minlength: [2, MESSAGES.MIN_LENGTH(FIELDS.CITY, 2)],
+            maxlength: [50, MESSAGES.MAX_LENGTH(FIELDS.CITY, 50)],
             trim: true,
             lowercase: true,
         },
@@ -29,9 +31,9 @@ const addressSchema = new Schema(
             uppercase: true,
             enum: {
                 values: INDIAN_STATE_NAMES,
-                message: `Invalid ${fields.indianState}`,
+                message: `Invalid ${FIELDS.INDIAN_STATE}`,
             },
-            required: [true, errorMessages.REQUIRED(fields.indianState)],
+            required: [true, MESSAGES.REQUIRED(FIELDS.INDIAN_STATE)],
         },
         stateCode: {
             type: String,
@@ -39,22 +41,22 @@ const addressSchema = new Schema(
             uppercase: true,
             enum: {
                 values: INDIAN_STATE_CODES,
-                message: `Invalid ${fields.indianStateCode}`,
+                message: `Invalid ${FIELDS.INDIAN_STATE_CODE}`,
             },
-            required: [true, errorMessages.REQUIRED(fields.indianStateCode)],
+            required: [true, MESSAGES.REQUIRED(FIELDS.INDIAN_STATE_CODE)],
         },
         pinCode: {
             type: String,
-            required: [true, errorMessages.REQUIRED(fields.pincode)],
+            required: [true, MESSAGES.REQUIRED(FIELDS.PIN_CODE)],
             trim: true,
             validate: {
-                validator: (v) => pinCodeRegex.test(v),
-                message: errorMessages.PINCODE_INVALID,
+                validator: (v) => REGEX.PIN_CODE.test(v),
+                message: MESSAGES.PINCODE_INVALID,
             },
         },
     },
     {
-        timestamps: true // automatically adds createdAt & updatedAt
+        timestamps: true
     }
 );
 

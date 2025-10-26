@@ -1,18 +1,20 @@
 import mongoose, { Schema } from "mongoose";
-import { StatusCodes, ReasonPhrases } from "http-status-codes";
+import { StatusCodes } from "http-status-codes";
 
-import { fields } from "../utils/fields.js";
-import { temporaryCustomerIdRegex, havmorPlatformCustomerIdRegex, emailRegex, phoneRegex, panCardRegex, gstinNumberRegex, } from "../utils/regex.js";
-import { errorMessages } from "../utils/errorMessages.js";
-import { CUSTOMER_STATUS } from "../constants.js";
-import { ApiError } from "../utils/ApiError.js";
+import {
+    FIELDS,
+    REGEX,
+    MESSAGES,
+    ENUMS,
+    ApiError
+} from "../utils/index.js";
 
 const customerSchema = new Schema(
     {
         userId: {
             type: Schema.Types.ObjectId,
             ref: "User",
-            required: [true, errorMessages.REQUIRED(fields.userId)],
+            required: [true, MESSAGES.REQUIRED(FIELDS.USER_ID)],
             index: true,
         },
         customerStatus: {
@@ -20,18 +22,18 @@ const customerSchema = new Schema(
             trim: true,
             uppercase: true,
             enum: {
-                values: CUSTOMER_STATUS,
-                message: `Invalid ${fields.customerStatus}`,
+                values: ENUMS.CUSTOMER_STATUS,
+                message: `Invalid ${FIELDS.CUSTOMER_STATUS}`,
             },
-            required: [true, errorMessages.REQUIRED(fields.customerStatus)],
+            required: [true, MESSAGES.REQUIRED(FIELDS.CUSTOMER_STATUS)],
             default: "TEMPORARY",
         },
         temporaryCustomerId: {
             type: String,
             trim: true,
             validate: {
-                validator: (value) => !value || temporaryCustomerIdRegex.test(value),
-                message: errorMessages.TEMPORARY_CUSTOMER_ID_INVALID,
+                validator: (value) => !value || REGEX.TEMPORARY_CUSTOMER_ID.test(value),
+                message: MESSAGES.TEMPORARY_CUSTOMER_ID_INVALID,
             },
             sparse: true,
             unique: true,
@@ -41,8 +43,8 @@ const customerSchema = new Schema(
             trim: true,
             validate: [
                 {
-                    validator: (value) => !value || havmorPlatformCustomerIdRegex.test(value),
-                    message: errorMessages.CUSTOMER_ID_INVALID,
+                    validator: (value) => !value || REGEX.HAVMOR_PLATFORM_CUSTOMER_ID.test(value),
+                    message: MESSAGES.CUSTOMER_ID_INVALID,
                 },
             ],
             sparse: true,
@@ -50,9 +52,9 @@ const customerSchema = new Schema(
         },
         shopName: {
             type: String,
-            required: [true, errorMessages.REQUIRED(fields.shopName)],
-            minlength: [2, errorMessages.MIN_LENGTH(fields.shopName, 2)],
-            maxlength: [100, errorMessages.MAX_LENGTH(fields.shopName, 100)],
+            required: [true, MESSAGES.REQUIRED(FIELDS.SHOP_NAME)],
+            minlength: [2, MESSAGES.MIN_LENGTH(FIELDS.SHOP_NAME, 2)],
+            maxlength: [100, MESSAGES.MAX_LENGTH(FIELDS.SHOP_NAME, 100)],
             trim: true,
             lowercase: true,
         },
@@ -63,11 +65,11 @@ const customerSchema = new Schema(
             validate: [
                 {
                     validator: (value) => !value || value.length >= 2,
-                    message: errorMessages.MIN_LENGTH(fields.firstName, 2),
+                    message: MESSAGES.MIN_LENGTH(FIELDS.FIRST_NAME, 2),
                 },
                 {
                     validator: (value) => !value || value.length <= 50,
-                    message: errorMessages.MAX_LENGTH(fields.firstName, 50),
+                    message: MESSAGES.MAX_LENGTH(FIELDS.FIRST_NAME, 50),
                 },
             ],
         },
@@ -78,11 +80,11 @@ const customerSchema = new Schema(
             validate: [
                 {
                     validator: (value) => !value || value.length >= 2,
-                    message: errorMessages.MIN_LENGTH(fields.lastName, 2),
+                    message: MESSAGES.MIN_LENGTH(FIELDS.LAST_NAME, 2),
                 },
                 {
                     validator: (value) => !value || value.length <= 50,
-                    message: errorMessages.MAX_LENGTH(fields.lastName, 50),
+                    message: MESSAGES.MAX_LENGTH(FIELDS.LAST_NAME, 50),
                 },
             ],
         },
@@ -92,8 +94,8 @@ const customerSchema = new Schema(
             lowercase: true,
             validate: [
                 {
-                    validator: (value) => !value || emailRegex.test(value),
-                    message: errorMessages.EMAIL_INVALID,
+                    validator: (value) => !value || REGEX.EMAIL.test(value),
+                    message: MESSAGES.EMAIL_INVALID,
                 },
             ],
         },
@@ -104,18 +106,18 @@ const customerSchema = new Schema(
          */
         phone: {
             type: String,
-            required: [true, errorMessages.REQUIRED(fields.phone)],
+            required: [true, MESSAGES.REQUIRED(FIELDS.PHONE)],
             trim: true,
             set: (value) => {
                 // Normalize value to 10 digits
                 const digits = value?.startsWith("+91") ? value.slice(3) : value;
 
                 // Validate using regex
-                if (!phoneRegex.test(digits)) {
+                if (!REGEX.PHONE.test(digits)) {
                     // Instead of plain Error, throw ApiError
                     throw new ApiError(
                         StatusCodes.BAD_REQUEST,
-                        errorMessages.PHONE_INVALID
+                        MESSAGES.PHONE_INVALID
                     );
                 }
 
@@ -129,8 +131,8 @@ const customerSchema = new Schema(
             uppercase: true,
             validate: [
                 {
-                    validator: (value) => !value || panCardRegex.test(value),
-                    message: errorMessages.PAN_CARD_INVALID,
+                    validator: (value) => !value || REGEX.PAN_CARD.test(value),
+                    message: MESSAGES.PAN_CARD_INVALID,
                 },
             ],
         },
@@ -140,15 +142,15 @@ const customerSchema = new Schema(
             uppercase: true,
             validate: [
                 {
-                    validator: (value) => !value || gstinNumberRegex.test(value),
-                    message: errorMessages.GSTIN_NUMBER_INVALID,
+                    validator: (value) => !value || REGEX.GSTIN_NUMBER.test(value),
+                    message: MESSAGES.GSTIN_NUMBER_INVALID,
                 },
             ],
         },
         customerAddress: {
             type: Schema.Types.ObjectId,
             ref: "Address",
-            required: [true, errorMessages.REQUIRED(fields.customerAddress)],
+            required: [true, MESSAGES.REQUIRED(FIELDS.CUSTOMER_ADDRESS)],
         },
     },
     {

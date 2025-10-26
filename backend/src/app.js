@@ -4,9 +4,12 @@ import morgan from "morgan";
 import { StatusCodes } from "http-status-codes";
 import cookieParser from 'cookie-parser';
 
-import logger from "./utils/logger.js";
-import { ApiError } from "./utils/ApiError.js";
 import { errorMiddleware } from "./middlewares/error.middleware.js";
+
+import {
+    logger,
+    ApiError
+} from "./utils/index.js";
 
 import healthCheckRouter from "./routes/healthCheck.route.js";
 import userRouter from "./routes/user.route.js";

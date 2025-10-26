@@ -1,11 +1,13 @@
 import { StatusCodes, ReasonPhrases } from "http-status-codes";
 import jwt from "jsonwebtoken";
 
-import { asyncHandler } from "../utils/asyncHandler.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
-import { ApiError } from "../utils/ApiError.js";
-import logger from "../utils/logger.js";
-import { fields } from "../utils/fields.js";
+import {
+    asyncHandler,
+    ApiResponse,
+    ApiError,
+    logger,
+    FIELDS
+} from "../utils/index.js";
 
 import { User } from "../models/user.model.js";
 
@@ -60,7 +62,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
         const existingUser = await User.findOne({ $or: [{ email }, { username }] });
 
         if (existingUser) {
-            throw new ApiError(StatusCodes.CONFLICT, ReasonPhrases.CONFLICT, [`${fields.email} or ${fields.username} already exists`]);
+            throw new ApiError(StatusCodes.CONFLICT, ReasonPhrases.CONFLICT, [`${FIELDS.EMAIL} or ${FIELDS.USERNAME} already exists`]);
         }
 
         // 2. Create new user
@@ -77,7 +79,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
 
         logger.info(`New user registered: ${user.email} (id: ${user._id})`);
 
-        // 3. Send response (exclude sensitive fields) [WITHOUT tokens]
+        // 3. Send response (exclude sensitive FIELDS) [WITHOUT tokens]
         return res.status(StatusCodes.CREATED).json(
             new ApiResponse(
                 StatusCodes.CREATED,
@@ -440,4 +442,12 @@ const refreshTokens = asyncHandler(async (req, res, next) => {
     }
 });
 
-export { registerUser, loginUser, logoutUser, fetchSecurityQuestion, validateSecurityAnswerController, resetUserPassword, refreshTokens };
+export {
+    registerUser,
+    loginUser,
+    logoutUser,
+    fetchSecurityQuestion,
+    validateSecurityAnswerController,
+    resetUserPassword,
+    refreshTokens
+};

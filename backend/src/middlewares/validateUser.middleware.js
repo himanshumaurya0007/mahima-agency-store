@@ -1,9 +1,17 @@
 import { StatusCodes } from "http-status-codes";
 
-import { ApiError } from "../utils/ApiError.js";
-import logger from "../utils/logger.js";
+import {
+    ApiError,
+    logger
+} from "../utils/index.js";
 
-import { registerValidationSchema, loginValidationSchema, securityQuestionValidationSchema, securityAnswerValidationSchema, resetPasswordValidationSchema } from "../validations/user.validation.js";
+import {
+    registerValidationSchema,
+    loginValidationSchema,
+    securityQuestionValidationSchema,
+    securityAnswerValidationSchema,
+    resetPasswordValidationSchema
+} from "../validations/user.validation.js";
 
 /**
  * Generic validator middleware
@@ -42,4 +50,10 @@ const validateSecurityQuestion = validate(securityQuestionValidationSchema, "Sec
 const validateSecurityAnswer = validate(securityAnswerValidationSchema, "Security Answer");
 const validateResetPassword = validate(resetPasswordValidationSchema, "Reset Password");
 
-export { validateRegister, validateLogin, validateSecurityQuestion, validateSecurityAnswer, validateResetPassword };
+export {
+    validateRegister,
+    validateLogin,
+    validateSecurityQuestion,
+    validateSecurityAnswer,
+    validateResetPassword
+};

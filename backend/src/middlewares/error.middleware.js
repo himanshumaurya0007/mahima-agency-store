@@ -1,6 +1,12 @@
 // src/middlewares/error.middleware.js
 import { StatusCodes, ReasonPhrases } from "http-status-codes";
-import { ApiError, ApiResponse, mongooseErrorHandler, logger } from "../utils/core/index.js";
+
+import {
+    ApiError,
+    ApiResponse,
+    mongooseErrorHandler,
+    logger
+} from "../utils/index.js";
 
 /**
  * Global centralized error-handling middleware.

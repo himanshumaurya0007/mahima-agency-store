@@ -1,12 +1,13 @@
 import mongoose from "mongoose";
 import { StatusCodes, ReasonPhrases } from "http-status-codes";
 
-import { asyncHandler } from "../utils/asyncHandler.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
-import { ApiError } from "../utils/ApiError.js";
-import logger from "../utils/logger.js";
-import { fields } from "../utils/fields.js";
-
+import {
+    asyncHandler,
+    ApiResponse,
+    ApiError,
+    logger,
+    FIELDS
+} from "../utils/index.js";
 import { Customer } from "../models/customer.model.js";
 import { Address } from "../models/address.model.js";
 
@@ -42,7 +43,7 @@ const addCustomer = asyncHandler(async (req, res, next) => {
                 StatusCodes.BAD_REQUEST,
                 ReasonPhrases.BAD_REQUEST,
                 [
-                    `${fields.havmorPlatformCustomerId} and ${fields.temporaryCustomerId} must not be the same value.`
+                    `${FIELDS.HAVMOR_PLATFORM_CUSTOMER_ID} and ${FIELDS.TEMPORARY_CUSTOMER_ID} must not be the same value.`
                 ]
             );
         }
@@ -58,7 +59,7 @@ const addCustomer = asyncHandler(async (req, res, next) => {
                 throw new ApiError(
                     StatusCodes.CONFLICT,
                     ReasonPhrases.CONFLICT,
-                    [`Provided ${fields.havmorPlatformCustomerId} already exists as a ${fields.temporaryCustomerId}.`]
+                    [`Provided ${FIELDS.HAVMOR_PLATFORM_CUSTOMER_ID} already exists as a ${FIELDS.TEMPORARY_CUSTOMER_ID}.`]
                 );
             }
         }
@@ -73,7 +74,7 @@ const addCustomer = asyncHandler(async (req, res, next) => {
                 throw new ApiError(
                     StatusCodes.CONFLICT,
                     ReasonPhrases.CONFLICT,
-                    [`Provided ${fields.temporaryCustomerId} already exists as a ${fields.havmorPlatformCustomerId}.`]
+                    [`Provided ${FIELDS.TEMPORARY_CUSTOMER_ID} already exists as a ${FIELDS.HAVMOR_PLATFORM_CUSTOMER_ID}.`]
                 );
             }
         }
@@ -165,11 +166,11 @@ const addCustomer = asyncHandler(async (req, res, next) => {
 
             let message;
             if (duplicateField === "temporaryCustomerId") {
-                message = `Duplicate ${fields.temporaryCustomerId}: This temporary ID already exists.`;
+                message = `Duplicate ${FIELDS.TEMPORARY_CUSTOMER_ID}: This temporary ID already exists.`;
             } else if (duplicateField === "havmorPlatformCustomerId") {
-                message = `Duplicate ${fields.havmorPlatformCustomerId}: This ID already exists.`;
+                message = `Duplicate ${FIELDS.HAVMOR_PLATFORM_CUSTOMER_ID}: This ID already exists.`;
             } else if (duplicateField === "phone") {
-                message = `Duplicate ${fields.phone}: This phone already exists for this user.`;
+                message = `Duplicate ${FIELDS.PHONE}: This phone already exists for this user.`;
             } else {
                 message = "Duplicate key error.";
             }
@@ -396,7 +397,7 @@ const updateCustomer = asyncHandler(async (req, res, next) => {
                 StatusCodes.BAD_REQUEST,
                 ReasonPhrases.BAD_REQUEST,
                 [
-                    `${fields.havmorPlatformCustomerId} and ${fields.temporaryCustomerId} must not be the same value.`
+                    `${FIELDS.HAVMOR_PLATFORM_CUSTOMER_ID} and ${FIELDS.TEMPORARY_CUSTOMER_ID} must not be the same value.`
                 ]
             );
         }
@@ -413,7 +414,7 @@ const updateCustomer = asyncHandler(async (req, res, next) => {
                 throw new ApiError(
                     StatusCodes.CONFLICT,
                     ReasonPhrases.CONFLICT,
-                    [`Provided ${fields.havmorPlatformCustomerId} already exists as a ${fields.temporaryCustomerId}.`]
+                    [`Provided ${FIELDS.HAVMOR_PLATFORM_CUSTOMER_ID} already exists as a ${FIELDS.TEMPORARY_CUSTOMER_ID}.`]
                 );
             }
         }
@@ -429,7 +430,7 @@ const updateCustomer = asyncHandler(async (req, res, next) => {
                 throw new ApiError(
                     StatusCodes.CONFLICT,
                     ReasonPhrases.CONFLICT,
-                    [`Provided ${fields.temporaryCustomerId} already exists as a ${fields.havmorPlatformCustomerId}.`]
+                    [`Provided ${FIELDS.TEMPORARY_CUSTOMER_ID} already exists as a ${FIELDS.HAVMOR_PLATFORM_CUSTOMER_ID}.`]
                 );
             }
         }
@@ -521,11 +522,11 @@ const updateCustomer = asyncHandler(async (req, res, next) => {
 
             let message;
             if (duplicateField === "temporaryCustomerId") {
-                message = `Duplicate ${fields.temporaryCustomerId}: This temporary ID already exists.`;
+                message = `Duplicate ${FIELDS.TEMPORARY_CUSTOMER_ID}: This temporary ID already exists.`;
             } else if (duplicateField === "havmorPlatformCustomerId") {
-                message = `Duplicate ${fields.havmorPlatformCustomerId}: This ID already exists.`;
+                message = `Duplicate ${FIELDS.HAVMOR_PLATFORM_CUSTOMER_ID}: This ID already exists.`;
             } else if (duplicateField === "phone") {
-                message = `Duplicate ${fields.phone}: This phone already exists for this user.`;
+                message = `Duplicate ${FIELDS.PHONE}: This phone already exists for this user.`;
             } else {
                 message = "Duplicate key error.";
             }
@@ -645,4 +646,10 @@ const deleteCustomer = asyncHandler(async (req, res, next) => {
     }
 });
 
-export { addCustomer, getAllCustomers, getCustomerById, updateCustomer, deleteCustomer };
+export {
+    addCustomer,
+    getAllCustomers,
+    getCustomerById,
+    updateCustomer,
+    deleteCustomer
+};

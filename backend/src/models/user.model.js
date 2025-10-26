@@ -2,86 +2,88 @@ import mongoose, { Schema } from "mongoose";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
-import { fields } from "../utils/fields.js";
-import { emailRegex, phoneRegex, usernameRegex, passwordRegex } from "../utils/regex.js";
-import { errorMessages } from "../utils/errorMessages.js";
-import { SECURITY_QUESTIONS } from "../constants.js";
+import {
+    ENUMS,
+    FIELDS,
+    REGEX,
+    MESSAGES
+} from "../utils/index.js";
 
 const userSchema = new Schema(
     {
         firstName: {
             type: String,
-            required: [true, errorMessages.REQUIRED(fields.firstName)],
-            minlength: [2, errorMessages.MIN_LENGTH(fields.firstName, 2)],
-            maxlength: [50, errorMessages.MAX_LENGTH(fields.firstName, 50)],
+            required: [true, MESSAGES.REQUIRED(FIELDS.FIRST_NAME)],
+            minlength: [2, MESSAGES.MIN_LENGTH(FIELDS.FIRST_NAME, 2)],
+            maxlength: [50, MESSAGES.MAX_LENGTH(FIELDS.FIRST_NAME, 50)],
             trim: true,
             lowercase: true,
         },
         lastName: {
             type: String,
-            required: [true, errorMessages.REQUIRED(fields.lastName)],
-            minlength: [2, errorMessages.MIN_LENGTH(fields.lastName, 2)],
-            maxlength: [50, errorMessages.MAX_LENGTH(fields.lastName, 50)],
+            required: [true, MESSAGES.REQUIRED(FIELDS.LAST_NAME)],
+            minlength: [2, MESSAGES.MIN_LENGTH(FIELDS.LAST_NAME, 2)],
+            maxlength: [50, MESSAGES.MAX_LENGTH(FIELDS.LAST_NAME, 50)],
             trim: true,
             lowercase: true,
         },
         email: {
             type: String,
-            required: [true, errorMessages.REQUIRED(fields.email)],
+            required: [true, MESSAGES.REQUIRED(FIELDS.EMAIL)],
             trim: true,
             lowercase: true,
             unique: true,
             validate: {
-                validator: (v) => emailRegex.test(v),
-                message: errorMessages.EMAIL_INVALID,
+                validator: (v) => REGEX.EMAIL.test(v),
+                message: MESSAGES.EMAIL_INVALID,
             },
         },
         phone: {
             type: String,
-            required: [true, errorMessages.REQUIRED(fields.phone)],
+            required: [true, MESSAGES.REQUIRED(FIELDS.PHONE)],
             trim: true,
             validate: {
-                validator: (v) => phoneRegex.test(v),
-                message: errorMessages.PHONE_INVALID,
+                validator: (v) => REGEX.PHONE.test(v),
+                message: MESSAGES.PHONE_INVALID,
             },
         },
         username: {
             type: String,
-            required: [true, errorMessages.REQUIRED(fields.username)],
-            minlength: [3, errorMessages.MIN_LENGTH(fields.username, 3)],
-            maxlength: [30, errorMessages.MAX_LENGTH(fields.username, 30)],
+            required: [true, MESSAGES.REQUIRED(FIELDS.USERNAME)],
+            minlength: [3, MESSAGES.MIN_LENGTH(FIELDS.USERNAME, 3)],
+            maxlength: [30, MESSAGES.MAX_LENGTH(FIELDS.USERNAME, 30)],
             trim: true,
             lowercase: true,
             unique: true,
             validate: {
-                validator: (v) => usernameRegex.test(v),
-                message: errorMessages.USERNAME_INVALID,
+                validator: (v) => REGEX.USERNAME.test(v),
+                message: MESSAGES.USERNAME_INVALID,
             },
         },
         securityQuestion: {
             type: String,
             enum: {
-                values: SECURITY_QUESTIONS,
-                message: `Invalid ${fields.securityQuestion}`,
+                values: ENUMS.SECURITY_QUESTIONS,
+                message: `Invalid ${FIELDS.SECURITY_QUESTION}`,
             },
-            required: [true, errorMessages.REQUIRED(fields.securityQuestion)],
+            required: [true, MESSAGES.REQUIRED(FIELDS.SECURITY_QUESTION)],
         },
         securityAnswer: {
             type: String,
-            required: [true, errorMessages.REQUIRED(fields.securityAnswer)],
-            minlength: [3, errorMessages.MIN_LENGTH(fields.securityAnswer, 3)],
-            maxlength: [50, errorMessages.MAX_LENGTH(fields.securityAnswer, 50)],
+            required: [true, MESSAGES.REQUIRED(FIELDS.SECURITY_ANSWER)],
+            minlength: [3, MESSAGES.MIN_LENGTH(FIELDS.SECURITY_ANSWER, 3)],
+            maxlength: [50, MESSAGES.MAX_LENGTH(FIELDS.SECURITY_ANSWER, 50)],
             trim: true,
         },
         password: {
             type: String,
-            required: [true, errorMessages.REQUIRED(fields.password)],
-            minlength: [8, errorMessages.MIN_LENGTH(fields.password, 8)],
-            maxlength: [100, errorMessages.MAX_LENGTH(fields.password, 100)],
+            required: [true, MESSAGES.REQUIRED(FIELDS.PASSWORD)],
+            minlength: [8, MESSAGES.MIN_LENGTH(FIELDS.PASSWORD, 8)],
+            maxlength: [100, MESSAGES.MAX_LENGTH(FIELDS.PASSWORD, 100)],
             trim: true,
             validate: {
-                validator: (v) => passwordRegex.test(v),
-                message: errorMessages.PASSWORD_INVALID,
+                validator: (v) => REGEX.PASSWORD.test(v),
+                message: MESSAGES.PASSWORD_INVALID,
             },
         },
         refreshToken: {
@@ -103,7 +105,7 @@ userSchema.pre("save", async function (next) {
                 this.phone = `+91${this.phone}`;
             }
         }
-        
+
         // Hash password if modified
         if (this.isModified("password")) {
             this.password = await bcrypt.hash(this.password, saltRounds);
