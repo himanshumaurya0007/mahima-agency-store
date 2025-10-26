@@ -51,6 +51,9 @@ export const setAuthCookies = (res, accessToken, refreshToken) => {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
+        path: "/",
+        // maxAge: process.env.REFRESH_TOKEN_MAX_AGE || 7 * 24 * 60 * 60 * 1000,
+        maxAge: process.env.REFRESH_TOKEN_MAX_AGE || 604800000,
     };
 
     res
@@ -59,6 +62,8 @@ export const setAuthCookies = (res, accessToken, refreshToken) => {
 };
 
 export const findUserByEmailOrUsername = async (query = {}, selectFields = "") => {
-    const { email, username } = query;
-    return User.findOne({ $or: [{ email }, { username }] }).select(selectFields);
+    const filters = [];
+    if (query.email) filters.push({ email: query.email });
+    if (query.username) filters.push({ username: query.username });
+    return User.findOne({ $or: filters }).select(selectFields);
 }
