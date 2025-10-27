@@ -653,36 +653,71 @@ p {
 .login .input-container input[type='password']:not(:placeholder-shown) ~ .topline {
   width: 66%;
 }
-
-/* Topline Width For Forgot Password */
-
-/* For Step 1 */
-
-.forgot-password .step-1 .input-container input[type='text']:focus ~ .topline,
-.forgot-password .step-1 .input-container input[type='text']:not(:placeholder-shown) ~ .topline {
+/* Step 1: Username/Email Input */
+.forgot-password .step-1 .input-container input:focus ~ .topline,
+.forgot-password .step-1 .input-container input:not(:placeholder-shown) ~ .topline {
   width: 47%;
 }
 
-.forgot-password .step-1 .input-container input[type='email']:focus ~ .topline,
-.forgot-password .step-1 .input-container input[type='email']:not(:placeholder-shown) ~ .topline {
-  width: 37%;
-}
-
-/* For Step 2 */
-
-.forgot-password .step-2 .input-container:nth-child(1) input[type='password']:focus ~ .topline,
-.forgot-password .step-2 .input-container:nth-child(1) input[type='password']:not(:placeholder-shown) ~ .topline {
+/* Step 2: Security Answer Input */
+.forgot-password .step-2 .input-container input:focus ~ .topline,
+.forgot-password .step-2 .input-container input:not(:placeholder-shown) ~ .topline {
   width: 45%;
 }
 
-/* For Step 3 */
-
-.forgot-password .step-3 .input-container input[type='text']:focus ~ .topline,
-.forgot-password .step-3 .input-container input[type='text']:not(:placeholder-shown) ~ .topline {
-  width: 55%;
+/* Step 3: New Password Input */
+.forgot-password .step-3 .input-container:first-of-type input:focus ~ .topline,
+.forgot-password .step-3 .input-container:first-of-type input:not(:placeholder-shown) ~ .topline {
+  width: 48%;
 }
 
-.forgot-password .step-3 .input-container:nth-child(2) input[type='password']:focus ~ .topline,
-.forgot-password .step-3 .input-container:nth-child(2) input[type='password']:not(:placeholder-shown) ~ .topline {
+/* Step 3: Confirm Password Input */
+.forgot-password .step-3 .input-container:last-of-type input:focus ~ .topline,
+.forgot-password .step-3 .input-container:last-of-type input:not(:placeholder-shown) ~ .topline {
   width: 45%;
 }
+
+/* Additional smooth animations */
+@layer utilities {
+  /* Hover lift effect for cards */
+  .hover-lift {
+    @apply transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg;
+  }
+
+  /* Hover scale effect for buttons/cards */
+  .hover-scale {
+    @apply transition-transform duration-300 ease-in-out hover:scale-105;
+  }
+
+  /* Smooth transition utility */
+  .smooth-transition {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  /* Skeleton pulse animation */
+  .skeleton {
+    @apply animate-pulse bg-gray-200 rounded;
+  }
+}
+
+
+/* AuthInput Topline Animations
+.input-container input:focus ~ .topline,
+.input-container input:not(:placeholder-shown) ~ .topline,
+.input-container select:focus ~ .topline,
+.input-container select:not([value=""]) ~ .topline {
+  width: var(--topline-width, 50%);
+}
+
+/* Label float on focus/filled */
+/* .input-container input:focus ~ .label,
+.input-container input:not(:placeholder-shown) ~ .label,
+.input-container select:focus ~ .label,
+.input-container select:not([value=""]) ~ .label {
+  top: -0.8rem;
+  left: 1rem;
+  font-size: 0.75rem;
+  color: #111111;
+  background-color: #fff4e6;
+  padding: 0 0.25rem;
+} */

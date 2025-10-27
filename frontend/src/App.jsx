@@ -1,42 +1,50 @@
+// src/App.jsx
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 
+// User Components
 import Register from './components/user/Register';
 import LogIn from './components/user/LogIn';
 import Dashboard from './components/user/Dashboard';
-import ForgetPassword from './components/user/ForgotPassword';
+import ForgotPassword from './components/user/ForgotPassword';
+
+// Customer Components
 import CustomersList from './components/customer/CustomersList';
 import AddCustomer from './components/customer/AddCustomer';
 import UpdateCustomer from './components/customer/UpdateCustomer';
+
+// Test Component
 import Test from './Test';
 
 const App = () => {
   return (
     <div>
       <Routes>
-        {/* Redirect root → /register */}
+        {/* Redirect root to register */}
         <Route path="/" element={<Navigate to="/register" replace />} />
 
         {/* User Routes */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<LogIn />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/reset-password" element={<ForgetPassword />} />
+        <Route path="/reset-password" element={<ForgotPassword />} />
 
         {/* Customer Routes */}
         <Route path="/customers" element={<CustomersList />} />
         <Route path="/customers/add" element={<AddCustomer />} />
-        <Route path="/customers/edit/:customerId" element={<UpdateCustomer />} />
+        
+        {/* FIXED: Changed :id to :customerId to match UpdateCustomer component */}
+        <Route path="/customers/update/:customerId" element={<UpdateCustomer />} />
 
         {/* Test Route */}
         <Route path="/test" element={<Test />} />
 
-        {/* Catch all other routes - redirect to login */}
+        {/* Catch-all: redirect to login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
 
-      {/* Toast Notification */}
+      {/* Toast Notifications */}
       <Toaster
         position="top-right"
         toastOptions={{

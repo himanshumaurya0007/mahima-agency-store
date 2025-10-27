@@ -18,15 +18,15 @@ class ApiError extends Error {
     }
   }
 
-  static fromAxios(error) {
-    if (error.response) {
-      // Server responded with error
-      return new ApiError(
-        error.response.status,
-        error.response.data?.message || 'Request failed',
-        error.response.data?.errors || [],
-      );
-    }
+static fromAxios(error) {
+  if (error.response) {
+    return new ApiError(
+      error.response.status,
+      error.response.data?.message || 'Request failed',
+      error.response.data?.errors || [],
+      error.response.data // Store the full response data
+    );
+  }
     if (error.request) {
       // No response
       return new ApiError(503, 'No response from server');
