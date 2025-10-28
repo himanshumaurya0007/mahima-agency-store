@@ -55,26 +55,8 @@ export const ENUMS = {
         "TEMPORARY",
         "PERMANENT"
     ],
-
-    PRODUCT_CATEGORIES_WITH_CODES: [
-        { name: "BLOCKBUSTERS", code: "BB" },
-        { name: "BULKS", code: "BP" },
-        { name: "CANDIES", code: "CANDY" },
-        { name: "KULFIES", code: "KULFY" },
-        { name: "CONES", code: "CONE" },
-        { name: "BIG CUP", code: "B/C" },
-        { name: "JUMBO CUP", code: "J/C" },
-        { name: "CUPS", code: "CUP" },
-        { name: "NOVELTIES", code: "NOVELTY" },
-        { name: "COMBOS", code: "COMBO" },
-        { name: "TUBS", code: "TUB" },
-        { name: "CAKES", code: "CAKE" },
-    ],
 };
 
 // Derived arrays for Mongoose validation:
 export const INDIAN_STATE_NAMES = ENUMS.INDIAN_STATES_WITH_ABBREVIATIONS.map(s => s.name);
 export const INDIAN_STATE_CODES = ENUMS.INDIAN_STATES_WITH_ABBREVIATIONS.map(s => s.code);
-
-export const PRODUCT_CATEGORY_NAMES = ENUMS.PRODUCT_CATEGORIES_WITH_CODES.map(c => c.name);
-export const PRODUCT_CATEGORY_CODES = ENUMS.PRODUCT_CATEGORIES_WITH_CODES.map(c => c.code);

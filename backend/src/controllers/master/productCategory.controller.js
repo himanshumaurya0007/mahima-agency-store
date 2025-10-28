@@ -1,52 +1,54 @@
-// backend/src/controllers/master/productCategory.controller.js
+import { StatusCodes, ReasonPhrases } from "http-status-codes";
 
-import { StatusCodes } from "http-status-codes";
-import { productCategoryValidationSchema } from "../../validations/master/productCategory.validation.js";
 import {
-    asyncHandler,
     ApiResponse,
     ApiError,
+    asyncHandler,
     logger,
     mongooseErrorHandler,
-    MESSAGES,
-    FIELDS
+    FIELDS,
+    MESSAGES
 } from "../../utils/index.js";
+
 import { ProductCategory } from "../../models/master/productCategory.model.js";
 
 /**
  * ------------------------------------------------------------------------
- * 🎯 CREATE Product Category
- * @route POST /api/v1/master/product/category
- * @access Protected
+ * @route   POST /api/v1/master/product/category
+ * @desc    Create a new product category
+ * @access  Protected (JWT)
  * ------------------------------------------------------------------------
  */
-export const createProductCategory = asyncHandler(async (req, res, next) => {
-    const { error, value } = productCategoryValidationSchema.validate(req.body, { abortEarly: false });
-
-    if (error) {
-        logger.warn(`[ProductCategory] Validation failed: ${error.message}`);
-        throw new ApiError(
-            StatusCodes.BAD_REQUEST,
-            MESSAGES.BAD_REQUEST,
-            error.details.map((d) => d.message)
-        );
-    }
-
-    const { category, categoryCode } = value;
-
+const createProductCategory = asyncHandler(async (req, res, next) => {
     try {
-        // Check for existing category
-        const existing = await ProductCategory.findOne({ category });
-        if (existing) {
-            throw new ApiError(
-                StatusCodes.CONFLICT,
-                MESSAGES.DUPLICATE_VALUE(FIELDS.PRODUCT_CATEGORY)
+        const { name, code } = req.body;
+
+        // ✅ Check for duplicate category
+        const existingCategory = await ProductCategory.findOne({
+            $or: [{ name }, { code }]
+        });
+
+        if (existingCategory) {
+            logger.warn(`Duplicate Product Category creation attempt`, { name, code });
+
+            return next(
+                new ApiError(
+                    StatusCodes.CONFLICT,
+                    MESSAGES.DUPLICATE_VALUE(FIELDS.PRODUCT_CATEGORY),
+                    [
+                        existingCategory.name === name
+                            ? `${FIELDS.PRODUCT_CATEGORY} '${name}' already exists`
+                            : `${FIELDS.PRODUCT_CATEGORY_CODE} '${code}' already exists`
+                    ]
+                )
             );
         }
 
-        const newCategory = await ProductCategory.create({ category, categoryCode });
+        // ✅ Create new category
+        const newCategory = await ProductCategory.create({ name, code });
 
-        logger.info(`[ProductCategory] Created: ${category} (${categoryCode})`);
+        logger.info(`Product Category created`, { id: newCategory._id, name, code });
+
         return res
             .status(StatusCodes.CREATED)
             .json(
@@ -56,164 +58,135 @@ export const createProductCategory = asyncHandler(async (req, res, next) => {
                     `${FIELDS.PRODUCT_CATEGORY} created successfully`
                 )
             );
-    } catch (err) {
-        const handledError = mongooseErrorHandler(err) || ApiError.fromUnknown(err);
-        return next(handledError);
+    } catch (error) {
+        const formattedError = mongooseErrorHandler(error) || ApiError.fromUnknown(error);
+        next(formattedError);
     }
 });
 
 /**
  * ------------------------------------------------------------------------
- * 📋 GET All Product Categories
- * @route GET /api/v1/master/product/category
- * @access Protected
+ * @route   GET /api/v1/master/product/category
+ * @desc    Retrieve all product categories
+ * @access  Protected (JWT)
  * ------------------------------------------------------------------------
  */
-export const getAllProductCategories = asyncHandler(async (req, res, next) => {
+const getAllProductCategories = asyncHandler(async (req, res, next) => {
     try {
-        const categories = await ProductCategory.find().sort({ category: 1 });
+        const categories = await ProductCategory.find().sort({ name: 1 }); // sorted alphabetically
 
-        if (!categories || categories.length === 0) {
-            throw new ApiError(StatusCodes.NOT_FOUND, MESSAGES.NOT_FOUND(FIELDS.PRODUCT_CATEGORY));
+        if (!categories.length) {
+            logger.info("No product categories found in the database.");
+            return res
+                .status(StatusCodes.OK)
+                .json(
+                    new ApiResponse(
+                        StatusCodes.OK,
+                        [],
+                        `${FIELDS.PRODUCT_CATEGORY}s not found`
+                    )
+                );
         }
 
+        logger.info(`Fetched ${categories.length} product categories`);
         return res
             .status(StatusCodes.OK)
             .json(
                 new ApiResponse(
                     StatusCodes.OK,
                     categories,
-                    `${FIELDS.PRODUCT_CATEGORY} fetched successfully`
+                    `${FIELDS.PRODUCT_CATEGORY}s retrieved successfully`
                 )
             );
-    } catch (err) {
-        const handledError = mongooseErrorHandler(err) || ApiError.fromUnknown(err);
-        return next(handledError);
+    } catch (error) {
+        const formattedError = mongooseErrorHandler(error) || ApiError.fromUnknown(error);
+        next(formattedError);
     }
 });
 
 /**
  * ------------------------------------------------------------------------
- * 🔍 GET Product Category by ID
- * @route GET /api/v1/master/product/category/:id
- * @access Protected
+ * @route   GET /api/v1/master/product/category/:id
+ * @desc    Retrieve a specific product category by ID
+ * @access  Protected (JWT)
  * ------------------------------------------------------------------------
  */
-export const getProductCategoryById = asyncHandler(async (req, res, next) => {
-    const { id } = req.params;
-
+const getProductCategoryById = asyncHandler(async (req, res, next) => {
     try {
+        const { id } = req.params;
+
         const category = await ProductCategory.findById(id);
         if (!category) {
-            throw new ApiError(StatusCodes.NOT_FOUND, MESSAGES.NOT_FOUND(FIELDS.PRODUCT_CATEGORY));
+            logger.warn(`Product Category not found`, { id });
+            return next(
+                new ApiError(
+                    StatusCodes.NOT_FOUND,
+                    MESSAGES.NOT_FOUND(FIELDS.PRODUCT_CATEGORY),
+                    [`${FIELDS.PRODUCT_CATEGORY} with ID '${id}' not found`]
+                )
+            );
         }
 
+        logger.info(`Fetched Product Category`, { id });
         return res
             .status(StatusCodes.OK)
             .json(
                 new ApiResponse(
                     StatusCodes.OK,
                     category,
-                    `${FIELDS.PRODUCT_CATEGORY} fetched successfully`
+                    `${FIELDS.PRODUCT_CATEGORY} retrieved successfully`
                 )
             );
-    } catch (err) {
-        const handledError = mongooseErrorHandler(err) || ApiError.fromUnknown(err);
-        return next(handledError);
+    } catch (error) {
+        const formattedError = mongooseErrorHandler(error) || ApiError.fromUnknown(error);
+        next(formattedError);
     }
 });
 
 /**
  * ------------------------------------------------------------------------
- * ✏️ UPDATE Product Category
- * @route PUT /api/v1/master/product/category/:id
- * @access Protected
+ * @route   DELETE /api/v1/master/product/category/:id
+ * @desc    Delete a specific product category by ID
+ * @access  Protected (JWT)
  * ------------------------------------------------------------------------
  */
-// export const updateProductCategory = asyncHandler(async (req, res, next) => {
-//     const { id } = req.params;
-//     const { error, value } = productCategoryValidationSchema.validate(req.body, { abortEarly: false });
-
-//     if (error) {
-//         logger.warn(`[ProductCategory] Validation failed (Update): ${error.message}`);
-//         throw new ApiError(
-//             StatusCodes.BAD_REQUEST,
-//             MESSAGES.BAD_REQUEST,
-//             error.details.map((d) => d.message)
-//         );
-//     }
-
-//     const { category, categoryCode } = value;
-
-//     try {
-//         const existing = await ProductCategory.findOne({
-//             category,
-//             _id: { $ne: id }, // Prevent self-duplication
-//         });
-
-//         if (existing) {
-//             throw new ApiError(
-//                 StatusCodes.CONFLICT,
-//                 MESSAGES.DUPLICATE_VALUE(FIELDS.PRODUCT_CATEGORY)
-//             );
-//         }
-
-//         const updated = await ProductCategory.findByIdAndUpdate(
-//             id,
-//             { category, categoryCode },
-//             { new: true, runValidators: true }
-//         );
-
-//         if (!updated) {
-//             throw new ApiError(StatusCodes.NOT_FOUND, MESSAGES.NOT_FOUND(FIELDS.PRODUCT_CATEGORY));
-//         }
-
-//         logger.info(`[ProductCategory] Updated: ${updated.category} (${updated.categoryCode})`);
-
-//         return res
-//             .status(StatusCodes.OK)
-//             .json(
-//                 new ApiResponse(
-//                     StatusCodes.OK,
-//                     updated,
-//                     `${FIELDS.PRODUCT_CATEGORY} updated successfully`
-//                 )
-//             );
-//     } catch (err) {
-//         const handledError = mongooseErrorHandler(err) || ApiError.fromUnknown(err);
-//         return next(handledError);
-//     }
-// });
-
-/**
- * ------------------------------------------------------------------------
- * 🗑️ DELETE Product Category by ID
- * @route DELETE /api/v1/master/product/category/:id
- * @access Protected
- * ------------------------------------------------------------------------
- */
-export const deleteProductCategory = asyncHandler(async (req, res, next) => {
-    const { id } = req.params;
-
+const deleteProductCategory = asyncHandler(async (req, res, next) => {
     try {
-        const deleted = await ProductCategory.findByIdAndDelete(id);
-        if (!deleted) {
-            throw new ApiError(StatusCodes.NOT_FOUND, MESSAGES.NOT_FOUND(FIELDS.PRODUCT_CATEGORY));
+        const { id } = req.params;
+
+        const category = await ProductCategory.findByIdAndDelete(id);
+
+        if (!category) {
+            logger.warn(`Attempted to delete non-existing Product Category`, { id });
+            return next(
+                new ApiError(
+                    StatusCodes.NOT_FOUND,
+                    MESSAGES.NOT_FOUND(FIELDS.PRODUCT_CATEGORY),
+                    [`${FIELDS.PRODUCT_CATEGORY} with ID '${id}' not found`]
+                )
+            );
         }
 
-        logger.info(`[ProductCategory] Deleted: ${deleted.category} (${deleted.categoryCode})`);
-
+        logger.info(`Deleted Product Category`, { id, name: category.name });
         return res
             .status(StatusCodes.OK)
             .json(
                 new ApiResponse(
                     StatusCodes.OK,
-                    null,
+                    category,
                     `${FIELDS.PRODUCT_CATEGORY} deleted successfully`
                 )
             );
-    } catch (err) {
-        const handledError = mongooseErrorHandler(err) || ApiError.fromUnknown(err);
-        return next(handledError);
+    } catch (error) {
+        const formattedError = mongooseErrorHandler(error) || ApiError.fromUnknown(error);
+        next(formattedError);
     }
 });
+
+
+export {
+    createProductCategory,
+    getAllProductCategories,
+    getProductCategoryById,
+    deleteProductCategory,
+}

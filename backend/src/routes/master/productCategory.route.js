@@ -8,7 +8,6 @@ import {
     getAllProductCategories,
     getProductCategoryById,
     deleteProductCategory,
-// } from "../controllers/master/productCategory.controller.js";
 } from "../../controllers/master/productCategory.controller.js";
 
 const router = Router();
