@@ -3,9 +3,9 @@ import { StatusCodes } from "http-status-codes";
 import {
     ApiError,
     logger
-} from "../utils/index.js";
+} from "../../utils/index.js";
 
-import { customerValidationSchema } from "../validations/customer.validation.js";
+import { customerValidationSchema } from "../../validations/customer.validation.js";
 
 /**
  * Generic validator middleware (reused for Customer)

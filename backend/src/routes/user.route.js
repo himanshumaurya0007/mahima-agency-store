@@ -6,7 +6,7 @@ import {
     validateSecurityQuestion,
     validateSecurityAnswer,
     validateResetPassword
-} from '../middlewares/validateUser.middleware.js';
+} from '../middlewares/validations/validateUser.middleware.js';
 import { verifyJWT } from "../middlewares/user.middleware.js";
 
 import {

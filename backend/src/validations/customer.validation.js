@@ -88,7 +88,7 @@ const customerValidationSchema = Joi.object({
         .trim()
         .required()
         .messages({
-            "string.empty": MESSAGES.REQUIRED(FIELDS.phone),
+            "string.empty": MESSAGES.REQUIRED(FIELDS.PHONE),
             "string.pattern.base": MESSAGES.PHONE_INVALID,
         }),
 

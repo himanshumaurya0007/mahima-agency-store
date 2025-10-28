@@ -3,7 +3,7 @@ import { StatusCodes } from "http-status-codes";
 import {
     ApiError,
     logger
-} from "../utils/index.js";
+} from "../../utils/index.js";
 
 import {
     registerValidationSchema,
@@ -11,7 +11,7 @@ import {
     securityQuestionValidationSchema,
     securityAnswerValidationSchema,
     resetPasswordValidationSchema
-} from "../validations/user.validation.js";
+} from "../../validations/user.validation.js";
 
 /**
  * Generic validator middleware

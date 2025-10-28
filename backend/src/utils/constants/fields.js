@@ -25,4 +25,7 @@ export const FIELDS = {
     INDIAN_STATE: "State",
     INDIAN_STATE_CODE: "State code",
     PIN_CODE: "PIN code",
+
+    PRODUCT_CATEGORY: "Product Category",
+    PRODUCT_CATEGORY_CODE: "Product Category Code"
 };
