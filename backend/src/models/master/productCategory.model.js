@@ -19,13 +19,16 @@ const productCategorySchema = new Schema(
             required: [true, MESSAGES.REQUIRED(FIELDS.PRODUCT_CATEGORY)],
             unique: true, // Enforce uniqueness at the DB level
         },
-
         code: {
             type: String,
             trim: true,
             uppercase: true,
             required: [true, MESSAGES.REQUIRED(FIELDS.PRODUCT_CATEGORY_CODE)],
-            immutable: true, // Prevent modifications after creation
+        },
+        isActive: {
+            type: Boolean,
+            default: true,
+            required: [true, MESSAGES.REQUIRED(FIELDS.IS_ACTIVE)],
         },
     },
     {

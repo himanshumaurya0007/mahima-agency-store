@@ -1,5 +1,4 @@
-import { StatusCodes, ReasonPhrases } from "http-status-codes";
-
+import { StatusCodes } from "http-status-codes";
 import {
     ApiResponse,
     ApiError,
@@ -7,7 +6,7 @@ import {
     logger,
     mongooseErrorHandler,
     FIELDS,
-    MESSAGES
+    MESSAGES,
 } from "../../utils/index.js";
 
 import { ProductCategory } from "../../models/master/productCategory.model.js";
@@ -25,7 +24,7 @@ const createProductCategory = asyncHandler(async (req, res, next) => {
 
         // ✅ Check for duplicate category
         const existingCategory = await ProductCategory.findOne({
-            $or: [{ name }, { code }]
+            $or: [{ name }, { code }],
         });
 
         if (existingCategory) {
@@ -38,14 +37,18 @@ const createProductCategory = asyncHandler(async (req, res, next) => {
                     [
                         existingCategory.name === name
                             ? `${FIELDS.PRODUCT_CATEGORY} '${name}' already exists`
-                            : `${FIELDS.PRODUCT_CATEGORY_CODE} '${code}' already exists`
+                            : `${FIELDS.PRODUCT_CATEGORY_CODE} '${code}' already exists`,
                     ]
                 )
             );
         }
 
         // ✅ Create new category
-        const newCategory = await ProductCategory.create({ name, code });
+        const newCategory = await ProductCategory.create({
+            name,
+            code,
+            isActive: true,
+        });
 
         logger.info(`Product Category created`, { id: newCategory._id, name, code });
 
@@ -59,7 +62,8 @@ const createProductCategory = asyncHandler(async (req, res, next) => {
                 )
             );
     } catch (error) {
-        const formattedError = mongooseErrorHandler(error) || ApiError.fromUnknown(error);
+        const formattedError =
+            mongooseErrorHandler(error) || ApiError.fromUnknown(error);
         next(formattedError);
     }
 });
@@ -67,16 +71,18 @@ const createProductCategory = asyncHandler(async (req, res, next) => {
 /**
  * ------------------------------------------------------------------------
  * @route   GET /api/v1/master/product/category
- * @desc    Retrieve all product categories
+ * @desc    Retrieve all active product categories
  * @access  Protected (JWT)
  * ------------------------------------------------------------------------
  */
 const getAllProductCategories = asyncHandler(async (req, res, next) => {
     try {
-        const categories = await ProductCategory.find().sort({ name: 1 }); // sorted alphabetically
+        const categories = await ProductCategory.find({ isActive: true }).sort({
+            name: 1,
+        });
 
         if (!categories.length) {
-            logger.info("No product categories found in the database.");
+            logger.info("No active product categories found.");
             return res
                 .status(StatusCodes.OK)
                 .json(
@@ -88,7 +94,7 @@ const getAllProductCategories = asyncHandler(async (req, res, next) => {
                 );
         }
 
-        logger.info(`Fetched ${categories.length} product categories`);
+        logger.info(`Fetched ${categories.length} active product categories`);
         return res
             .status(StatusCodes.OK)
             .json(
@@ -99,7 +105,8 @@ const getAllProductCategories = asyncHandler(async (req, res, next) => {
                 )
             );
     } catch (error) {
-        const formattedError = mongooseErrorHandler(error) || ApiError.fromUnknown(error);
+        const formattedError =
+            mongooseErrorHandler(error) || ApiError.fromUnknown(error);
         next(formattedError);
     }
 });
@@ -138,7 +145,68 @@ const getProductCategoryById = asyncHandler(async (req, res, next) => {
                 )
             );
     } catch (error) {
-        const formattedError = mongooseErrorHandler(error) || ApiError.fromUnknown(error);
+        const formattedError =
+            mongooseErrorHandler(error) || ApiError.fromUnknown(error);
+        next(formattedError);
+    }
+});
+
+/**
+ * ------------------------------------------------------------------------
+ * @route   PUT /api/v1/master/product/category/:id
+ * @desc    Soft delete (disable) or reactivate a Product Category
+ * @access  Protected (JWT)
+ * ------------------------------------------------------------------------
+ * Allows toggling isActive = false (disable) or true (reactivate)
+ * ------------------------------------------------------------------------
+ */
+const updateProductCategoryStatus = asyncHandler(async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { isActive } = req.body;
+
+        if (typeof isActive !== "boolean") {
+            return next(
+                new ApiError(
+                    StatusCodes.BAD_REQUEST,
+                    MESSAGES.INVALID_VALUE(FIELDS.IS_ACTIVE),
+                    [`${FIELDS.IS_ACTIVE} must be a boolean`]
+                )
+            );
+        }
+
+        const category = await ProductCategory.findByIdAndUpdate(
+            id,
+            { isActive },
+            { new: true }
+        );
+
+        if (!category) {
+            logger.warn(`Attempted to update status of non-existing category`, { id });
+            return next(
+                new ApiError(
+                    StatusCodes.NOT_FOUND,
+                    MESSAGES.NOT_FOUND(FIELDS.PRODUCT_CATEGORY),
+                    [`${FIELDS.PRODUCT_CATEGORY} with ID '${id}' not found`]
+                )
+            );
+        }
+
+        const action = isActive ? "re-activated" : "disabled";
+        logger.info(`Product Category ${action}`, { id, name: category.name });
+
+        return res
+            .status(StatusCodes.OK)
+            .json(
+                new ApiResponse(
+                    StatusCodes.OK,
+                    category,
+                    `${FIELDS.PRODUCT_CATEGORY} ${action} successfully`
+                )
+            );
+    } catch (error) {
+        const formattedError =
+            mongooseErrorHandler(error) || ApiError.fromUnknown(error);
         next(formattedError);
     }
 });
@@ -146,7 +214,7 @@ const getProductCategoryById = asyncHandler(async (req, res, next) => {
 /**
  * ------------------------------------------------------------------------
  * @route   DELETE /api/v1/master/product/category/:id
- * @desc    Delete a specific product category by ID
+ * @desc    Hard delete a product category by ID
  * @access  Protected (JWT)
  * ------------------------------------------------------------------------
  */
@@ -167,26 +235,27 @@ const deleteProductCategory = asyncHandler(async (req, res, next) => {
             );
         }
 
-        logger.info(`Deleted Product Category`, { id, name: category.name });
+        logger.info(`Hard deleted Product Category`, { id, name: category.name });
         return res
             .status(StatusCodes.OK)
             .json(
                 new ApiResponse(
                     StatusCodes.OK,
                     category,
-                    `${FIELDS.PRODUCT_CATEGORY} deleted successfully`
+                    `${FIELDS.PRODUCT_CATEGORY} permanently deleted successfully`
                 )
             );
     } catch (error) {
-        const formattedError = mongooseErrorHandler(error) || ApiError.fromUnknown(error);
+        const formattedError =
+            mongooseErrorHandler(error) || ApiError.fromUnknown(error);
         next(formattedError);
     }
 });
-
 
 export {
     createProductCategory,
     getAllProductCategories,
     getProductCategoryById,
+    updateProductCategoryStatus, // NEW: soft delete/reactivate handler
     deleteProductCategory,
-}
+};

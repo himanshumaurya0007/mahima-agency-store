@@ -7,6 +7,7 @@ import {
     createProductCategory,
     getAllProductCategories,
     getProductCategoryById,
+    updateProductCategoryStatus,
     deleteProductCategory,
 } from "../../controllers/master/productCategory.controller.js";
 
@@ -30,6 +31,7 @@ router
 router
     .route('/:id')
     .get(getProductCategoryById)
+    .put(updateProductCategoryStatus)
     .delete(deleteProductCategory);
 
 export default router;

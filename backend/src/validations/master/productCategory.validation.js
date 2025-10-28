@@ -11,8 +11,9 @@ import {
  * Ensures:
  *  - Both fields are required.
  *  - categoryCode auto-mapped from category.
+ * - Boolean validation for isActive (soft delete / activation flag).
  *  - Strict alignment with ProductCategory model validation.
- */backend/src/models/master/productPackSize.model.js
+ */
 const productCategoryValidationSchema = Joi.object({
     name: Joi.string()
         .trim()
@@ -34,6 +35,21 @@ const productCategoryValidationSchema = Joi.object({
             "any.required": MESSAGES.REQUIRED(FIELDS.PRODUCT_CATEGORY_CODE),
             "any.only": MESSAGES.INVALID_VALUE(FIELDS.PRODUCT_CATEGORY_CODE),
             "string.empty": MESSAGES.REQUIRED(FIELDS.PRODUCT_CATEGORY_CODE),
+        }),
+
+    /**
+     * --------------------------------------------------------------------
+     * Soft Delete / Activation Flag Validation
+     * --------------------------------------------------------------------
+     * - true  => active/enabled
+     * - false => disabled/soft-deleted
+     * --------------------------------------------------------------------
+     */
+    isActive: Joi.boolean()
+        .required()
+        .messages({
+            "boolean.base": MESSAGES.BOOLEAN_BASE(FIELDS.IS_ACTIVE),
+            "any.required": MESSAGES.REQUIRED(FIELDS.IS_ACTIVE),
         }),
 });
 
