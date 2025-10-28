@@ -12,7 +12,7 @@ import {
  *  - Both fields are required.
  *  - categoryCode auto-mapped from category.
  *  - Strict alignment with ProductCategory model validation.
- */
+ */backend/src/models/master/productPackSize.model.js
 const productCategoryValidationSchema = Joi.object({
     name: Joi.string()
         .trim()

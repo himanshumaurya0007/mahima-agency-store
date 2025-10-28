@@ -4,6 +4,8 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 dotenv.config("../../../../.env");
 
+import { FIELDS } from "../../../utils/index.js";
+
 import { ProductCategory } from "../../../models/master/productCategory.model.js";
 
 const PRODUCT_CATEGORIES_WITH_CODES = [
@@ -30,12 +32,12 @@ const seedProductCategoryWithCodes = async () => {
         await mongoose.connect(`${process.env.MONGO_URI}/${process.env.DB_NAME}`);
         console.log("Connected to MongoDB.");
 
-        // Clear existing departments
+        // Clear existing
         await ProductCategory.deleteMany({});
-        console.log("Existing departments cleared.");
+        console.log(`Existing ${FIELDS.PRODUCT_CATEGORY} cleared.`);
 
         const result = await ProductCategory.insertMany(PRODUCT_CATEGORIES_WITH_CODES);
-        console.log(`Seeded ${result.length} departments.`);
+        console.log(`Seeded ${result.length} ${FIELDS.PRODUCT_CATEGORY}.`);
 
         process.exit(0);
     } catch (error) {

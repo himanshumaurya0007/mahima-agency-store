@@ -27,5 +27,6 @@ export const FIELDS = {
     PIN_CODE: "PIN code",
 
     PRODUCT_CATEGORY: "Product Category",
-    PRODUCT_CATEGORY_CODE: "Product Category Code"
+    PRODUCT_CATEGORY_CODE: "Product Category Code",
+    PACK_SIZE: "Pack Size",
 };
