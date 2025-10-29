@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { validateProductCategory } from '../../middlewares/validations/master/productCategoryValidation.middleware.js';
+import { validateProductCategory } from "../../middlewares/validations/appMasterValidation.middleware.js";
 import { verifyJWT } from "../../middlewares/user.middleware.js";
 
 import {
@@ -14,7 +14,7 @@ import {
 const router = Router();
 
 /**
- * Base: /api/v1/master/product/category
+ * Base: /api/v1/masters/products/categories
  */
 
 // ===============================

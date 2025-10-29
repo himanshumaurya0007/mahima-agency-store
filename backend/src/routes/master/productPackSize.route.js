@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { validateProductPackSize } from '../../middlewares/validations/master/productPackSizeValidation.middleware.js';
+import { validateProductPackSize } from "../../middlewares/validations/appMasterValidation.middleware.js";
 import { verifyJWT } from "../../middlewares/user.middleware.js";
 
 import {
@@ -14,7 +14,7 @@ import {
 const router = Router();
 
 /**
- * Base: /api/v1/master/product/pack-size
+ * Base: /api/v1/masters/products/pack-sizes
  */
 
 // ===============================
