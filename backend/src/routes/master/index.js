@@ -10,7 +10,7 @@ const router = express.Router();
  */
 
 // Product-related master routes
-router.use("/product", productRouter);
+router.use("/products", productRouter);
 
 // Future extensions:
 // router.use("/customer", customerRouter);

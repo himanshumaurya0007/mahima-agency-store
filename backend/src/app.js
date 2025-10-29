@@ -46,9 +46,9 @@ if (process.env.NODE_ENV === "development") {
 
 // Routes
 app.use("/api/v1/health-check", healthCheckRouter);
-app.use("/api/v1/user", userRouter);
-app.use("/api/v1/customer", customerRouter);
-app.use("/api/v1/master", masterRouter);
+app.use("/api/v1/users", userRouter);
+app.use("/api/v1/customers", customerRouter);
+app.use("/api/v1/masters", masterRouter);
 
 // Handle 404s
 app.use((req, res, next) => {
