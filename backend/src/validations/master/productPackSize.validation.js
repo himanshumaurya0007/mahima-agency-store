@@ -15,6 +15,13 @@ const productPackSizeValidationSchema = Joi.object({
             "any.required": MESSAGES.REQUIRED(FIELDS.PACK_SIZE),
             "string.empty": MESSAGES.REQUIRED(FIELDS.PACK_SIZE),
         }),
+
+    isActive: Joi.boolean()
+        .required()
+        .messages({
+            "boolean.base": MESSAGES.BOOLEAN_BASE(FIELDS.IS_ACTIVE),
+            "any.required": MESSAGES.REQUIRED(FIELDS.IS_ACTIVE),
+        }),
 });
 
 export { productPackSizeValidationSchema };
