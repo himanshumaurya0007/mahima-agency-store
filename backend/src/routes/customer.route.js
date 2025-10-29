@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { validateCustomer } from '../middlewares/validations/customerValidation.middleware.js';
+import { validateCustomer } from "../middlewares/validations/appValidation.middleware.js";
 import { verifyJWT } from "../middlewares/user.middleware.js";
 
 import {
