@@ -18,11 +18,16 @@ const productPackSizeSchema = new Schema(
             required: [true, MESSAGES.REQUIRED(FIELDS.PACK_SIZE)],
             unique: true, // Enforce uniqueness at the DB level
         },
+        isActive: {
+            type: Boolean,
+            default: true,
+            required: [true, MESSAGES.REQUIRED(FIELDS.IS_ACTIVE)],
+        },
     },
     {
         timestamps: true,
         versionKey: false,
-        collection: "product_packsize",
+        collection: "product_packsizes",
     }
 );
 
@@ -34,5 +39,5 @@ const productPackSizeSchema = new Schema(
 export const ProductPackSize = mongoose.model(
     "ProductPackSize",
     productPackSizeSchema,
-    "product_packsize"
+    "product_packsizes"
 );
