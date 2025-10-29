@@ -30,4 +30,5 @@ export const FIELDS = {
     PRODUCT_CATEGORY_CODE: "Product Category Code",
     PACK_SIZE: "Pack Size",
     IS_ACTIVE: "Active Status",
+    VOLUME_UNIT: "Volume unit",
 };
