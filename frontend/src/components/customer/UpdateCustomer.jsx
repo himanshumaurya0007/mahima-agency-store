@@ -15,6 +15,7 @@ import {
   CheckCircle,
   ChevronDown,
   AlertCircle,
+  Lock,
 } from 'lucide-react';
 import customerApi from '../../services/customerApi';
 import authService from '../../services/authService';
@@ -66,6 +67,7 @@ const UpdateCustomer = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [isOriginallyPermanent, setIsOriginallyPermanent] = useState(false);
 
   // STATE TYPEAHEAD
   const [stateSearch, setStateSearch] = useState('');
@@ -83,11 +85,21 @@ const UpdateCustomer = () => {
       }
 
       try {
-        console.log('Fetching customer with ID:', customerId);
+        console.log('🔍 Fetching customer with ID:', customerId);
         const response = await customerApi.getCustomerById(customerId);
         
+        console.log('📦 Full API Response:', response);
+        console.log('📊 Response Data:', response.data);
+        
         if (response.success && response.data) {
-          const customer = response.data;
+          const customer = response.data.customer || response.data;
+          
+          console.log('👤 Extracted Customer Object:', customer);
+          
+          if (!customer || !customer.shopName) {
+            console.error('❌ Invalid customer data structure:', response.data);
+            throw new Error('Customer data is incomplete or missing');
+          }
           
           const loadedData = {
             customerStatus: customer.customerStatus || 'TEMPORARY',
@@ -109,12 +121,27 @@ const UpdateCustomer = () => {
             },
           };
 
+          console.log('✅ Loaded Form Data:', loadedData);
+
+          // Track if originally PERMANENT
+          setIsOriginallyPermanent(customer.customerStatus === 'PERMANENT');
+
           setFormData(loadedData);
           setOriginalData(JSON.parse(JSON.stringify(loadedData)));
           setStateSearch(customer.customerAddress?.state || '');
+          
+          toast.success('Customer data loaded successfully');
+        } else {
+          throw new Error('Invalid API response structure');
         }
       } catch (error) {
-        console.error('Fetch customer failed:', error);
+        console.error('❌ Fetch customer failed:', error);
+        console.error('Error Details:', {
+          message: error.message,
+          statusCode: error.statusCode,
+          response: error.response
+        });
+        
         toast.error(error.message || 'Failed to load customer details');
         navigate('/customers', { replace: true });
       } finally {
@@ -125,7 +152,7 @@ const UpdateCustomer = () => {
     fetchCustomer();
   }, [customerId, navigate]);
 
-  // AUTO-COPY: Copy temporaryCustomerId to havmorPlatformCustomerId when status changes to PERMANENT
+  // AUTO-COPY: Temp ID to Platform ID when switching to PERMANENT
   useEffect(() => {
     if (
       formData.customerStatus === 'PERMANENT' &&
@@ -137,7 +164,7 @@ const UpdateCustomer = () => {
         havmorPlatformCustomerId: prev.temporaryCustomerId,
       }));
       
-      toast.success('Temporary ID auto-copied to Platform ID');
+      toast.success('Temporary ID converted to Platform ID');
     }
   }, [formData.customerStatus, formData.temporaryCustomerId, formData.havmorPlatformCustomerId]);
 
@@ -455,6 +482,60 @@ const UpdateCustomer = () => {
     setShowConfirmModal(true);
   };
 
+  // HELPER: Get changed fields for modal
+  const getChangedFields = () => {
+    if (!originalData) return {};
+
+    const changes = {};
+
+    // Check each field for changes
+    if (formData.customerStatus !== originalData.customerStatus) {
+      changes.customerStatus = formData.customerStatus;
+    }
+    if (formData.shopName !== originalData.shopName) {
+      changes.shopName = formData.shopName;
+    }
+    if (formData.firstName !== originalData.firstName) {
+      changes.firstName = formData.firstName;
+    }
+    if (formData.lastName !== originalData.lastName) {
+      changes.lastName = formData.lastName;
+    }
+    if (formData.email !== originalData.email) {
+      changes.email = formData.email;
+    }
+    if (formData.phone !== originalData.phone) {
+      changes.phone = formData.phone;
+    }
+    if (formData.panCardNumber !== originalData.panCardNumber) {
+      changes.panCardNumber = formData.panCardNumber;
+    }
+    if (formData.gstinNumber !== originalData.gstinNumber) {
+      changes.gstinNumber = formData.gstinNumber;
+    }
+
+    // Check address changes
+    const addressChanges = {};
+    if (formData.customerAddress.place !== originalData.customerAddress.place) {
+      addressChanges.place = formData.customerAddress.place;
+    }
+    if (formData.customerAddress.city !== originalData.customerAddress.city) {
+      addressChanges.city = formData.customerAddress.city;
+    }
+    if (formData.customerAddress.state !== originalData.customerAddress.state) {
+      addressChanges.state = formData.customerAddress.state;
+    }
+    if (formData.customerAddress.pinCode !== originalData.customerAddress.pinCode) {
+      addressChanges.pinCode = formData.customerAddress.pinCode;
+    }
+
+    if (Object.keys(addressChanges).length > 0) {
+      changes.customerAddress = addressChanges;
+    }
+
+    return changes;
+  };
+
   // SUBMIT HANDLER
   const handleConfirmSubmit = async () => {
     setLoading(true);
@@ -504,6 +585,9 @@ const UpdateCustomer = () => {
         customerData.gstinNumber = formData.gstinNumber.trim().toUpperCase();
       }
 
+      console.log('📤 Submitting update for customer:', customerId);
+      console.log('📝 Update payload:', customerData);
+
       const response = await customerApi.updateCustomer(customerId, customerData);
 
       if (response.success) {
@@ -511,7 +595,7 @@ const UpdateCustomer = () => {
         navigate('/customers', { replace: true });
       }
     } catch (error) {
-      console.error('Update customer failed:', error);
+      console.error('❌ Update customer failed:', error);
 
       let errorMsg = 'Failed to update customer';
       
@@ -697,10 +781,12 @@ const UpdateCustomer = () => {
                     {['TEMPORARY', 'PERMANENT'].map((status) => (
                       <label
                         key={status}
-                        className={`flex-1 cursor-pointer rounded-lg border-2 p-4 transition-all ${
+                        className={`flex-1 rounded-lg border-2 p-4 transition-all ${
                           formData.customerStatus === status
                             ? 'border-black bg-vanilla'
-                            : 'border-gray-300 hover:border-gray-400'
+                            : isOriginallyPermanent && status === 'TEMPORARY'
+                            ? 'border-gray-200 bg-gray-100 cursor-not-allowed opacity-60'
+                            : 'border-gray-300 hover:border-gray-400 cursor-pointer'
                         }`}
                       >
                         <input
@@ -709,17 +795,23 @@ const UpdateCustomer = () => {
                           value={status}
                           checked={formData.customerStatus === status}
                           onChange={handleChange}
+                          disabled={isOriginallyPermanent && status === 'TEMPORARY'}
                           className="sr-only"
                         />
-                        <span className="text-base font-semibold">
-                          {status.charAt(0) + status.slice(1).toLowerCase()}
-                        </span>
+                        <div className="flex items-center justify-between">
+                          <span className="text-base font-semibold">
+                            {status.charAt(0) + status.slice(1).toLowerCase()}
+                          </span>
+                          {isOriginallyPermanent && status === 'TEMPORARY' && (
+                            <Lock size={16} className="text-gray-400" />
+                          )}
+                        </div>
                       </label>
                     ))}
                   </div>
                 </div>
 
-                {/* Temporary Customer ID (Display Only) */}
+                {/* TEMPORARY: Show Temp ID only */}
                 {formData.customerStatus === 'TEMPORARY' && formData.temporaryCustomerId && (
                   <Input
                     name="temporaryCustomerId"
@@ -731,29 +823,16 @@ const UpdateCustomer = () => {
                   />
                 )}
 
-                {/* Havmor Platform ID - Auto-populated when status changes */}
-                {formData.customerStatus === 'PERMANENT' && (
-                  <div className="space-y-2">
-                    <Input
-                      name="havmorPlatformCustomerId"
-                      type="text"
-                      label="Havmor Platform Customer ID"
-                      value={formData.havmorPlatformCustomerId}
-                      onChange={handleChange}
-                      error={errors.havmorPlatformCustomerId}
-                      placeholder="8 digits"
-                      required
-                      icon={Hash}
-                      maxLength="8"
-                    />
-                    {formData.havmorPlatformCustomerId === formData.temporaryCustomerId && 
-                     formData.temporaryCustomerId && (
-                      <p className="ml-1 flex items-center text-xs font-medium text-green-600">
-                        <CheckCircle size={12} className="mr-1" />
-                        Auto-copied from Temporary ID
-                      </p>
-                    )}
-                  </div>
+                {/* PERMANENT: Show Platform ID (read-only) */}
+                {formData.customerStatus === 'PERMANENT' && formData.havmorPlatformCustomerId && (
+                  <Input
+                    name="havmorPlatformCustomerId"
+                    type="text"
+                    label="Havmor Platform Customer ID"
+                    value={formData.havmorPlatformCustomerId}
+                    disabled
+                    icon={Hash}
+                  />
                 )}
 
                 {/* Shop Name */}
@@ -929,93 +1008,112 @@ const UpdateCustomer = () => {
           </div>
         </form>
 
-        {/* Confirmation Modal */}
+        {/* Confirmation Modal - ONLY CHANGED FIELDS */}
         <Modal
           isOpen={showConfirmModal}
           onClose={() => setShowConfirmModal(false)}
-          title="Confirm Customer Updates"
+          title="Confirm Changes"
           size="2xl"
           showCloseButton={false}
         >
           <p className="text-sm text-gray-600 mb-6">
-            Review changes before updating
+            Review the changes you made before updating
           </p>
 
-          <div className="space-y-6">
-            <div>
-              <h4 className="text-lg font-bold text-black mb-3 flex items-center">
-                <CheckCircle size={20} className="mr-2 text-green-600" />
-                Basic Information
-              </h4>
-              <div className="bg-vanilla rounded-lg p-4 space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-600 font-medium">Customer Type</span>
-                  <span className="text-black font-semibold">{formData.customerStatus}</span>
-                </div>
-                {formData.customerStatus === 'PERMANENT' && formData.havmorPlatformCustomerId && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 font-medium">Havmor Platform ID</span>
-                    <span className="text-black font-semibold">
-                      {formData.havmorPlatformCustomerId}
-                    </span>
-                  </div>
-                )}
-                <div className="flex justify-between">
-                  <span className="text-gray-600 font-medium">Shop Name</span>
-                  <span className="text-black font-semibold">{formData.shopName}</span>
-                </div>
-              </div>
-            </div>
+          <div className="space-y-4">
+            {(() => {
+              const changes = getChangedFields();
+              const hasChangesToShow = Object.keys(changes).length > 0;
 
-            <div>
-              <h4 className="text-lg font-bold text-black mb-3 flex items-center">
-                <CheckCircle size={20} className="mr-2 text-green-600" />
-                Contact Details
-              </h4>
-              <div className="bg-vanilla rounded-lg p-4 space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-600 font-medium">Phone</span>
-                  <span className="text-black font-semibold">{formData.phone}</span>
-                </div>
-                {formData.email && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 font-medium">Email</span>
-                    <span className="text-black font-semibold">{formData.email}</span>
+              if (!hasChangesToShow) {
+                return (
+                  <div className="text-center py-4 text-gray-500">
+                    No changes detected
                   </div>
-                )}
-              </div>
-            </div>
+                );
+              }
 
-            <div>
-              <h4 className="text-lg font-bold text-black mb-3 flex items-center">
-                <CheckCircle size={20} className="mr-2 text-green-600" />
-                Address
-              </h4>
-              <div className="bg-vanilla rounded-lg p-4 space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-600 font-medium">Place</span>
-                  <span className="text-black font-semibold">
-                    {formData.customerAddress.place}
-                  </span>
+              return (
+                <div className="bg-vanilla rounded-lg p-4 space-y-3">
+                  {changes.customerStatus && (
+                    <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                      <span className="text-gray-600 font-medium">Customer Type</span>
+                      <span className="text-black font-semibold">{changes.customerStatus}</span>
+                    </div>
+                  )}
+                  {changes.shopName && (
+                    <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                      <span className="text-gray-600 font-medium">Shop Name</span>
+                      <span className="text-black font-semibold">{changes.shopName}</span>
+                    </div>
+                  )}
+                  {changes.firstName && (
+                    <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                      <span className="text-gray-600 font-medium">First Name</span>
+                      <span className="text-black font-semibold">{changes.firstName}</span>
+                    </div>
+                  )}
+                  {changes.lastName && (
+                    <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                      <span className="text-gray-600 font-medium">Last Name</span>
+                      <span className="text-black font-semibold">{changes.lastName}</span>
+                    </div>
+                  )}
+                  {changes.phone && (
+                    <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                      <span className="text-gray-600 font-medium">Phone</span>
+                      <span className="text-black font-semibold">{changes.phone}</span>
+                    </div>
+                  )}
+                  {changes.email && (
+                    <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                      <span className="text-gray-600 font-medium">Email</span>
+                      <span className="text-black font-semibold">{changes.email}</span>
+                    </div>
+                  )}
+                  {changes.panCardNumber && (
+                    <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                      <span className="text-gray-600 font-medium">PAN Card</span>
+                      <span className="text-black font-semibold">{changes.panCardNumber}</span>
+                    </div>
+                  )}
+                  {changes.gstinNumber && (
+                    <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                      <span className="text-gray-600 font-medium">GSTIN</span>
+                      <span className="text-black font-semibold">{changes.gstinNumber}</span>
+                    </div>
+                  )}
+                  {changes.customerAddress && (
+                    <>
+                      {changes.customerAddress.place && (
+                        <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                          <span className="text-gray-600 font-medium">Address</span>
+                          <span className="text-black font-semibold">{changes.customerAddress.place}</span>
+                        </div>
+                      )}
+                      {changes.customerAddress.city && (
+                        <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                          <span className="text-gray-600 font-medium">City</span>
+                          <span className="text-black font-semibold">{changes.customerAddress.city}</span>
+                        </div>
+                      )}
+                      {changes.customerAddress.state && (
+                        <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                          <span className="text-gray-600 font-medium">State</span>
+                          <span className="text-black font-semibold">{changes.customerAddress.state}</span>
+                        </div>
+                      )}
+                      {changes.customerAddress.pinCode && (
+                        <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                          <span className="text-gray-600 font-medium">PIN Code</span>
+                          <span className="text-black font-semibold">{changes.customerAddress.pinCode}</span>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 font-medium">City</span>
-                  <span className="text-black font-semibold">{formData.customerAddress.city}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 font-medium">State</span>
-                  <span className="text-black font-semibold">
-                    {formData.customerAddress.state}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 font-medium">PIN Code</span>
-                  <span className="text-black font-semibold">
-                    {formData.customerAddress.pinCode}
-                  </span>
-                </div>
-              </div>
-            </div>
+              );
+            })()}
           </div>
 
           <div className="flex justify-end gap-4 mt-6">
@@ -1025,7 +1123,7 @@ const UpdateCustomer = () => {
               disabled={loading}
               className="h-12 px-6"
             >
-              Go Back & Edit
+              Cancel
             </Button>
             <Button
               variant="primary"
@@ -1034,7 +1132,7 @@ const UpdateCustomer = () => {
               icon={CheckCircle}
               className="h-12 px-6"
             >
-              Confirm & Update
+              Confirm Update
             </Button>
           </div>
         </Modal>
