@@ -2,12 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
+
 import { validateField } from '../../utils/validate';
-import { validateForm } from '../../middlewares/validateUser.middleware';
-import { loginUserValidationSchema } from '../../validations/userValidationSchemas';
-import authService from '../../services/authService';
-import { emailRegex } from '../../utils/regex';
-import { getInputClasses, getLabelClasses, getToplineClasses } from '../../utils/authHelpers';
+import {
+  REGEX,
+  getInputClasses,
+  getLabelClasses,
+  getToplineClasses
+} from '../../../utils/index';
+// import { validateForm } from '../../middlewares/validateUser.middleware';
+import { loginUserValidationSchema } from '../validations/userValidationSchemas';
+import authService from '../services/authService';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -37,7 +42,7 @@ const Login = () => {
   const MAX_ATTEMPTS = 3;
 
   // Detect if user entered email or username
-  const detectEmailFormat = (value) => emailRegex.test(value);
+  const detectEmailFormat = (value) => REGEX.EMAIL.test(value);
 
   // Handle input changes
   const handleChange = (e) => {
@@ -143,9 +148,8 @@ const Login = () => {
   // Password toggle icon (shows only when focused or has value)
   const getPasswordIcon = () => {
     const isVisible = focusedField === 'password' || formData.password;
-    const iconClass = `absolute right-3 top-4 transition-opacity duration-500 z-10 cursor-pointer text-gray-600 hover:text-black ${
-      isVisible ? 'opacity-100' : 'opacity-0'
-    }`;
+    const iconClass = `absolute right-3 top-4 transition-opacity duration-500 z-10 cursor-pointer text-gray-600 hover:text-black ${isVisible ? 'opacity-100' : 'opacity-0'
+      }`;
 
     return (
       <button type="button" className={iconClass} onClick={() => setShowPassword(!showPassword)}>
@@ -216,11 +220,10 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className={`h-[55px] w-full ${
-                  loading
-                    ? 'cursor-not-allowed bg-gray-600'
-                    : 'bg-black hover:bg-gray-800 active:bg-gray-900'
-                } focus:ring-offset-cream flex items-center justify-center rounded-lg text-xl font-medium text-white shadow-sm transition-all duration-300 ease-in-out hover:shadow-md focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:outline-none`}
+                className={`h-[55px] w-full ${loading
+                  ? 'cursor-not-allowed bg-gray-600'
+                  : 'bg-black hover:bg-gray-800 active:bg-gray-900'
+                  } focus:ring-offset-cream flex items-center justify-center rounded-lg text-xl font-medium text-white shadow-sm transition-all duration-300 ease-in-out hover:shadow-md focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:outline-none`}
               >
                 {loading ? (
                   <>

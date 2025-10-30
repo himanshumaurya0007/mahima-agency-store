@@ -551,16 +551,17 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import userApi from '../../services/userApi';
-import authService from '../../services/authService';
-import { fields } from '../../utils/fields';
-import { errorMessages } from '../../utils/errorMessages';
-import { emailRegex } from '../../utils/regex';
+import userApi from '../services/userApi';
+import authService from '../services/authService';
+// import { fields } from '../../utils/fields';
+// import { errorMessages } from '../../utils/errorMessages';
+// import { emailRegex } from '../../utils/regex';
+import { FIELDS, MESSAGES, REGEX } from '../../../utils/index'
 import { validateField } from '../../utils/validate';
 import {
   securityAnswerValidationSchema,
   resetPasswordValidationSchema,
-} from '../../validations/userValidationSchemas';
+} from '../validations/userValidationSchemas';
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -798,9 +799,8 @@ const ForgotPassword = () => {
   // Password toggle icons
   const getPasswordIcon = (fieldName) => {
     const isVisible = focusedField === fieldName || formData[fieldName];
-    const iconClass = `absolute right-3 top-4 transition-opacity duration-500 z-10 cursor-pointer text-gray-600 hover:text-black ${
-      isVisible ? 'opacity-100' : 'opacity-0'
-    }`;
+    const iconClass = `absolute right-3 top-4 transition-opacity duration-500 z-10 cursor-pointer text-gray-600 hover:text-black ${isVisible ? 'opacity-100' : 'opacity-0'
+      }`;
 
     const toggleStates = {
       securityAnswer: [showSecurityAnswer, setShowSecurityAnswer],
@@ -830,9 +830,8 @@ const ForgotPassword = () => {
     return (
       <div className="input-container relative">
         <input
-          className={`input h-[55px] w-full rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 ${
-            hasPasswordIcon ? 'pr-12' : ''
-          } text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm`}
+          className={`input h-[55px] w-full rounded-br-[10px] border-r-2 border-b-2 border-l-2 border-black border-t-transparent bg-transparent px-5 ${hasPasswordIcon ? 'pr-12' : ''
+            } text-lg font-medium tracking-wider transition-all duration-[400ms] ease-in outline-none focus:shadow-sm`}
           name={name}
           type={type}
           required
@@ -884,20 +883,18 @@ const ForgotPassword = () => {
               {[1, 2, 3].map((step) => (
                 <React.Fragment key={step}>
                   <div
-                    className={`flex h-8 w-8 items-center justify-center rounded-full transition-all duration-300 ease-in-out ${
-                      currentStep >= step
+                    className={`flex h-8 w-8 items-center justify-center rounded-full transition-all duration-300 ease-in-out ${currentStep >= step
                         ? 'scale-110 transform bg-black text-white'
                         : 'scale-100 transform bg-gray-300 text-gray-600'
-                    }`}
+                      }`}
                   >
                     {step}
                   </div>
                   {step < 3 && (
                     <div className="mx-2 h-1 flex-1 overflow-hidden rounded bg-gray-300">
                       <div
-                        className={`h-full bg-black transition-all duration-500 ease-in-out ${
-                          currentStep > step ? 'w-full' : 'w-0'
-                        }`}
+                        className={`h-full bg-black transition-all duration-500 ease-in-out ${currentStep > step ? 'w-full' : 'w-0'
+                          }`}
                       ></div>
                     </div>
                   )}
@@ -972,11 +969,10 @@ const ForgotPassword = () => {
                 <button
                   onClick={handleSecurityVerification}
                   disabled={loading || !securityQuestion}
-                  className={`h-[55px] w-full ${
-                    loading || !securityQuestion
+                  className={`h-[55px] w-full ${loading || !securityQuestion
                       ? 'cursor-not-allowed bg-gray-600'
                       : 'bg-black hover:bg-gray-800 active:bg-gray-900'
-                  } flex items-center justify-center rounded-lg text-xl font-medium text-white transition-all duration-300 ease-in-out`}
+                    } flex items-center justify-center rounded-lg text-xl font-medium text-white transition-all duration-300 ease-in-out`}
                 >
                   {loading ? (
                     <>
@@ -1013,11 +1009,10 @@ const ForgotPassword = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`h-[55px] w-full ${
-                    loading
+                  className={`h-[55px] w-full ${loading
                       ? 'cursor-not-allowed bg-gray-600'
                       : 'bg-black hover:bg-gray-800 active:bg-gray-900'
-                  } flex items-center justify-center rounded-lg text-xl font-medium text-white transition-all duration-300 ease-in-out`}
+                    } flex items-center justify-center rounded-lg text-xl font-medium text-white transition-all duration-300 ease-in-out`}
                 >
                   {loading ? (
                     <>

@@ -540,12 +540,13 @@ import {
   Filter,
   X,
 } from 'lucide-react';
-import customerApi from '../../services/customerApi';
-import authService from '../../services/authService';
-import Button from '../common/Button';
-import DeleteModal from '../common/DeleteModal';
-import EmptyState from '../common/EmptyState';
-import { SkeletonCards } from '../common/Loader';
+
+import customerApi from '../services/customerApi';
+import authService from '../../auth/services/authService';
+import Button from '../../../components/ui/Input';
+import DeleteModal from '../../../components/ui/DeleteModal';
+import EmptyState from '../../../components/ui/EmptyState';
+import { SkeletonCards } from '../../../components/ui/Loader';
 
 const CustomersList = () => {
   const navigate = useNavigate();

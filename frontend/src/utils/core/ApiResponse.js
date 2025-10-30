@@ -1,4 +1,3 @@
-// frontend/src/utils/ApiResponse.js
 class ApiResponse {
   constructor(statusCode = 200, data = null, message = 'Request successful') {
     this.statusCode = statusCode;

@@ -52,3 +52,11 @@ export const ENUMS = {
 // Derived arrays for Mongoose validation:
 export const INDIAN_STATE_NAMES = ENUMS.INDIAN_STATES_WITH_ABBREVIATIONS.map((s) => s.name);
 export const INDIAN_STATE_CODES = ENUMS.INDIAN_STATES_WITH_ABBREVIATIONS.map((s) => s.code);
+
+
+// For dropdown options (label-value pairs)
+export const indianStateOptions = INDIAN_STATES_WITH_ABBREVIATIONS.map((state) => ({
+  value: state.name,
+  label: state.name,
+  code: state.code,
+}));

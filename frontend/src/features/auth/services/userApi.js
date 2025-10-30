@@ -16,7 +16,7 @@ const userApi = {
    * @returns {Promise<ApiResponse>} - standardized response
    */
   registerUser: asyncHandler(async (userData) => {
-    const response = await baseApi.post('/user/register', userData);
+    const response = await baseApi.post('/users/register', userData);
     return ApiResponse.fromAxios(response);
   }),
 
@@ -36,7 +36,7 @@ const userApi = {
    * @returns {Promise<ApiResponse>} - success message
    */
   logoutUser: asyncHandler(async () => {
-    const response = await baseApi.post('/user/logout');
+    const response = await baseApi.post('/users/logout');
     return ApiResponse.fromAxios(response);
   }),
 
@@ -46,7 +46,7 @@ const userApi = {
    * @returns {Promise<ApiResponse>} - security question
    */
   fetchSecurityQuestion: asyncHandler(async (query) => {
-    const response = await baseApi.get('/user/security-question', {
+    const response = await baseApi.get('/users/security-question', {
       params: query,
     });
     return ApiResponse.fromAxios(response);
@@ -58,7 +58,7 @@ const userApi = {
    * @returns {Promise<ApiResponse>} - verification result
    */
   validateSecurityAnswer: asyncHandler(async (data) => {
-    const response = await baseApi.post('/user/security-answer/verify', data);
+    const response = await baseApi.post('/users/security-answer/verify', data);
     return ApiResponse.fromAxios(response);
   }),
 
@@ -68,7 +68,7 @@ const userApi = {
    * @returns {Promise<ApiResponse>} - reset result
    */
   resetUserPassword: asyncHandler(async (data) => {
-    const response = await baseApi.patch('/user/password/reset', data);
+    const response = await baseApi.patch('/users/password/reset', data);
     return ApiResponse.fromAxios(response);
   }),
 };

@@ -1070,14 +1070,15 @@ import {
   CheckCircle,
   ChevronDown,
 } from 'lucide-react';
-import customerApi from '../../services/customerApi';
-import authService from '../../services/authService';
+
+import customerApi from '../services/customerApi';
+import authService from '../../auth/services/authService';
 import { validateCustomerField, validateCustomerForm } from '../../utils/validate';
-import { customerValidationSchema } from '../../validations/customerValidationSchemas';
-import { indianStateOptions, INDIAN_STATES_WITH_ABBREVIATIONS } from '../../utils/indianStates';
-import Input from '../common/Input';
-import Button from '../common/Button';
-import Modal from '../common/Modal';
+import { customerValidationSchema } from '../validations/customerValidationSchemas';
+// import { indianStateOptions, INDIAN_STATES_WITH_ABBREVIATIONS } from '../../utils/indianStates';
+import Input from '../../../components/ui/Input';
+import Button from '../../../components/ui/Button';
+import Modal from '../../../components/ui/Modal';
 
 const AddCustomer = () => {
   const navigate = useNavigate();
@@ -1519,17 +1520,15 @@ const AddCustomer = () => {
           onFocus={() => setShowStateDropdown(true)}
           onKeyDown={handleStateKeyDown}
           placeholder="Search for a state"
-          className={`h-14 w-full rounded-lg border-2 ${
-            errors['customerAddress.state']
+          className={`h-14 w-full rounded-lg border-2 ${errors['customerAddress.state']
               ? 'border-red-400 focus:border-red-500'
               : 'focus:border-peach border-gray-300'
-          } bg-white text-black px-4 pr-10 text-base font-medium tracking-wider transition-all duration-200 ease-in outline-none hover:border-gray-400 focus:shadow-md`}
+            } bg-white text-black px-4 pr-10 text-base font-medium tracking-wider transition-all duration-200 ease-in outline-none hover:border-gray-400 focus:shadow-md`}
         />
         <ChevronDown
           size={20}
-          className={`absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none transition-transform ${
-            showStateDropdown ? 'rotate-180' : ''
-          }`}
+          className={`absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none transition-transform ${showStateDropdown ? 'rotate-180' : ''
+            }`}
         />
 
         {/* Dropdown */}
@@ -1542,11 +1541,10 @@ const AddCustomer = () => {
               <div
                 key={state.value}
                 onClick={() => handleStateSelect(state.value)}
-                className={`cursor-pointer px-4 py-3 text-base font-medium transition-colors ${
-                  index === selectedStateIndex
+                className={`cursor-pointer px-4 py-3 text-base font-medium transition-colors ${index === selectedStateIndex
                     ? 'bg-peach text-black'
                     : 'hover:bg-vanilla text-gray-700'
-                }`}
+                  }`}
               >
                 {state.label}
               </div>
@@ -1597,18 +1595,16 @@ const AddCustomer = () => {
               <React.Fragment key={step.number}>
                 <div className="flex items-center">
                   <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-full text-base font-bold transition-all duration-300 ${
-                      currentStep >= step.number
+                    className={`flex h-10 w-10 items-center justify-center rounded-full text-base font-bold transition-all duration-300 ${currentStep >= step.number
                         ? 'text-cream scale-110 bg-black shadow-lg'
                         : 'scale-100 bg-gray-200 text-gray-500'
-                    }`}
+                      }`}
                   >
                     {step.number}
                   </div>
                   <span
-                    className={`ml-3 hidden text-sm font-semibold tracking-wide transition-colors sm:block ${
-                      currentStep >= step.number ? 'text-black' : 'text-gray-400'
-                    }`}
+                    className={`ml-3 hidden text-sm font-semibold tracking-wide transition-colors sm:block ${currentStep >= step.number ? 'text-black' : 'text-gray-400'
+                      }`}
                   >
                     {step.label}
                   </span>
@@ -1617,9 +1613,8 @@ const AddCustomer = () => {
                 {index !== 2 && (
                   <div className="mx-2 h-[3px] flex-1 overflow-hidden rounded-full bg-gray-200 sm:mx-4">
                     <div
-                      className={`h-full bg-black transition-all duration-500 ease-out ${
-                        currentStep > step.number ? 'w-full' : 'w-0'
-                      }`}
+                      className={`h-full bg-black transition-all duration-500 ease-out ${currentStep > step.number ? 'w-full' : 'w-0'
+                        }`}
                     />
                   </div>
                 )}
@@ -1647,11 +1642,10 @@ const AddCustomer = () => {
                     {['TEMPORARY', 'PERMANENT'].map((status) => (
                       <label
                         key={status}
-                        className={`flex-1 cursor-pointer rounded-lg border-2 p-4 transition-all ${
-                          formData.customerStatus === status
+                        className={`flex-1 cursor-pointer rounded-lg border-2 p-4 transition-all ${formData.customerStatus === status
                             ? 'border-black bg-vanilla'
                             : 'border-gray-300 hover:border-gray-400'
-                        }`}
+                          }`}
                       >
                         <input
                           type="radio"

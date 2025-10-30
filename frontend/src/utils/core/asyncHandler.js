@@ -1,4 +1,3 @@
-// frontend/src/utils/asyncHandler.js
 import ApiError from './ApiError';
 
 export const asyncHandler = (fn) => {

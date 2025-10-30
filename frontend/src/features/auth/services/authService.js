@@ -1,6 +1,7 @@
 // src/services/authService.js
 import { toast } from 'react-hot-toast';
-import baseApi from './baseApi';
+
+import baseApi from '../../../services/baseApi';
 import userApi from './userApi';
 
 class AuthService {
@@ -86,17 +87,17 @@ class AuthService {
   async login(credentials) {
     try {
       const response = await userApi.loginUser(credentials);
-      
+
       if (response.success && response.data?.data) {
         const { user, accessToken, refreshToken } = response.data.data;
-        
+
         if (user && accessToken) {
           localStorage.setItem('authToken', accessToken);
           if (refreshToken) {
             localStorage.setItem('refreshToken', refreshToken);
           }
           localStorage.setItem('userData', JSON.stringify(user));
-          
+
           toast.success('Login successful!');
           return { success: true, user };
         } else {
@@ -115,7 +116,7 @@ class AuthService {
   async register(userData) {
     try {
       const response = await userApi.registerUser(userData);
-      
+
       if (response.success) {
         toast.success('Registration successful! Please login.');
         return { success: true };
@@ -140,20 +141,20 @@ class AuthService {
     }
   }
 
-//   // Validate The Access Token 
-//   async validateToken() {
-//   try {
-//     const token = this.getAccessToken();
-//     if (!token) return false;
-    
-//     // Make a lightweight API call to verify token
-//     const response = await baseApi.get('/user/verify-token');
-//     return response.data.success;
-//   // eslint-disable-next-line no-unused-vars
-//   } catch (error) {
-//     return false;
-//   }
-// }
+  //   // Validate The Access Token 
+  //   async validateToken() {
+  //   try {
+  //     const token = this.getAccessToken();
+  //     if (!token) return false;
+
+  //     // Make a lightweight API call to verify token
+  //     const response = await baseApi.get('/user/verify-token');
+  //     return response.data.success;
+  //   // eslint-disable-next-line no-unused-vars
+  //   } catch (error) {
+  //     return false;
+  //   }
+  // }
 }
 
 export default new AuthService();

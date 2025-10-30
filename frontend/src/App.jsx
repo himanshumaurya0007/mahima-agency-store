@@ -3,19 +3,19 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 
-// User Components
-import Register from './components/user/Register';
-import LogIn from './components/user/LogIn';
-import Dashboard from './components/user/Dashboard';
-import ForgotPassword from './components/user/ForgotPassword';
+// User
+import Register from './features/auth/components/Register'
+import Login from './features/auth/components/Login'
+import Dashboard from './features/auth/components/Dashboard'
+import ForgotPassword from './features/auth/components/ForgotPassword'
 
-// Customer Components
-import CustomersList from './components/customer/CustomersList';
-import AddCustomer from './components/customer/AddCustomer';
-import UpdateCustomer from './components/customer/UpdateCustomer';
+// Customer
+import CustomersList from './features/customers/components/CustomersList';
+import AddCustomer from './features/customers/components/AddCustomer';
+import UpdateCustomer from './features/customers/components/UpdateCustomer';
 
 // Test Component
-import Test from './Test';
+// import Test from './Test';
 
 const App = () => {
   return (
@@ -26,7 +26,7 @@ const App = () => {
 
         {/* User Routes */}
         <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<LogIn />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/reset-password" element={<ForgotPassword />} />
 
@@ -38,7 +38,7 @@ const App = () => {
         <Route path="/customers/update/:customerId" element={<UpdateCustomer />} />
 
         {/* Test Route */}
-        <Route path="/test" element={<Test />} />
+        {/* <Route path="/test" element={<Test />} /> */}
 
         {/* Catch-all: redirect to login */}
         <Route path="*" element={<Navigate to="/login" replace />} />

@@ -2,11 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import authService from '../../services/authService';
-import { SECURITY_QUESTIONS } from '../../utils/constants';
+import authService from '../services/authService';
+// import { SECURITY_QUESTIONS } from '../../../utils/index';
+import {
+  ENUMS,
+  getInputClasses,
+  getLabelClasses,
+  getToplineClasses
+} from '../../../utils/index';
 import { registerUserValidationSchema } from '../../validations/userValidationSchemas';
 import { useAuthForm } from '../../hooks/useAuthForm';
-import { getInputClasses, getLabelClasses, getToplineClasses } from '../../utils/authHelpers';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -56,9 +61,8 @@ const Register = () => {
   // Password/Security Answer toggle icons
   const getFieldIcon = (fieldName) => {
     const isVisible = focusedField === fieldName && formData[fieldName];
-    const iconClass = `absolute right-3 top-4 transition-opacity duration-500 z-10 cursor-pointer text-gray-600 hover:text-black ${
-      isVisible ? 'opacity-100' : 'opacity-0'
-    }`;
+    const iconClass = `absolute right-3 top-4 transition-opacity duration-500 z-10 cursor-pointer text-gray-600 hover:text-black ${isVisible ? 'opacity-100' : 'opacity-0'
+      }`;
 
     if (fieldName === 'password') {
       return (
@@ -186,7 +190,7 @@ const Register = () => {
           </div>
 
           <form className="w-full space-y-6" onSubmit={handleSubmit}>
-            
+
             {/* Personal Information */}
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:gap-8">
               <div className="flex justify-center sm:justify-start">
@@ -236,11 +240,10 @@ const Register = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className={`h-[55px] w-full ${
-                  loading
-                    ? 'cursor-not-allowed bg-gray-600'
-                    : 'bg-black hover:bg-gray-800 active:bg-gray-900'
-                } focus:ring-offset-cream flex items-center justify-center rounded-lg text-xl font-medium text-white shadow-sm transition-all duration-300 ease-in-out hover:shadow-md focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:outline-none`}
+                className={`h-[55px] w-full ${loading
+                  ? 'cursor-not-allowed bg-gray-600'
+                  : 'bg-black hover:bg-gray-800 active:bg-gray-900'
+                  } focus:ring-offset-cream flex items-center justify-center rounded-lg text-xl font-medium text-white shadow-sm transition-all duration-300 ease-in-out hover:shadow-md focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:outline-none`}
               >
                 {loading ? (
                   <>
