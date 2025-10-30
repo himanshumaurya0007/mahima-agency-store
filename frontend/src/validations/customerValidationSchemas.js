@@ -28,7 +28,7 @@ export const customerValidationSchema = {
     maxLength: 8,
     pattern: /^[0-9]{8}$/,
     message: 'Havmor Platform ID must be exactly 8 digits',
-    validate: (value, formData) => {
+    validate: (value) => {
       // ✅ Skip validation if empty (backend will handle conversion)
       if (!value || !value.trim()) {
         return null;
