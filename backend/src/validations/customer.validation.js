@@ -1,38 +1,40 @@
 import Joi from "joi";
 import mongoose from "mongoose";
 
-import { fields } from "../utils/fields.js";
-import { temporaryCustomerIdRegex, havmorPlatformCustomerIdRegex, emailRegex, phoneRegex, panCardRegex, gstinNumberRegex, } from "../utils/regex.js";
-import { errorMessages } from "../utils/errorMessages.js";
-import { CUSTOMER_STATUS } from "../constants.js";
+import {
+    ENUMS,
+    FIELDS,
+    REGEX,
+    MESSAGES
+} from "../utils/index.js";
 
 import { addressValidationSchema } from "./address.validation.js";
 
 const customerValidationSchema = Joi.object({
     customerStatus: Joi.string()
-        .valid(...CUSTOMER_STATUS)
+        .valid(...ENUMS.CUSTOMER_STATUS)
         .uppercase()
         .default("TEMPORARY")
         .messages({
-            "any.only": `Invalid ${fields.customerStatus}`,
+            "any.only": `Invalid ${FIELDS.CUSTOMER_STATUS}`,
         }),
 
     temporaryCustomerId: Joi.string()
-        .pattern(temporaryCustomerIdRegex)
+        .pattern(REGEX.TEMPORARY_CUSTOMER_ID)
         .trim()
         .optional()
         .allow(null, "")
         .messages({
-            "string.pattern.base": errorMessages.TEMPORARY_CUSTOMER_ID_INVALID,
+            "string.pattern.base": MESSAGES.TEMPORARY_CUSTOMER_ID_INVALID,
         }),
 
     havmorPlatformCustomerId: Joi.string()
-        .pattern(havmorPlatformCustomerIdRegex)
+        .pattern(REGEX.HAVMOR_PLATFORM_CUSTOMER_ID)
         .trim()
         .optional() // Optional — required only for permanent customers
         .allow(null, "")
         .messages({
-            "string.pattern.base": errorMessages.CUSTOMER_ID_INVALID,
+            "string.pattern.base": MESSAGES.CUSTOMER_ID_INVALID,
         }),
 
     shopName: Joi.string()
@@ -42,9 +44,9 @@ const customerValidationSchema = Joi.object({
         .lowercase()
         .required()
         .messages({
-            "string.empty": errorMessages.REQUIRED(fields.shopName),
-            "string.min": errorMessages.MIN_LENGTH(fields.shopName, 2),
-            "string.max": errorMessages.MAX_LENGTH(fields.shopName, 100),
+            "string.empty": MESSAGES.REQUIRED(FIELDS.SHOP_NAME),
+            "string.min": MESSAGES.MIN_LENGTH(FIELDS.SHOP_NAME, 2),
+            "string.max": MESSAGES.MAX_LENGTH(FIELDS.SHOP_NAME, 100),
         }),
 
     firstName: Joi.string()
@@ -55,8 +57,8 @@ const customerValidationSchema = Joi.object({
         .optional()
         .allow(null, "")
         .messages({
-            "string.min": errorMessages.MIN_LENGTH(fields.firstName, 2),
-            "string.max": errorMessages.MAX_LENGTH(fields.firstName, 50),
+            "string.min": MESSAGES.MIN_LENGTH(FIELDS.FIRST_NAME, 2),
+            "string.max": MESSAGES.MAX_LENGTH(FIELDS.FIRST_NAME, 50),
         }),
 
     lastName: Joi.string()
@@ -67,58 +69,58 @@ const customerValidationSchema = Joi.object({
         .optional()
         .allow(null, "")
         .messages({
-            "string.min": errorMessages.MIN_LENGTH(fields.lastName, 2),
-            "string.max": errorMessages.MAX_LENGTH(fields.lastName, 50),
+            "string.min": MESSAGES.MIN_LENGTH(FIELDS.LAST_NAME, 2),
+            "string.max": MESSAGES.MAX_LENGTH(FIELDS.LAST_NAME, 50),
         }),
 
     email: Joi.string()
-        .pattern(emailRegex)
+        .pattern(REGEX.EMAIL)
         .trim()
         .lowercase()
         .optional()
         .allow(null, "")
         .messages({
-            "string.pattern.base": errorMessages.EMAIL_INVALID,
+            "string.pattern.base": MESSAGES.EMAIL_INVALID,
         }),
 
     phone: Joi.string()
-        .pattern(phoneRegex)
+        .pattern(REGEX.PHONE)
         .trim()
         .required()
         .messages({
-            "string.empty": errorMessages.REQUIRED(fields.phone),
-            "string.pattern.base": errorMessages.PHONE_INVALID,
+            "string.empty": MESSAGES.REQUIRED(FIELDS.PHONE),
+            "string.pattern.base": MESSAGES.PHONE_INVALID,
         }),
 
     panCardNumber: Joi.string()
-        .pattern(panCardRegex)
+        .pattern(REGEX.PAN_CARD)
         .trim()
         .uppercase()
         .optional()
         .allow(null, "")
         .messages({
-            "string.pattern.base": errorMessages.PAN_CARD_INVALID,
+            "string.pattern.base": MESSAGES.PAN_CARD_INVALID,
         }),
 
     gstinNumber: Joi.string()
-        .pattern(gstinNumberRegex)
+        .pattern(REGEX.GSTIN_NUMBER)
         .trim()
         .uppercase()
         .optional()
         .allow(null, "")
         .messages({
-            "string.pattern.base": errorMessages.GSTIN_NUMBER_INVALID,
+            "string.pattern.base": MESSAGES.GSTIN_NUMBER_INVALID,
         }),
 
     customerAddress: addressValidationSchema.required().messages({
-        "any.required": errorMessages.REQUIRED(fields.customerAddress),
-        "any.invalid": `${fields.customerAddress} must be a valid ObjectId`,
+        "any.required": MESSAGES.REQUIRED(FIELDS.CUSTOMER_ADDRESS),
+        "any.invalid": `${FIELDS.CUSTOMER_ADDRESS} must be a valid ObjectId`,
     }),
 }).custom((obj, helpers) => {
     // Conditional validation: havmorPlatformCustomerId required if status is PERMANENT
     if (obj.customerStatus === "PERMANENT" && !obj.havmorPlatformCustomerId) {
         return helpers.error("any.custom", {
-            message: errorMessages.REQUIRED(fields.havmorPlatformCustomerId),
+            message: MESSAGES.REQUIRED(FIELDS.HAVMOR_PLATFORM_CUSTOMER_ID),
         });
     }
     return obj;

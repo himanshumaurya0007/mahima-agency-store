@@ -4,13 +4,17 @@ import morgan from "morgan";
 import { StatusCodes } from "http-status-codes";
 import cookieParser from 'cookie-parser';
 
-import logger from "./utils/logger.js";
-import { ApiError } from "./utils/ApiError.js";
 import { errorMiddleware } from "./middlewares/error.middleware.js";
+
+import {
+    logger,
+    ApiError
+} from "./utils/index.js";
 
 import healthCheckRouter from "./routes/healthCheck.route.js";
 import userRouter from "./routes/user.route.js";
 import customerRouter from "./routes/customer.route.js";
+import masterRouter from "./routes/master/index.js";
 
 const app = express();
 
@@ -42,8 +46,9 @@ if (process.env.NODE_ENV === "development") {
 
 // Routes
 app.use("/api/v1/health-check", healthCheckRouter);
-app.use("/api/v1/user", userRouter);
-app.use("/api/v1/customer", customerRouter);
+app.use("/api/v1/users", userRouter);
+app.use("/api/v1/customers", customerRouter);
+app.use("/api/v1/masters", masterRouter);
 
 // Handle 404s
 app.use((req, res, next) => {
