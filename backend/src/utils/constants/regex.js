@@ -43,4 +43,7 @@ export const REGEX = {
     // Optional additions (future use)
     CITY: /^[a-zA-Z\s]+$/,
     STATE_CODE: /^[A-Z]{2}$/,
+
+    MATERIAL_CODE: /^40\d{4}$/,
+    HSN_CODE: /^\d{8}$/,
 };

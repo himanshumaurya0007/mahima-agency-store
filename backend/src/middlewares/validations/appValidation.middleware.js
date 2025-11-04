@@ -37,3 +37,11 @@ export const validateCustomer = createValidator(
     customerValidationSchema,
     "Customer"
 );
+
+// Product
+import { productValidationSchema } from "../../validations/product.validation.js";
+
+export const validateProduct = createValidator(
+    productValidationSchema,
+    "Product"
+);

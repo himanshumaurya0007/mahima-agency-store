@@ -31,4 +31,13 @@ export const FIELDS = {
     PACK_SIZE: "Pack Size",
     IS_ACTIVE: "Active Status",
     VOLUME_UNIT: "Volume unit",
+
+    PRODUCT_NAME: "Product name",
+    VOLUME_MAGNITUDE: "Volume magnitude",
+    VOLUME_UNIT: "Volume unit",
+    MATERIAL_CODE: "Material code",
+    MRP: "MRP (Maximum Retail Price)",
+    RATE: "Rate",
+    STOCK: "Stock",
+    HSN_CODE: "HSN code",
 };
