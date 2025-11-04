@@ -11,9 +11,9 @@ import {
 import { Product } from "../models/product.model.js";
 
 /**
- * @desc Add a new product
  * @route POST /api/v1/products
- * @access Private
+ * @desc Add a new product
+ * @access Protected (JWT)
  */
 const addProduct = asyncHandler(async (req, res, next) => {
     try {
@@ -35,9 +35,9 @@ const addProduct = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Get all products for the authenticated user
  * @route GET /api/v1/products
- * @access Private
+ * @desc Get all products
+ * @access Protected (JWT)
  */
 const getAllProducts = asyncHandler(async (req, res, next) => {
     try {
@@ -59,9 +59,9 @@ const getAllProducts = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Get a single product by ID for the authenticated user
  * @route GET /api/v1/products/:id
- * @access Private
+ * @desc Get a single product by ID
+ * @access Protected (JWT)
  */
 const getProductById = asyncHandler(async (req, res, next) => {
     try {
@@ -101,9 +101,9 @@ const getProductById = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Update a product by ID for the authenticated user
  * @route PUT /api/v1/products/:id
- * @access Private
+ * @desc Update a product by ID
+ * @access Protected (JWT)
  */
 const updateProduct = asyncHandler(async (req, res, next) => {
     try {
@@ -147,9 +147,9 @@ const updateProduct = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Delete a product by ID for the authenticated user
  * @route DELETE /api/v1/products/:id
- * @access Private
+ * @desc Delete a product by ID
+ * @access Protected (JWT)
  */
 const deleteProduct = asyncHandler(async (req, res, next) => {
     try {
@@ -189,8 +189,8 @@ const deleteProduct = asyncHandler(async (req, res, next) => {
 });
 
 export {
-    addProduct,
     getAllProducts,
+    addProduct,
     getProductById,
     updateProduct,
     deleteProduct

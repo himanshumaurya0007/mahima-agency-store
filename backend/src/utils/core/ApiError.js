@@ -1,6 +1,6 @@
-// utils/core/ApiError.js
 import { StatusCodes, ReasonPhrases } from "http-status-codes";
-import logger from "./logger.js";
+
+import { logger } from "./index.js";
 
 /**
  * 🚨 ApiError — Centralized structured error class

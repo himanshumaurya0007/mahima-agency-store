@@ -1,5 +1,3 @@
-// utils/fields.js
-
 export const FIELDS = {
     FIRST_NAME: "First name",
     LAST_NAME: "Last name",

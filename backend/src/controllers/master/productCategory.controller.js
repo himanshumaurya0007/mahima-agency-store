@@ -1,4 +1,5 @@
 import { StatusCodes } from "http-status-codes";
+
 import {
     ApiResponse,
     ApiError,
@@ -13,7 +14,7 @@ import { ProductCategory } from "../../models/master/productCategory.model.js";
 
 /**
  * ------------------------------------------------------------------------
- * @route   POST /api/v1/master/product/category
+ * @route   POST /api/v1/masters/products/categories
  * @desc    Create a new product category
  * @access  Protected (JWT)
  * ------------------------------------------------------------------------
@@ -70,7 +71,7 @@ const createProductCategory = asyncHandler(async (req, res, next) => {
 
 /**
  * ------------------------------------------------------------------------
- * @route   GET /api/v1/master/product/category
+ * @route   GET /api/v1/masters/products/categories
  * @desc    Retrieve all active product categories
  * @access  Protected (JWT)
  * ------------------------------------------------------------------------
@@ -113,7 +114,7 @@ const getAllProductCategories = asyncHandler(async (req, res, next) => {
 
 /**
  * ------------------------------------------------------------------------
- * @route   GET /api/v1/master/product/category/:id
+ * @route   GET /api/v1/masters/products/categories/:id
  * @desc    Retrieve a specific product category by ID
  * @access  Protected (JWT)
  * ------------------------------------------------------------------------
@@ -153,8 +154,8 @@ const getProductCategoryById = asyncHandler(async (req, res, next) => {
 
 /**
  * ------------------------------------------------------------------------
- * @route   PUT /api/v1/master/product/category/:id
- * @desc    Soft delete (disable) or reactivate a Product Category
+ * @route   PUT /api/v1/masters/products/categories/:id
+ * @desc    Soft delete (disable) or reactivate a product category
  * @access  Protected (JWT)
  * ------------------------------------------------------------------------
  * Allows toggling isActive = false (disable) or true (reactivate)
@@ -213,7 +214,7 @@ const updateProductCategoryStatus = asyncHandler(async (req, res, next) => {
 
 /**
  * ------------------------------------------------------------------------
- * @route   DELETE /api/v1/master/product/category/:id
+ * @route   DELETE /api/v1/masters/products/categories/:id
  * @desc    Hard delete a product category by ID
  * @access  Protected (JWT)
  * ------------------------------------------------------------------------
@@ -253,9 +254,9 @@ const deleteProductCategory = asyncHandler(async (req, res, next) => {
 });
 
 export {
-    createProductCategory,
     getAllProductCategories,
+    createProductCategory,
     getProductCategoryById,
-    updateProductCategoryStatus, // NEW: soft delete/reactivate handler
+    updateProductCategoryStatus,
     deleteProductCategory,
 };

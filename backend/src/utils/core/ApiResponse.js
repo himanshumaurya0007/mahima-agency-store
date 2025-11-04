@@ -1,4 +1,3 @@
-// utils/core/ApiResponse.js
 import { StatusCodes } from "http-status-codes";
 
 /**

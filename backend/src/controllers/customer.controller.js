@@ -1,4 +1,3 @@
-// backend/src/controllers/customer.controller.js
 import mongoose from "mongoose";
 import { StatusCodes, ReasonPhrases } from "http-status-codes";
 
@@ -18,9 +17,9 @@ import { Customer } from "../models/customer.model.js";
 import { Address } from "../models/address.model.js";
 
 /**
- * @desc Add a new customer (idempotent)
- * @route POST /api/v1/customer
- * @access Private
+ * @route POST /api/v1/customers
+ * @desc Add a new customer
+ * @access Protected (JWT)
  */
 const addCustomer = asyncHandler(async (req, res, next) => {
     let session;
@@ -83,9 +82,9 @@ const addCustomer = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Get all customers for the authenticated user
- * @route GET /api/v1/customer
- * @access Private
+ * @route GET /api/v1/customers
+ * @desc Get all customers
+ * @access Protected (JWT)
  */
 const getAllCustomers = asyncHandler(async (req, res, next) => {
     try {
@@ -118,9 +117,9 @@ const getAllCustomers = asyncHandler(async (req, res, next) => {
 });
 
 /**
+ * @route GET /api/v1/customers/:id
  * @desc Get a single customer by ID
- * @route GET /api/v1/customer/:id
- * @access Private
+ * @access Protected (JWT)
  */
 const getCustomerById = asyncHandler(async (req, res, next) => {
     try {
@@ -159,9 +158,9 @@ const getCustomerById = asyncHandler(async (req, res, next) => {
 });
 
 /**
+ * @route PUT /api/v1/customers/:id
  * @desc Update a customer by ID
- * @route PUT /api/v1/customer/:id
- * @access Private
+ * @access Protected (JWT)
  */
 const updateCustomer = asyncHandler(async (req, res, next) => {
     let session;
@@ -238,9 +237,9 @@ const updateCustomer = asyncHandler(async (req, res, next) => {
 });
 
 /**
+ * @route DELETE /api/v1/customers/:id
  * @desc Delete a customer by ID
- * @route DELETE /api/v1/customer/:id
- * @access Private
+ * @access Protected (JWT)
  */
 const deleteCustomer = asyncHandler(async (req, res, next) => {
     let session;
@@ -294,8 +293,8 @@ const deleteCustomer = asyncHandler(async (req, res, next) => {
 });
 
 export {
-    addCustomer,
     getAllCustomers,
+    addCustomer,
     getCustomerById,
     updateCustomer,
     deleteCustomer

@@ -1,5 +1,5 @@
-// backend/src/middlewares/validations/index.js
 import { StatusCodes } from "http-status-codes";
+
 import {
     ApiError,
     logger

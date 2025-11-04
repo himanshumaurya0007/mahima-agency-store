@@ -15,8 +15,8 @@ import {
 import { User } from "../models/user.model.js";
 
 /**
+ * @route   POST /api/v1/users/register
  * @desc    Register a new user (NO tokens here)
- * @route   POST /api/v1/user/register
  * @access  Public
  */
 const registerUser = asyncHandler(async (req, res, next) => {
@@ -69,8 +69,8 @@ const registerUser = asyncHandler(async (req, res, next) => {
 });
 
 /**
+ * @route   POST /api/v1/users/login
  * @desc    Login user (Tokens generated here)
- * @route   POST /api/v1/user/login
  * @access  Public
  */
 const loginUser = asyncHandler(async (req, res, next) => {
@@ -127,9 +127,9 @@ const loginUser = asyncHandler(async (req, res, next) => {
 });
 
 /**
+ * @route   POST /api/v1/users/logout
  * @desc    Logout user (clear tokens + invalidate refreshToken)
- * @route   POST /api/v1/user/logout
- * @access  Private (requires JWT)
+ * @access  Protected (JWT)
  */
 const logoutUser = asyncHandler(async (req, res, next) => {
     // 1. Extract authenticated userId from request
@@ -174,8 +174,8 @@ const logoutUser = asyncHandler(async (req, res, next) => {
 });
 
 /**
+ * @route   GET /api/v1/users/security-question
  * @desc    Fetch security question for a user (by email or username)
- * @route   GET /api/v1/user/security-question
  * @access  Public
  */
 const fetchSecurityQuestion = asyncHandler(async (req, res, next) => {
@@ -205,8 +205,8 @@ const fetchSecurityQuestion = asyncHandler(async (req, res, next) => {
 });
 
 /**
+ * @route   POST /api/v1/users/security-answer/verify
  * @desc    Validate user’s security answer
- * @route   POST /api/v1/user/security-answer/verify
  * @access  Public
  */
 const validateSecurityAnswerController = asyncHandler(async (req, res, next) => {
@@ -247,8 +247,8 @@ const validateSecurityAnswerController = asyncHandler(async (req, res, next) => 
 });
 
 /**
- * @desc    Reset user’s password (after security answer verified)
- * @route   PATCH /api/v1/user/password/reset
+ * @route   PATCH /api/v1/users/password/reset
+ * @desc    Reset user’s password
  * @access  Public
  */
 const resetUserPassword = asyncHandler(async (req, res, next) => {
@@ -283,8 +283,8 @@ const resetUserPassword = asyncHandler(async (req, res, next) => {
 });
 
 /**
+ * @route   POST /api/v1/users/tokens
  * @desc    Refresh access token using refresh token
- * @route   POST /api/v1/user/tokens
  * @access  Public
  */
 const refreshTokens = asyncHandler(async (req, res, next) => {

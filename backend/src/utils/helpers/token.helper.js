@@ -1,10 +1,7 @@
 import jwt from "jsonwebtoken";
 import { StatusCodes, ReasonPhrases } from "http-status-codes";
 
-import {
-    ApiError,
-    logger
-} from "../../utils/index.js";
+import { ApiError, logger } from "../../utils/index.js";
 
 import { User } from "../../models/user.model.js";
 

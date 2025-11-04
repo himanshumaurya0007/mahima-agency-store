@@ -1,19 +1,10 @@
-// validations/master/productCategory.validation.js
-
 import Joi from "joi";
+
 import {
     FIELDS,
     MESSAGES,
 } from "../../utils/index.js";
 
-/**
- * Joi validation schema for Product Category.
- * Ensures:
- *  - Both fields are required.
- *  - categoryCode auto-mapped from category.
- * - Boolean validation for isActive (soft delete / activation flag).
- *  - Strict alignment with ProductCategory model validation.
- */
 const productCategoryValidationSchema = Joi.object({
     name: Joi.string()
         .trim()
@@ -37,14 +28,6 @@ const productCategoryValidationSchema = Joi.object({
             "string.empty": MESSAGES.REQUIRED(FIELDS.PRODUCT_CATEGORY_CODE),
         }),
 
-    /**
-     * --------------------------------------------------------------------
-     * Soft Delete / Activation Flag Validation
-     * --------------------------------------------------------------------
-     * - true  => active/enabled
-     * - false => disabled/soft-deleted
-     * --------------------------------------------------------------------
-     */
     isActive: Joi.boolean()
         .required()
         .messages({

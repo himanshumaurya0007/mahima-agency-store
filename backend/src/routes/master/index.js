@@ -1,4 +1,5 @@
 import express from "express";
+
 import productRouter from "./product.route.js";
 // Future: import customerRouter from "./customer.route.js";
 // Future: import invoiceRouter from "./invoice.route.js";
@@ -6,7 +7,7 @@ import productRouter from "./product.route.js";
 const router = express.Router();
 
 /**
- * Base: /api/v1/master
+ * Base: /api/v1/masters
  */
 
 // Product-related master routes

@@ -5,11 +5,6 @@ import {
     MESSAGES
 } from "../../utils/index.js";
 
-/**
- * ------------------------------------------------------------------------
- * PRODUCT CATEGORY SCHEMA
- * ------------------------------------------------------------------------
- */
 const productPackSizeSchema = new Schema(
     {
         name: {
@@ -31,11 +26,6 @@ const productPackSizeSchema = new Schema(
     }
 );
 
-/**
- * ------------------------------------------------------------------------
- * Explicit collection name ensures consistent DB naming
- * ------------------------------------------------------------------------
- */
 export const ProductPackSize = mongoose.model(
     "ProductPackSize",
     productPackSizeSchema,

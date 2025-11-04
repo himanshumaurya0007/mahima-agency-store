@@ -137,7 +137,7 @@ const loginValidationSchema = Joi.object({
             "string.min": MESSAGES.MIN_LENGTH(FIELDS.PASSWORD, 8),
             "string.max": MESSAGES.MAX_LENGTH(FIELDS.PASSWORD, 100),
         }),
-}).xor("username", "email");  // Ensure user provides either username OR email
+}).xor("username", "email");
 
 const securityQuestionValidationSchema = Joi.object({
     email: Joi.string()
@@ -161,7 +161,7 @@ const securityQuestionValidationSchema = Joi.object({
             "string.min": MESSAGES.MIN_LENGTH(FIELDS.USERNAME, 3),
             "string.max": MESSAGES.MAX_LENGTH(FIELDS.USERNAME, 30),
         }),
-}).xor("email", "username"); // Require either email OR username
+}).xor("email", "username");
 
 const securityAnswerValidationSchema = Joi.object({
     email: Joi.string()
@@ -196,7 +196,7 @@ const securityAnswerValidationSchema = Joi.object({
             "string.min": MESSAGES.MIN_LENGTH(FIELDS.SECURITY_ANSWER, 3),
             "string.max": MESSAGES.MAX_LENGTH(FIELDS.SECURITY_ANSWER, 50),
         }),
-}).xor("email", "username"); // Require either email OR username
+}).xor("email", "username");
 
 const resetPasswordValidationSchema = Joi.object({
     email: Joi.string()
@@ -233,7 +233,7 @@ const resetPasswordValidationSchema = Joi.object({
             "string.min": MESSAGES.MIN_LENGTH(FIELDS.PASSWORD, 8),
             "string.max": MESSAGES.MAX_LENGTH(FIELDS.PASSWORD, 100),
         }),
-}).xor("email", "username"); // Require either email OR username
+}).xor("email", "username");
 
 export {
     registerValidationSchema,

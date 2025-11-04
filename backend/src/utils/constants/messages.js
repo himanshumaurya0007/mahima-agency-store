@@ -1,5 +1,3 @@
-// utils/messages.js
-
 export const MESSAGES = {
     // ---------------------------
     // 🧩 GENERIC VALIDATION MESSAGES

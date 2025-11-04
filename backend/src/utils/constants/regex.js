@@ -1,5 +1,3 @@
-// utils/regex.js
-
 export const REGEX = {
     // ---------------------------
     // 📧 USER & AUTHENTICATION

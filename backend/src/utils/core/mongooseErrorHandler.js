@@ -1,7 +1,6 @@
-// backend/src/utils/core/mongooseErrorHandler.js
 import { StatusCodes, ReasonPhrases } from "http-status-codes";
-import { ApiError } from "./ApiError.js";
-import logger from "./logger.js";
+
+import { ApiError, logger } from "./index.js";
 import { FIELDS, MESSAGES } from "../constants/index.js";
 
 /**

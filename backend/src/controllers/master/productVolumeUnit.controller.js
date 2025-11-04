@@ -12,21 +12,12 @@ import {
 import { ProductVolumeUnit } from "../../models/master/productVolumeUnit.model.js";
 
 /**
- * ============================================================================
- * 🧩 PRODUCT VOLUME UNIT CONTROLLER
- * ----------------------------------------------------------------------------
- * CRUD operations:
- *  - Create
- *  - Read all
- *  - Read by ID
- *  - Update (Soft delete via isActive)
- *  - Hard delete
- * ============================================================================
+ * ------------------------------------------------------------------------
+ * @route   POST /api/v1/masters/products/volumne-units
+ * @desc    Create a new product volume unit
+ * @access  Protected (JWT)
+ * ------------------------------------------------------------------------
  */
-
-/* ----------------------------------------------------------------------------
- * 🟢 CREATE PRODUCT VOLUME UNIT
- * ---------------------------------------------------------------------------- */
 const createProductVolumeUnit = asyncHandler(async (req, res, next) => {
     try {
         const { name, isActive } = req.body;
@@ -72,9 +63,13 @@ const createProductVolumeUnit = asyncHandler(async (req, res, next) => {
     }
 });
 
-/* ----------------------------------------------------------------------------
- * 🟡 GET ALL PRODUCT VOLUME UNITS
- * ---------------------------------------------------------------------------- */
+/**
+ * ------------------------------------------------------------------------
+ * @route   GET /api/v1/masters/products/volumne-units
+ * @desc    Retrieve all active product volume units
+ * @access  Protected (JWT)
+ * ------------------------------------------------------------------------
+ */
 const getAllProductVolumeUnits = asyncHandler(async (req, res, next) => {
     try {
         const volumeUnits = await ProductVolumeUnit.find().sort({ name: 1 });
@@ -93,9 +88,13 @@ const getAllProductVolumeUnits = asyncHandler(async (req, res, next) => {
     }
 });
 
-/* ----------------------------------------------------------------------------
- * 🟠 GET PRODUCT VOLUME UNIT BY ID
- * ---------------------------------------------------------------------------- */
+/**
+ * ------------------------------------------------------------------------
+ * @route   GET /api/v1/masters/products/volumne-units/:id
+ * @desc    Retrieve a specific product volume unit by ID
+ * @access  Protected (JWT)
+ * ------------------------------------------------------------------------
+ */
 const getProductVolumeUnitById = asyncHandler(async (req, res, next) => {
     try {
         const { id } = req.params;
@@ -122,9 +121,15 @@ const getProductVolumeUnitById = asyncHandler(async (req, res, next) => {
     }
 });
 
-/* ----------------------------------------------------------------------------
- * 🧯 UPDATE PRODUCT VOLUME UNIT (Soft Delete / Enable Disable)
- * ---------------------------------------------------------------------------- */
+/**
+ * ------------------------------------------------------------------------
+ * @route   PUT /api/v1/masters/products/volumne-units/:id
+ * @desc    Soft delete (disable) or reactivate a product volume unit
+ * @access  Protected (JWT)
+ * ------------------------------------------------------------------------
+ * Allows toggling isActive = false (disable) or true (reactivate)
+ * ------------------------------------------------------------------------
+ */
 const updateProductVolumeUnitStatus = asyncHandler(async (req, res, next) => {
     try {
         const { id } = req.params;
@@ -165,9 +170,13 @@ const updateProductVolumeUnitStatus = asyncHandler(async (req, res, next) => {
     }
 });
 
-/* ----------------------------------------------------------------------------
- * 🔴 HARD DELETE PRODUCT VOLUME UNIT
- * ---------------------------------------------------------------------------- */
+/**
+ * ------------------------------------------------------------------------
+ * @route   DELETE /api/v1/masters/products/volumne-units/:id
+ * @desc    Hard delete a product volume unit by ID
+ * @access  Protected (JWT)
+ * ------------------------------------------------------------------------
+ */
 const deleteProductVolumeUnit = asyncHandler(async (req, res, next) => {
     try {
         const { id } = req.params;

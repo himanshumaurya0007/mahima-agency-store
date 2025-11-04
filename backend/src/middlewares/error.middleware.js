@@ -1,4 +1,3 @@
-// src/middlewares/error.middleware.js
 import { StatusCodes, ReasonPhrases } from "http-status-codes";
 
 import {

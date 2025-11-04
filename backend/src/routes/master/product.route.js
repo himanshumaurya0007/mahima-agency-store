@@ -13,7 +13,5 @@ const router = express.Router();
 router.use("/categories", productCategoryRouter);
 router.use("/pack-sizes", productPackSizeRouter);
 router.use("/volume-units", productVolumeUnitRouter);
-// Future: router.use("/brand", productBrandRouter);
-// Future: router.use("/type", productTypeRouter);
 
 export default router;

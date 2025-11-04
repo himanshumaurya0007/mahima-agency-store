@@ -5,11 +5,6 @@ import {
     MESSAGES
 } from "../../utils/index.js";
 
-/**
- * ------------------------------------------------------------------------
- * PRODUCT CATEGORY SCHEMA
- * ------------------------------------------------------------------------
- */
 const productCategorySchema = new Schema(
     {
         name: {
@@ -38,11 +33,6 @@ const productCategorySchema = new Schema(
     }
 );
 
-/**
- * ------------------------------------------------------------------------
- * Explicit collection name ensures consistent DB naming
- * ------------------------------------------------------------------------
- */
 export const ProductCategory = mongoose.model(
     "ProductCategory",
     productCategorySchema,

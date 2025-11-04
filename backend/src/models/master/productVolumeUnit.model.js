@@ -5,11 +5,6 @@ import {
     MESSAGES
 } from "../../utils/index.js";
 
-/**
- * ------------------------------------------------------------------------
- * PRODUCT CATEGORY SCHEMA
- * ------------------------------------------------------------------------
- */
 const productVolumeUnitSchema = new Schema(
     {
         name: {
@@ -31,11 +26,6 @@ const productVolumeUnitSchema = new Schema(
     }
 );
 
-/**
- * ------------------------------------------------------------------------
- * Explicit collection name ensures consistent DB naming
- * ------------------------------------------------------------------------
- */
 export const ProductVolumeUnit = mongoose.model(
     "productVolumeUnit",
     productVolumeUnitSchema,

@@ -1,4 +1,5 @@
 import { StatusCodes } from "http-status-codes";
+
 import {
     ApiResponse,
     ApiError,
@@ -12,21 +13,12 @@ import {
 import { ProductPackSize } from "../../models/master/productPackSize.model.js";
 
 /**
- * ============================================================================
- * 🧩 PRODUCT PACK SIZE CONTROLLER
- * ----------------------------------------------------------------------------
- * CRUD operations:
- *  - Create
- *  - Read all
- *  - Read by ID
- *  - Update (soft delete via isActive)
- *  - Hard delete
- * ============================================================================
+ * ------------------------------------------------------------------------
+ * @route   POST /api/v1/masters/products/pack-sizes
+ * @desc    Create a new product pack-size
+ * @access  Protected (JWT)
+ * ------------------------------------------------------------------------
  */
-
-/* ----------------------------------------------------------------------------
- * 🟢 CREATE PRODUCT PACK SIZE
- * ---------------------------------------------------------------------------- */
 const createProductPackSize = asyncHandler(async (req, res, next) => {
     try {
         const { name } = req.body;
@@ -68,9 +60,13 @@ const createProductPackSize = asyncHandler(async (req, res, next) => {
     }
 });
 
-/* ----------------------------------------------------------------------------
- * 🟡 GET ALL PRODUCT PACK SIZES
- * ---------------------------------------------------------------------------- */
+/**
+ * ------------------------------------------------------------------------
+ * @route   GET /api/v1/masters/products/pack-sizes
+ * @desc    Retrieve all active product pack-size
+ * @access  Protected (JWT)
+ * ------------------------------------------------------------------------
+ */
 const getAllProductPackSizes = asyncHandler(async (req, res, next) => {
     try {
         const packSizes = await ProductPackSize.find().sort({ name: 1 });
@@ -89,9 +85,13 @@ const getAllProductPackSizes = asyncHandler(async (req, res, next) => {
     }
 });
 
-/* ----------------------------------------------------------------------------
- * 🟠 GET PRODUCT PACK SIZE BY ID
- * ---------------------------------------------------------------------------- */
+/**
+ * ------------------------------------------------------------------------
+ * @route   GET /api/v1/masters/products/pack-sizes
+ * @desc    Retrieve a specific product pack-size by ID
+ * @access  Protected (JWT)
+ * ------------------------------------------------------------------------
+ */
 const getProductPackSizeById = asyncHandler(async (req, res, next) => {
     try {
         const { id } = req.params;
@@ -118,9 +118,15 @@ const getProductPackSizeById = asyncHandler(async (req, res, next) => {
     }
 });
 
-/* ----------------------------------------------------------------------------
- * 🧯 UPDATE PRODUCT PACK SIZE (Soft Delete via isActive)
- * ---------------------------------------------------------------------------- */
+/**
+ * ------------------------------------------------------------------------
+ * @route   UPDATE /api/v1/masters/products/pack-sizes/:id
+ * @desc    Soft delete (disable) or reactivate a product pack-size
+ * @access  Protected (JWT)
+ * ------------------------------------------------------------------------
+ * Allows toggling isActive = false (disable) or true (reactivate)
+ * ------------------------------------------------------------------------
+ */
 const updateProductPackSizeStatus = asyncHandler(async (req, res, next) => {
     try {
         const { id } = req.params;
@@ -161,9 +167,13 @@ const updateProductPackSizeStatus = asyncHandler(async (req, res, next) => {
     }
 });
 
-/* ----------------------------------------------------------------------------
- * 🔴 HARD DELETE PRODUCT PACK SIZE
- * ---------------------------------------------------------------------------- */
+/**
+ * ------------------------------------------------------------------------
+ * @route   DELETE /api/v1/masters/products/pack-sizes/:id
+ * @desc    Hard delete a product pack-size by ID
+ * @access  Protected (JWT)
+ * ------------------------------------------------------------------------
+ */
 const deleteProductPackSize = asyncHandler(async (req, res, next) => {
     try {
         const { id } = req.params;
