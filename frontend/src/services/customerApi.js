@@ -11,7 +11,7 @@ class CustomerApi {
    */
   async addCustomer(customerData) {
     try {
-      const response = await baseApi.post('/customer', customerData);
+      const response = await baseApi.post('/customers', customerData);
       // ✅ Pass the inner data object
       return new ApiResponse(
         response.data.statusCode,
@@ -29,7 +29,7 @@ class CustomerApi {
    */
   async getAllCustomers() {
     try {
-      const response = await baseApi.get('/customer');
+      const response = await baseApi.get('/customers');
       // ✅ Pass the inner data object (which contains 'customers' array)
       return new ApiResponse(
         response.data.statusCode,
@@ -48,7 +48,7 @@ class CustomerApi {
    */
   async getCustomerById(id) {
     try {
-      const response = await baseApi.get(`/customer/${id}`);
+      const response = await baseApi.get(`/customers/${id}`);
       // ✅ Pass the inner data object
       return new ApiResponse(
         response.data.statusCode,
@@ -68,7 +68,7 @@ class CustomerApi {
    */
   async updateCustomer(id, customerData) {
     try {
-      const response = await baseApi.put(`/customer/${id}`, customerData);
+      const response = await baseApi.put(`/customers/${id}`, customerData);
       // ✅ Pass the inner data object
       return new ApiResponse(
         response.data.statusCode,
@@ -87,7 +87,7 @@ class CustomerApi {
    */
   async deleteCustomer(id) {
     try {
-      const response = await baseApi.delete(`/customer/${id}`);
+      const response = await baseApi.delete(`/customers/${id}`);
       // ✅ Pass the inner data object
       return new ApiResponse(
         response.data.statusCode,
