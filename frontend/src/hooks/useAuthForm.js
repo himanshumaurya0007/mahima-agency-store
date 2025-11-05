@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { validateForm } from '../middlewares/validateUser.middleware';
-import { validateField } from '../utils/validate';
+import { validateForm } from '../middlewares/validateUser.middleware.js';
+import { validateField } from '../utils/validate.js';
 
 /**
  * Custom hook for authentication forms

@@ -13,8 +13,6 @@ export const customerFields = {
   panCardNumber: 'PAN Card Number',
   gstinNumber: 'GSTIN Number',
   
-  // Address Fields
-  customerAddress: 'Customer Address',
   place: 'Place',
   city: 'City',
   state: 'State',
