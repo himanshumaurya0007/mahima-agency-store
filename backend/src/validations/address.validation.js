@@ -1,9 +1,11 @@
 import Joi from "joi";
 
-import { fields } from "../utils/fields.js";
-import { pinCodeRegex } from "../utils/regex.js";
-import { errorMessages } from "../utils/errorMessages.js";
-import { INDIAN_STATE_NAMES, INDIAN_STATE_CODES } from "../constants.js";
+import {
+    FIELDS,
+    REGEX,
+    MESSAGES
+} from "../utils/index.js";
+import { INDIAN_STATE_NAMES, INDIAN_STATE_CODES } from "../utils/constants/enums.js";
 
 const addressValidationSchema = Joi.object({
     place: Joi.string()
@@ -13,9 +15,9 @@ const addressValidationSchema = Joi.object({
         .lowercase()
         .required()
         .messages({
-            "string.empty": errorMessages.REQUIRED(fields.place),
-            "string.min": errorMessages.MIN_LENGTH(fields.place, 3),
-            "string.max": errorMessages.MAX_LENGTH(fields.place, 50),
+            "string.empty": MESSAGES.REQUIRED(FIELDS.PLACE),
+            "string.min": MESSAGES.MIN_LENGTH(FIELDS.PLACE, 3),
+            "string.max": MESSAGES.MAX_LENGTH(FIELDS.PLACE, 50),
         }),
 
     city: Joi.string()
@@ -25,9 +27,9 @@ const addressValidationSchema = Joi.object({
         .lowercase()
         .required()
         .messages({
-            "string.empty": errorMessages.REQUIRED(fields.city),
-            "string.min": errorMessages.MIN_LENGTH(fields.city, 2),
-            "string.max": errorMessages.MAX_LENGTH(fields.city, 50),
+            "string.empty": MESSAGES.REQUIRED(FIELDS.CITY),
+            "string.min": MESSAGES.MIN_LENGTH(FIELDS.CITY, 2),
+            "string.max": MESSAGES.MAX_LENGTH(FIELDS.CITY, 50),
         }),
 
     state: Joi.string()
@@ -36,8 +38,8 @@ const addressValidationSchema = Joi.object({
         .trim()
         .required()
         .messages({
-            "any.only": `Invalid ${fields.indianState}`,
-            "string.empty": errorMessages.REQUIRED(fields.indianState),
+            "any.only": `Invalid ${FIELDS.INDIAN_STATE}`,
+            "string.empty": MESSAGES.REQUIRED(FIELDS.INDIAN_STATE),
         }),
 
     stateCode: Joi.string()
@@ -46,17 +48,17 @@ const addressValidationSchema = Joi.object({
         .trim()
         .required()
         .messages({
-            "any.only": `Invalid ${fields.indianStateCode}`,
-            "string.empty": errorMessages.REQUIRED(fields.indianStateCode),
+            "any.only": `Invalid ${FIELDS.INDIAN_STATE_CODE}`,
+            "string.empty": MESSAGES.REQUIRED(FIELDS.INDIAN_STATE_CODE),
         }),
 
     pinCode: Joi.string()
-        .pattern(pinCodeRegex)
+        .pattern(REGEX.PIN_CODE)
         .trim()
         .required()
         .messages({
-            "string.pattern.base": errorMessages.PINCODE_INVALID,
-            "string.empty": errorMessages.REQUIRED(fields.pincode),
+            "string.pattern.base": MESSAGES.PINCODE_INVALID,
+            "string.empty": MESSAGES.REQUIRED(FIELDS.PIN_CODE),
         }),
 });
 

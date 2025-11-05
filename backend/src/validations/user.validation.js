@@ -1,9 +1,11 @@
 import Joi from "joi";
 
-import { fields } from "../utils/fields.js";
-import { emailRegex, phoneRegex, usernameRegex, passwordRegex } from "../utils/regex.js";
-import { errorMessages } from "../utils/errorMessages.js";
-import { SECURITY_QUESTIONS } from "../constants.js"
+import {
+    ENUMS,
+    FIELDS,
+    REGEX,
+    MESSAGES
+} from "../utils/index.js";
 
 const registerValidationSchema = Joi.object({
     firstName: Joi.string()
@@ -13,10 +15,10 @@ const registerValidationSchema = Joi.object({
         .lowercase()
         .required()
         .messages({
-            "string.base": errorMessages.STRING_BASE(fields.firstName),
-            "string.empty": errorMessages.REQUIRED(fields.firstName),
-            "string.min": errorMessages.MIN_LENGTH(fields.firstName, 2),
-            "string.max": errorMessages.MAX_LENGTH(fields.firstName, 50),
+            "string.base": MESSAGES.STRING_BASE(FIELDS.FIRST_NAME),
+            "string.empty": MESSAGES.REQUIRED(FIELDS.FIRST_NAME),
+            "string.min": MESSAGES.MIN_LENGTH(FIELDS.FIRST_NAME, 2),
+            "string.max": MESSAGES.MAX_LENGTH(FIELDS.FIRST_NAME, 50),
         }),
 
     lastName: Joi.string()
@@ -26,51 +28,51 @@ const registerValidationSchema = Joi.object({
         .lowercase()
         .required()
         .messages({
-            "string.base": errorMessages.STRING_BASE(fields.lastName),
-            "string.empty": errorMessages.REQUIRED(fields.lastName),
-            "string.min": errorMessages.MIN_LENGTH(fields.lastName, 2),
-            "string.max": errorMessages.MAX_LENGTH(fields.lastName, 50),
+            "string.base": MESSAGES.STRING_BASE(FIELDS.LAST_NAME),
+            "string.empty": MESSAGES.REQUIRED(FIELDS.LAST_NAME),
+            "string.min": MESSAGES.MIN_LENGTH(FIELDS.LAST_NAME, 2),
+            "string.max": MESSAGES.MAX_LENGTH(FIELDS.LAST_NAME, 50),
         }),
 
     email: Joi.string()
-        .pattern(emailRegex)
+        .pattern(REGEX.EMAIL)
         .trim()
         .lowercase()
         .required()
         .messages({
-            "string.pattern.base": errorMessages.EMAIL_INVALID,
-            "string.empty": errorMessages.REQUIRED(fields.email),
+            "string.pattern.base": MESSAGES.EMAIL_INVALID,
+            "string.empty": MESSAGES.REQUIRED(FIELDS.EMAIL),
         }),
 
     phone: Joi.string()
-        .pattern(phoneRegex)
+        .pattern(REGEX.PHONE)
         .trim()
         .required()
         .messages({
-            "string.pattern.base": errorMessages.PHONE_INVALID,
-            "string.empty": errorMessages.REQUIRED(fields.phone),
+            "string.pattern.base": MESSAGES.PHONE_INVALID,
+            "string.empty": MESSAGES.REQUIRED(FIELDS.PHONE),
         }),
 
     username: Joi.string()
         .min(3)
         .max(30)
-        .pattern(usernameRegex)
+        .pattern(REGEX.USERNAME)
         .trim()
         .lowercase()
         .required()
         .messages({
-            "string.pattern.base": errorMessages.USERNAME_INVALID,
-            "string.empty": errorMessages.REQUIRED(fields.username),
-            "string.min": errorMessages.MIN_LENGTH(fields.username, 3),
-            "string.max": errorMessages.MAX_LENGTH(fields.username, 30),
+            "string.pattern.base": MESSAGES.USERNAME_INVALID,
+            "string.empty": MESSAGES.REQUIRED(FIELDS.USERNAME),
+            "string.min": MESSAGES.MIN_LENGTH(FIELDS.USERNAME, 3),
+            "string.max": MESSAGES.MAX_LENGTH(FIELDS.USERNAME, 30),
         }),
 
     securityQuestion: Joi.string()
-        .valid(...SECURITY_QUESTIONS)
+        .valid(...ENUMS.SECURITY_QUESTIONS)
         .required()
         .messages({
             "any.only": "Invalid security question",
-            "string.empty": errorMessages.REQUIRED(fields.securityQuestion),
+            "string.empty": MESSAGES.REQUIRED(FIELDS.SECURITY_QUESTION),
         }),
 
     securityAnswer: Joi.string()
@@ -79,22 +81,22 @@ const registerValidationSchema = Joi.object({
         .trim()
         .required()
         .messages({
-            "string.empty": errorMessages.REQUIRED(fields.securityAnswer),
-            "string.min": errorMessages.MIN_LENGTH(fields.securityAnswer, 3),
-            "string.max": errorMessages.MAX_LENGTH(fields.securityAnswer, 50),
+            "string.empty": MESSAGES.REQUIRED(FIELDS.SECURITY_ANSWER),
+            "string.min": MESSAGES.MIN_LENGTH(FIELDS.SECURITY_ANSWER, 3),
+            "string.max": MESSAGES.MAX_LENGTH(FIELDS.SECURITY_ANSWER, 50),
         }),
 
     password: Joi.string()
-        .pattern(passwordRegex)
+        .pattern(REGEX.PASSWORD)
         .min(8)
         .max(100)
         .trim()
         .required()
         .messages({
-            "string.pattern.base": errorMessages.PASSWORD_INVALID,
-            "string.empty": errorMessages.REQUIRED(fields.password),
-            "string.min": errorMessages.MIN_LENGTH(fields.password, 8),
-            "string.max": errorMessages.MAX_LENGTH(fields.password, 100),
+            "string.pattern.base": MESSAGES.PASSWORD_INVALID,
+            "string.empty": MESSAGES.REQUIRED(FIELDS.PASSWORD),
+            "string.min": MESSAGES.MIN_LENGTH(FIELDS.PASSWORD, 8),
+            "string.max": MESSAGES.MAX_LENGTH(FIELDS.PASSWORD, 100),
         }),
 
     refreshToken: Joi.string().optional(),
@@ -102,86 +104,86 @@ const registerValidationSchema = Joi.object({
 
 const loginValidationSchema = Joi.object({
     email: Joi.string()
-        .pattern(emailRegex)
+        .pattern(REGEX.EMAIL)
         .trim()
         .lowercase()
         .messages({
-            "string.pattern.base": errorMessages.EMAIL_INVALID,
-            "string.empty": errorMessages.REQUIRED(fields.email),
+            "string.pattern.base": MESSAGES.EMAIL_INVALID,
+            "string.empty": MESSAGES.REQUIRED(FIELDS.EMAIL),
         }),
 
     username: Joi.string()
         .min(3)
         .max(30)
-        .pattern(usernameRegex)
+        .pattern(REGEX.USERNAME)
         .trim()
         .lowercase()
         .messages({
-            "string.pattern.base": errorMessages.USERNAME_INVALID,
-            "string.empty": errorMessages.REQUIRED(fields.username),
-            "string.min": errorMessages.MIN_LENGTH(fields.username, 3),
-            "string.max": errorMessages.MAX_LENGTH(fields.username, 30),
+            "string.pattern.base": MESSAGES.USERNAME_INVALID,
+            "string.empty": MESSAGES.REQUIRED(FIELDS.USERNAME),
+            "string.min": MESSAGES.MIN_LENGTH(FIELDS.USERNAME, 3),
+            "string.max": MESSAGES.MAX_LENGTH(FIELDS.USERNAME, 30),
         }),
 
     password: Joi.string()
-        .pattern(passwordRegex)
+        .pattern(REGEX.PASSWORD)
         .min(8)
         .max(100)
         .trim()
         .required()
         .messages({
-            "string.pattern.base": errorMessages.PASSWORD_INVALID,
-            "string.empty": errorMessages.REQUIRED(fields.password),
-            "string.min": errorMessages.MIN_LENGTH(fields.password, 8),
-            "string.max": errorMessages.MAX_LENGTH(fields.password, 100),
+            "string.pattern.base": MESSAGES.PASSWORD_INVALID,
+            "string.empty": MESSAGES.REQUIRED(FIELDS.PASSWORD),
+            "string.min": MESSAGES.MIN_LENGTH(FIELDS.PASSWORD, 8),
+            "string.max": MESSAGES.MAX_LENGTH(FIELDS.PASSWORD, 100),
         }),
-}).xor("username", "email");  // Ensure user provides either username OR email
+}).xor("username", "email");
 
 const securityQuestionValidationSchema = Joi.object({
     email: Joi.string()
-        .pattern(emailRegex)
+        .pattern(REGEX.EMAIL)
         .trim()
         .lowercase()
         .messages({
-            "string.pattern.base": errorMessages.EMAIL_INVALID,
-            "string.empty": errorMessages.REQUIRED(fields.email),
+            "string.pattern.base": MESSAGES.EMAIL_INVALID,
+            "string.empty": MESSAGES.REQUIRED(FIELDS.EMAIL),
         }),
 
     username: Joi.string()
         .min(3)
         .max(30)
-        .pattern(usernameRegex)
+        .pattern(REGEX.USERNAME)
         .trim()
         .lowercase()
         .messages({
-            "string.pattern.base": errorMessages.USERNAME_INVALID,
-            "string.empty": errorMessages.REQUIRED(fields.username),
-            "string.min": errorMessages.MIN_LENGTH(fields.username, 3),
-            "string.max": errorMessages.MAX_LENGTH(fields.username, 30),
+            "string.pattern.base": MESSAGES.USERNAME_INVALID,
+            "string.empty": MESSAGES.REQUIRED(FIELDS.USERNAME),
+            "string.min": MESSAGES.MIN_LENGTH(FIELDS.USERNAME, 3),
+            "string.max": MESSAGES.MAX_LENGTH(FIELDS.USERNAME, 30),
         }),
-}).xor("email", "username"); // Require either email OR username
+}).xor("email", "username");
 
 const securityAnswerValidationSchema = Joi.object({
     email: Joi.string()
-        .pattern(emailRegex)
+        .pattern(REGEX.EMAIL)
         .trim()
         .lowercase()
         .messages({
-            "string.pattern.base": errorMessages.EMAIL_INVALID,
-            "string.empty": errorMessages.REQUIRED(fields.email),
+            "string.pattern.base": MESSAGES.EMAIL_INVALID,
+            "string.empty": MESSAGES.REQUIRED(FIELDS.EMAIL),
         }),
 
     username: Joi.string()
         .min(3)
         .max(30)
-        .pattern(usernameRegex)
+        .pattern(REGEX.USERNAME)
         .trim()
         .lowercase()
         .messages({
-            "string.pattern.base": errorMessages.USERNAME_INVALID,
-            "string.empty": errorMessages.REQUIRED(fields.username),
-            "string.min": errorMessages.MIN_LENGTH(fields.username, 3),
-            "string.max": errorMessages.MAX_LENGTH(fields.username, 30),
+            "string.pattern.base": MESSAGES.USERNAME_INVALID,
+            "string.empty": MESSAGES.REQUIRED(FIELDS.USERNAME),
+            "string.min": MESSAGES.MIN_LENGTH(FIELDS.USERNAME, 3),
+            "string.max": MESSAGES.MAX_LENGTH(FIELDS.USERNAME, 30),
         }),
 
     securityAnswer: Joi.string()
@@ -190,47 +192,53 @@ const securityAnswerValidationSchema = Joi.object({
         .trim()
         .required()
         .messages({
-            "string.empty": errorMessages.REQUIRED(fields.securityAnswer),
-            "string.min": errorMessages.MIN_LENGTH(fields.securityAnswer, 3),
-            "string.max": errorMessages.MAX_LENGTH(fields.securityAnswer, 50),
+            "string.empty": MESSAGES.REQUIRED(FIELDS.SECURITY_ANSWER),
+            "string.min": MESSAGES.MIN_LENGTH(FIELDS.SECURITY_ANSWER, 3),
+            "string.max": MESSAGES.MAX_LENGTH(FIELDS.SECURITY_ANSWER, 50),
         }),
-}).xor("email", "username"); // Require either email OR username
+}).xor("email", "username");
 
 const resetPasswordValidationSchema = Joi.object({
     email: Joi.string()
-        .pattern(emailRegex)
+        .pattern(REGEX.EMAIL)
         .trim()
         .lowercase()
         .messages({
-            "string.pattern.base": errorMessages.EMAIL_INVALID,
-            "string.empty": errorMessages.REQUIRED(fields.email),
+            "string.pattern.base": MESSAGES.EMAIL_INVALID,
+            "string.empty": MESSAGES.REQUIRED(FIELDS.EMAIL),
         }),
 
     username: Joi.string()
         .min(3)
         .max(30)
-        .pattern(usernameRegex)
+        .pattern(REGEX.USERNAME)
         .trim()
         .lowercase()
         .messages({
-            "string.pattern.base": errorMessages.USERNAME_INVALID,
-            "string.empty": errorMessages.REQUIRED(fields.username),
-            "string.min": errorMessages.MIN_LENGTH(fields.username, 3),
-            "string.max": errorMessages.MAX_LENGTH(fields.username, 30),
+            "string.pattern.base": MESSAGES.USERNAME_INVALID,
+            "string.empty": MESSAGES.REQUIRED(FIELDS.USERNAME),
+            "string.min": MESSAGES.MIN_LENGTH(FIELDS.USERNAME, 3),
+            "string.max": MESSAGES.MAX_LENGTH(FIELDS.USERNAME, 30),
         }),
 
     newPassword: Joi.string()
-        .pattern(passwordRegex)
+        .pattern(REGEX.PASSWORD)
         .min(8)
         .max(100)
         .trim()
         .required()
         .messages({
-            "string.pattern.base": errorMessages.PASSWORD_INVALID,
-            "string.empty": errorMessages.REQUIRED(fields.password),
-            "string.min": errorMessages.MIN_LENGTH(fields.password, 8),
-            "string.max": errorMessages.MAX_LENGTH(fields.password, 100),
+            "string.pattern.base": MESSAGES.PASSWORD_INVALID,
+            "string.empty": MESSAGES.REQUIRED(FIELDS.PASSWORD),
+            "string.min": MESSAGES.MIN_LENGTH(FIELDS.PASSWORD, 8),
+            "string.max": MESSAGES.MAX_LENGTH(FIELDS.PASSWORD, 100),
         }),
-}).xor("email", "username"); // Require either email OR username
+}).xor("email", "username");
 
-export { registerValidationSchema, loginValidationSchema, securityQuestionValidationSchema, securityAnswerValidationSchema, resetPasswordValidationSchema };
+export {
+    registerValidationSchema,
+    loginValidationSchema,
+    securityQuestionValidationSchema,
+    securityAnswerValidationSchema,
+    resetPasswordValidationSchema
+};
