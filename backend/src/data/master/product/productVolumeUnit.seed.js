@@ -7,7 +7,7 @@ dotenv.config("../../../../.env");
 import { ProductVolumeUnit } from "../../../models/master/productVolumeUnit.model.js";
 import { FIELDS } from "../../../utils/index.js";
 
-const VOLUME_UNITS = [
+const PRODUCT_VOLUME_UNITS = [
     { name: "ML" },
     { name: "L" },
 ];
@@ -23,10 +23,10 @@ const seedProductPackSizes = async () => {
 
         // Clear existing
         await ProductVolumeUnit.deleteMany({});
-        console.log(`Existing ${FIELDS.VOLUME_UNIT} cleared.`);
+        console.log(`Existing ${FIELDS.PRODUCT_VOLUME_UNIT} cleared.`);
 
-        const result = await ProductVolumeUnit.insertMany(VOLUME_UNITS);
-        console.log(`Seeded ${result.length} ${FIELDS.VOLUME_UNIT}.`);
+        const result = await ProductVolumeUnit.insertMany(PRODUCT_VOLUME_UNITS);
+        console.log(`Seeded ${result.length} ${FIELDS.PRODUCT_VOLUME_UNIT}.`);
 
         process.exit(0);
     } catch (error) {

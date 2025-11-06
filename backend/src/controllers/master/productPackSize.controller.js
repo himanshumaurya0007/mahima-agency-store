@@ -26,7 +26,7 @@ const createProductPackSize = asyncHandler(async (req, res, next) => {
         if (!name?.trim()) {
             throw new ApiError(
                 StatusCodes.BAD_REQUEST,
-                MESSAGES.REQUIRED(FIELDS.PACK_SIZE)
+                MESSAGES.REQUIRED(FIELDS.PRODUCT_PACK_SIZE)
             );
         }
 
@@ -34,8 +34,8 @@ const createProductPackSize = asyncHandler(async (req, res, next) => {
         if (existing) {
             throw new ApiError(
                 StatusCodes.CONFLICT,
-                MESSAGES.DUPLICATE_VALUE(FIELDS.PACK_SIZE),
-                [`${FIELDS.PACK_SIZE} '${name}' already exists`]
+                MESSAGES.DUPLICATE_VALUE(FIELDS.PRODUCT_PACK_SIZE),
+                [`${FIELDS.PRODUCT_PACK_SIZE} '${name}' already exists`]
             );
         }
 
@@ -44,7 +44,7 @@ const createProductPackSize = asyncHandler(async (req, res, next) => {
             isActive: true,
         });
 
-        logger.info(`✅ Created ${FIELDS.PACK_SIZE}: ${packSize.name}`);
+        logger.info(`✅ Created ${FIELDS.PRODUCT_PACK_SIZE}: ${packSize.name}`);
 
         return res
             .status(StatusCodes.CREATED)
@@ -52,7 +52,7 @@ const createProductPackSize = asyncHandler(async (req, res, next) => {
                 new ApiResponse(
                     StatusCodes.CREATED,
                     packSize,
-                    `${FIELDS.PACK_SIZE} created successfully`
+                    `${FIELDS.PRODUCT_PACK_SIZE} created successfully`
                 )
             );
     } catch (error) {
@@ -77,7 +77,7 @@ const getAllProductPackSizes = asyncHandler(async (req, res, next) => {
                 new ApiResponse(
                     StatusCodes.OK,
                     packSizes,
-                    `${FIELDS.PACK_SIZE}s fetched successfully`
+                    `${FIELDS.PRODUCT_PACK_SIZE}s fetched successfully`
                 )
             );
     } catch (error) {
@@ -100,7 +100,7 @@ const getProductPackSizeById = asyncHandler(async (req, res, next) => {
         if (!packSize) {
             throw new ApiError(
                 StatusCodes.NOT_FOUND,
-                MESSAGES.NOT_FOUND(FIELDS.PACK_SIZE)
+                MESSAGES.NOT_FOUND(FIELDS.PRODUCT_PACK_SIZE)
             );
         }
 
@@ -110,7 +110,7 @@ const getProductPackSizeById = asyncHandler(async (req, res, next) => {
                 new ApiResponse(
                     StatusCodes.OK,
                     packSize,
-                    `${FIELDS.PACK_SIZE} fetched successfully`
+                    `${FIELDS.PRODUCT_PACK_SIZE} fetched successfully`
                 )
             );
     } catch (error) {
@@ -144,7 +144,7 @@ const updateProductPackSizeStatus = asyncHandler(async (req, res, next) => {
         if (!packSize) {
             throw new ApiError(
                 StatusCodes.NOT_FOUND,
-                MESSAGES.NOT_FOUND(FIELDS.PACK_SIZE)
+                MESSAGES.NOT_FOUND(FIELDS.PRODUCT_PACK_SIZE)
             );
         }
 
@@ -152,11 +152,11 @@ const updateProductPackSizeStatus = asyncHandler(async (req, res, next) => {
         await packSize.save();
 
         const message = isActive
-            ? `${FIELDS.PACK_SIZE} enabled successfully`
-            : `${FIELDS.PACK_SIZE} disabled successfully`;
+            ? `${FIELDS.PRODUCT_PACK_SIZE} enabled successfully`
+            : `${FIELDS.PRODUCT_PACK_SIZE} disabled successfully`;
 
         logger.info(
-            `🟠 Updated ${FIELDS.PACK_SIZE} (${packSize.name}) → isActive=${isActive}`
+            `🟠 Updated ${FIELDS.PRODUCT_PACK_SIZE} (${packSize.name}) → isActive=${isActive}`
         );
 
         return res
@@ -182,13 +182,13 @@ const deleteProductPackSize = asyncHandler(async (req, res, next) => {
         if (!packSize) {
             throw new ApiError(
                 StatusCodes.NOT_FOUND,
-                MESSAGES.NOT_FOUND(FIELDS.PACK_SIZE)
+                MESSAGES.NOT_FOUND(FIELDS.PRODUCT_PACK_SIZE)
             );
         }
 
         await ProductPackSize.findByIdAndDelete(id);
 
-        logger.warn(`🗑️ Deleted ${FIELDS.PACK_SIZE}: ${packSize.name}`);
+        logger.warn(`🗑️ Deleted ${FIELDS.PRODUCT_PACK_SIZE}: ${packSize.name}`);
 
         return res
             .status(StatusCodes.OK)
@@ -196,7 +196,7 @@ const deleteProductPackSize = asyncHandler(async (req, res, next) => {
                 new ApiResponse(
                     StatusCodes.OK,
                     null,
-                    `${FIELDS.PACK_SIZE} deleted successfully`
+                    `${FIELDS.PRODUCT_PACK_SIZE} deleted successfully`
                 )
             );
     } catch (error) {

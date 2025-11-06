@@ -24,15 +24,15 @@ export const FIELDS = {
     INDIAN_STATE_CODE: "State code",
     PIN_CODE: "PIN code",
 
+    IS_ACTIVE: "Active Status",
+
     PRODUCT_CATEGORY: "Product Category",
     PRODUCT_CATEGORY_CODE: "Product Category Code",
-    PACK_SIZE: "Pack Size",
-    IS_ACTIVE: "Active Status",
-    VOLUME_UNIT: "Volume unit",
+    PRODUCT_PACK_SIZE: "Product Pack Size",
+    PRODUCT_VOLUME_UNIT: "Product Volume unit",
 
     PRODUCT_NAME: "Product name",
     VOLUME_MAGNITUDE: "Volume magnitude",
-    VOLUME_UNIT: "Volume unit",
     MATERIAL_CODE: "Material code",
     MRP: "MRP (Maximum Retail Price)",
     RATE: "Rate",

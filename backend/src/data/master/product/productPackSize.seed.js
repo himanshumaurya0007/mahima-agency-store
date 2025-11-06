@@ -7,7 +7,7 @@ dotenv.config("../../../../.env");
 import { ProductPackSize } from "../../../models/master/productPackSize.model.js";
 import { FIELDS } from "../../../utils/index.js";
 
-const PACK_SIZES = [
+const PRODUCT_PACK_SIZES = [
     { name: "[1x1]" },
     { name: "[1x8]" },
     { name: "[1x10]" },
@@ -33,10 +33,10 @@ const seedProductPackSizes = async () => {
 
         // Clear existing
         await ProductPackSize.deleteMany({});
-        console.log(`Existing ${FIELDS.PACK_SIZE} cleared.`);
+        console.log(`Existing ${FIELDS.PRODUCT_PACK_SIZE} cleared.`);
 
-        const result = await ProductPackSize.insertMany(PACK_SIZES);
-        console.log(`Seeded ${result.length} ${FIELDS.PACK_SIZE}.`);
+        const result = await ProductPackSize.insertMany(PRODUCT_PACK_SIZES);
+        console.log(`Seeded ${result.length} ${FIELDS.PRODUCT_PACK_SIZE}.`);
 
         process.exit(0);
     } catch (error) {

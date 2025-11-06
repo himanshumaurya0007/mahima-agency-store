@@ -10,7 +10,7 @@ const productPackSizeSchema = new Schema(
         name: {
             type: String,
             trim: true,
-            required: [true, MESSAGES.REQUIRED(FIELDS.PACK_SIZE)],
+            required: [true, MESSAGES.REQUIRED(FIELDS.PRODUCT_PACK_SIZE)],
             unique: true, // Enforce uniqueness at the DB level
         },
         isActive: {

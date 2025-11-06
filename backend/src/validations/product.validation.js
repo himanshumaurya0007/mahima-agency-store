@@ -57,9 +57,9 @@ const productValidationSchema = Joi.object({
         .max(20)
         .required()
         .messages({
-            "string.empty": MESSAGES.REQUIRED(FIELDS.VOLUME_UNIT),
-            "string.min": MESSAGES.MIN_LENGTH(FIELDS.VOLUME_UNIT, 1),
-            "string.max": MESSAGES.MAX_LENGTH(FIELDS.VOLUME_UNIT, 20),
+            "string.empty": MESSAGES.REQUIRED(FIELDS.PRODUCT_VOLUME_UNIT),
+            "string.min": MESSAGES.MIN_LENGTH(FIELDS.PRODUCT_VOLUME_UNIT, 1),
+            "string.max": MESSAGES.MAX_LENGTH(FIELDS.PRODUCT_VOLUME_UNIT, 20),
         }),
 
     packSize: Joi.string()
@@ -68,9 +68,9 @@ const productValidationSchema = Joi.object({
         .max(20)
         .required()
         .messages({
-            "string.empty": MESSAGES.REQUIRED(FIELDS.PACK_SIZE),
-            "string.min": MESSAGES.MIN_LENGTH(FIELDS.PACK_SIZE, 2),
-            "string.max": MESSAGES.MAX_LENGTH(FIELDS.PACK_SIZE, 20),
+            "string.empty": MESSAGES.REQUIRED(FIELDS.PRODUCT_PACK_SIZE),
+            "string.min": MESSAGES.MIN_LENGTH(FIELDS.PRODUCT_PACK_SIZE, 2),
+            "string.max": MESSAGES.MAX_LENGTH(FIELDS.PRODUCT_PACK_SIZE, 20),
         }),
 
     materialCode: Joi.string()

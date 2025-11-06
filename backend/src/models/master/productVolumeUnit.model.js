@@ -10,7 +10,7 @@ const productVolumeUnitSchema = new Schema(
         name: {
             type: String,
             trim: true,
-            required: [true, MESSAGES.REQUIRED(FIELDS.VOLUME_UNIT)],
+            required: [true, MESSAGES.REQUIRED(FIELDS.PRODUCT_VOLUME_UNIT)],
             unique: true, // Enforce uniqueness at the DB level
         },
         isActive: {

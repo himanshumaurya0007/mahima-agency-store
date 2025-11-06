@@ -11,9 +11,9 @@ const productVolumeUnitValidationSchema = Joi.object({
         .uppercase()
         .required()
         .messages({
-            "string.base": MESSAGES.STRING_BASE(FIELDS.VOLUME_UNIT),
-            "any.required": MESSAGES.REQUIRED(FIELDS.VOLUME_UNIT),
-            "string.empty": MESSAGES.REQUIRED(FIELDS.VOLUME_UNIT),
+            "string.base": MESSAGES.STRING_BASE(FIELDS.PRODUCT_VOLUME_UNIT),
+            "any.required": MESSAGES.REQUIRED(FIELDS.PRODUCT_VOLUME_UNIT),
+            "string.empty": MESSAGES.REQUIRED(FIELDS.PRODUCT_VOLUME_UNIT),
         }),
 
     isActive: Joi.boolean()

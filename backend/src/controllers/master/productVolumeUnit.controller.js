@@ -26,7 +26,7 @@ const createProductVolumeUnit = asyncHandler(async (req, res, next) => {
         if (!name?.trim()) {
             throw new ApiError(
                 StatusCodes.BAD_REQUEST,
-                MESSAGES.REQUIRED(FIELDS.VOLUME_UNIT)
+                MESSAGES.REQUIRED(FIELDS.PRODUCT_VOLUME_UNIT)
             );
         }
 
@@ -37,8 +37,8 @@ const createProductVolumeUnit = asyncHandler(async (req, res, next) => {
         if (existing) {
             throw new ApiError(
                 StatusCodes.CONFLICT,
-                MESSAGES.DUPLICATE_VALUE(FIELDS.VOLUME_UNIT),
-                [`${FIELDS.VOLUME_UNIT} '${name}' already exists`]
+                MESSAGES.DUPLICATE_VALUE(FIELDS.PRODUCT_VOLUME_UNIT),
+                [`${FIELDS.PRODUCT_VOLUME_UNIT} '${name}' already exists`]
             );
         }
 
@@ -47,7 +47,7 @@ const createProductVolumeUnit = asyncHandler(async (req, res, next) => {
             isActive: typeof isActive === "boolean" ? isActive : true,
         });
 
-        logger.info(`✅ Created ${FIELDS.VOLUME_UNIT}: ${volumeUnit.name}`);
+        logger.info(`✅ Created ${FIELDS.PRODUCT_VOLUME_UNIT}: ${volumeUnit.name}`);
 
         return res
             .status(StatusCodes.CREATED)
@@ -55,7 +55,7 @@ const createProductVolumeUnit = asyncHandler(async (req, res, next) => {
                 new ApiResponse(
                     StatusCodes.CREATED,
                     volumeUnit,
-                    `${FIELDS.VOLUME_UNIT} created successfully`
+                    `${FIELDS.PRODUCT_VOLUME_UNIT} created successfully`
                 )
             );
     } catch (error) {
@@ -80,7 +80,7 @@ const getAllProductVolumeUnits = asyncHandler(async (req, res, next) => {
                 new ApiResponse(
                     StatusCodes.OK,
                     volumeUnits,
-                    `${FIELDS.VOLUME_UNIT}s fetched successfully`
+                    `${FIELDS.PRODUCT_VOLUME_UNIT}s fetched successfully`
                 )
             );
     } catch (error) {
@@ -103,7 +103,7 @@ const getProductVolumeUnitById = asyncHandler(async (req, res, next) => {
         if (!volumeUnit) {
             throw new ApiError(
                 StatusCodes.NOT_FOUND,
-                MESSAGES.NOT_FOUND(FIELDS.VOLUME_UNIT)
+                MESSAGES.NOT_FOUND(FIELDS.PRODUCT_VOLUME_UNIT)
             );
         }
 
@@ -113,7 +113,7 @@ const getProductVolumeUnitById = asyncHandler(async (req, res, next) => {
                 new ApiResponse(
                     StatusCodes.OK,
                     volumeUnit,
-                    `${FIELDS.VOLUME_UNIT} fetched successfully`
+                    `${FIELDS.PRODUCT_VOLUME_UNIT} fetched successfully`
                 )
             );
     } catch (error) {
@@ -147,7 +147,7 @@ const updateProductVolumeUnitStatus = asyncHandler(async (req, res, next) => {
         if (!volumeUnit) {
             throw new ApiError(
                 StatusCodes.NOT_FOUND,
-                MESSAGES.NOT_FOUND(FIELDS.VOLUME_UNIT)
+                MESSAGES.NOT_FOUND(FIELDS.PRODUCT_VOLUME_UNIT)
             );
         }
 
@@ -155,11 +155,11 @@ const updateProductVolumeUnitStatus = asyncHandler(async (req, res, next) => {
         await volumeUnit.save();
 
         const message = isActive
-            ? `${FIELDS.VOLUME_UNIT} enabled successfully`
-            : `${FIELDS.VOLUME_UNIT} disabled successfully`;
+            ? `${FIELDS.PRODUCT_VOLUME_UNIT} enabled successfully`
+            : `${FIELDS.PRODUCT_VOLUME_UNIT} disabled successfully`;
 
         logger.info(
-            `🟠 Updated ${FIELDS.VOLUME_UNIT} (${volumeUnit.name}) → isActive=${isActive}`
+            `🟠 Updated ${FIELDS.PRODUCT_VOLUME_UNIT} (${volumeUnit.name}) → isActive=${isActive}`
         );
 
         return res
@@ -185,13 +185,13 @@ const deleteProductVolumeUnit = asyncHandler(async (req, res, next) => {
         if (!volumeUnit) {
             throw new ApiError(
                 StatusCodes.NOT_FOUND,
-                MESSAGES.NOT_FOUND(FIELDS.VOLUME_UNIT)
+                MESSAGES.NOT_FOUND(FIELDS.PRODUCT_VOLUME_UNIT)
             );
         }
 
         await ProductVolumeUnit.findByIdAndDelete(id);
 
-        logger.warn(`🗑️ Deleted ${FIELDS.VOLUME_UNIT}: ${volumeUnit.name}`);
+        logger.warn(`🗑️ Deleted ${FIELDS.PRODUCT_VOLUME_UNIT}: ${volumeUnit.name}`);
 
         return res
             .status(StatusCodes.OK)
@@ -199,7 +199,7 @@ const deleteProductVolumeUnit = asyncHandler(async (req, res, next) => {
                 new ApiResponse(
                     StatusCodes.OK,
                     null,
-                    `${FIELDS.VOLUME_UNIT} deleted successfully`
+                    `${FIELDS.PRODUCT_VOLUME_UNIT} deleted successfully`
                 )
             );
     } catch (error) {
