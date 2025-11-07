@@ -41,12 +41,20 @@ const Dashboard = () => {
     }
   };
 
-  const handleViewCustomers = () => {
-    navigate('/customers');
+  // const handleViewCustomers = () => {
+  //   navigate('/customers');
+  // };
+
+  const handleMasterCategory = () => {
+    navigate('/master/categories');
   };
 
-  const handleAddCustomer = () => {
-    navigate('/customers/add');
+  const handleMasterPacksize = () => {
+    navigate('/master/pack-sizes');
+  };
+
+  const handleMasterVolumeUnit = () => {
+    navigate('/master/volume-units');
   };
 
   // ===== LOADING STATE =====
@@ -118,18 +126,32 @@ const Dashboard = () => {
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
+            {/* <button
               onClick={handleViewCustomers}
               className="btn-primary h-12 px-8 text-base"
             >
               View All Customers
+            </button> */}
+
+            <button
+              onClick={handleMasterCategory}
+              className="btn-outline h-12 px-8 text-base"
+            >
+              Category
             </button>
 
             <button
-              onClick={handleAddCustomer}
+              onClick={handleMasterPacksize}
               className="btn-outline h-12 px-8 text-base"
             >
-              Add New Customer
+              PackSize
+            </button>
+
+            <button
+              onClick={handleMasterVolumeUnit}
+              className="btn-outline h-12 px-8 text-base"
+            >
+              VolumeUnit
             </button>
 
             <button

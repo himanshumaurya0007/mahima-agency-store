@@ -1,7 +1,6 @@
 export const DB_NAME = "mahima_agency";
 
 export const ENUMS = {
-    GENDER: ["MALE", "FEMALE", "OTHER"],
 
     SECURITY_QUESTIONS: [
         "What was the name of your first pet?",
