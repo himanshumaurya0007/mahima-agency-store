@@ -10,6 +10,12 @@ const router = express.Router();
  * Base: /api/v1/masters
  */
 
+// ===============================
+// 🔐 PROTECTED ROUTES (JWT Required)
+// ===============================
+
+router.use(verifyJWT); // Protect all routes below this line
+
 // Product-related master routes
 router.use("/products", productRouter);
 

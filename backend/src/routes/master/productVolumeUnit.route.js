@@ -17,12 +17,6 @@ const router = Router();
  * Base: /api/v1/masters/products/volume-units
  */
 
-// ===============================
-// 🔐 PROTECTED ROUTES (JWT Required)
-// ===============================
-
-router.use(verifyJWT); // Protect all routes below this line
-
 router
     .route('/')
     .get(getAllProductVolumeUnits)
