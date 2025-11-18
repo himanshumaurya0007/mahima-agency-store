@@ -1,7 +1,6 @@
 import { Router } from 'express';
 
 import { validateProductPackSize } from "../../middlewares/validations/appMasterValidation.middleware.js";
-import { verifyJWT } from "../../middlewares/user.middleware.js";
 
 import {
     createProductPackSize,

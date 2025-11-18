@@ -1,5 +1,7 @@
 import express from "express";
 
+import { verifyJWT } from "../../middlewares/user.middleware.js";
+
 import productRouter from "./product.route.js";
 // Future: import customerRouter from "./customer.route.js";
 // Future: import invoiceRouter from "./invoice.route.js";
