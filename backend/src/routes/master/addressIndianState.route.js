@@ -8,7 +8,7 @@ import {
     getAddressIndianStateById,
     updateAddressIndianStateStatus,
     deleteAddressIndianState,
-} from "../../controllers/master/addressIndianStates.controller.js";
+} from "../../controllers/master/addressIndianState.controller.js";
 
 const router = Router();
 
