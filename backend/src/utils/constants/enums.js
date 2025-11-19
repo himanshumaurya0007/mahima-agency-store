@@ -16,7 +16,3 @@ export const ENUMS = {
         "PERMANENT"
     ],
 };
-
-// Derived arrays for Mongoose validation:
-export const INDIAN_STATE_NAMES = ENUMS.INDIAN_STATES_WITH_ABBREVIATIONS.map(s => s.name);
-export const INDIAN_STATE_CODES = ENUMS.INDIAN_STATES_WITH_ABBREVIATIONS.map(s => s.code);
