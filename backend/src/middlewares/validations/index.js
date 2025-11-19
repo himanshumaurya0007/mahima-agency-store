@@ -5,13 +5,6 @@ import {
     logger
 } from "../../utils/index.js";
 
-/**
- * Base reusable validation middleware generator.
- * @param {Joi.Schema} schema - Joi validation schema.
- * @param {string} context - Context name for better logging.
- * @param {"body" | "query" | "params"} [source="body"] - The request data source.
- * @param {object} [options] - Optional Joi validation options.
- */
 export const createValidator = (
     schema,
     context = "Request",
@@ -20,9 +13,10 @@ export const createValidator = (
 ) => {
     return (req, res, next) => {
         const data = req[source];
+
         const { error, value } = schema.validate(data, {
             abortEarly: false,
-            stripUnknown: true, // remove extra fields (recommended)
+            stripUnknown: true,
             ...options,
         });
 
@@ -37,8 +31,19 @@ export const createValidator = (
             );
         }
 
-        // assign sanitized data back
-        req[source] = value;
+        // Do NOT mutate req[source]
+        // Store sanitized data safely instead
+        switch (source) {
+            case "body":
+                req.validatedBody = value;
+                break;
+            case "query":
+                req.validatedQuery = value;
+                break;
+            case "params":
+                req.validatedParams = value;
+                break;
+        }
 
         logger.info(`${context} validation passed`);
         next();
