@@ -1,5 +1,13 @@
 import { createValidator } from "./index.js";
 
+// Address indian-states
+import { addressindianStateValidationSchema } from "../../validations/master/addressIndianState.validation.js";
+
+export const validateAddressindianState = createValidator(
+    addressindianStateValidationSchema,
+    "Address Indian State"
+);
+
 // Product category
 import { productCategoryValidationSchema } from "../../validations/master/productCategory.validation.js";
 
