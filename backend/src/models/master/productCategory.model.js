@@ -12,13 +12,14 @@ const productCategorySchema = new Schema(
             trim: true,
             uppercase: true,
             required: [true, MESSAGES.REQUIRED(FIELDS.PRODUCT_CATEGORY)],
-            unique: true, // Enforce uniqueness at the DB level
+            unique: true,
         },
         code: {
             type: String,
             trim: true,
             uppercase: true,
             required: [true, MESSAGES.REQUIRED(FIELDS.PRODUCT_CATEGORY_CODE)],
+            unique: true,
         },
         isActive: {
             type: Boolean,
