@@ -16,13 +16,28 @@ import { User } from "../models/user.model.js";
 
 /**
  * @route   POST /api/v1/users/register
- * @desc    Register a new user (NO tokens here)
+ * @desc    Register a new user (No tokens here). Validation is expected at route-level.
  * @access  Public
  */
 const registerUser = asyncHandler(async (req, res, next) => {
-    const { firstName, lastName, email, phone, username, password, securityQuestion, securityAnswer } = req.body;
+    const {
+        firstName,
+        lastName,
+        email,
+        phone,
+        username,
+        password,
+        securityQuestion,
+        securityAnswer,
+        place,
+        city,
+        state,
+        stateCode,
+        pinCode,
+        refreshToken, // optional
+    } = req.body;
 
-    // 1. Check if user already exists (by email or username)
+    // 1) Ensure no existing user with same email OR username
     const existingUser = await findUserByEmailOrUsername({ email, username });
 
     if (existingUser) {
@@ -33,7 +48,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
         );
     }
 
-    // 2. Create new user
+    // 2) Create user
     const user = await User.create({
         firstName,
         lastName,
@@ -43,41 +58,51 @@ const registerUser = asyncHandler(async (req, res, next) => {
         password,
         securityQuestion,
         securityAnswer,
+        place,
+        city,
+        state,
+        stateCode,
+        pinCode,
+        refreshToken: refreshToken ?? null,
     });
 
     logger.info(`New user registered: ${user.email} (id: ${user._id})`);
 
-    // 3. Send response (exclude sensitive FIELDS) [WITHOUT tokens]
-    return res.status(StatusCodes.CREATED)
-        .json(
-            new ApiResponse(
-                StatusCodes.CREATED,
-                {
-                    user: {
-                        _id: user._id,
-                        firstName: user.firstName,
-                        lastName: user.lastName,
-                        email: user.email,
-                        phone: user.phone,
-                        username: user.username,
-                        securityQuestion: user.securityQuestion,
-                    },
+    // 3) Return created user summary (no tokens)
+    return res.status(StatusCodes.CREATED).json(
+        new ApiResponse(
+            StatusCodes.CREATED,
+            {
+                user: {
+                    _id: user._id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    email: user.email,
+                    phone: user.phone,
+                    username: user.username,
+                    securityQuestion: user.securityQuestion,
+                    place: user.place,
+                    city: user.city,
+                    state: user.state,
+                    stateCode: user.stateCode,
+                    pinCode: user.pinCode,
                 },
-                `User registered successfully. Please login to continue.`
-            ));
-
+            },
+            "User registered successfully. Please login to continue."
+        )
+    );
 });
 
 /**
  * @route   POST /api/v1/users/login
- * @desc    Login user (Tokens generated here)
+ * @desc    Login user (generate tokens & set cookies)
  * @access  Public
  */
 const loginUser = asyncHandler(async (req, res, next) => {
     const { email, username, password } = req.body;
 
-    // 1. Find user by email OR username
-    const user = await findUserByEmailOrUsername({ email, username }, "+password");
+    // 1) Find user by email OR username (include password to compare)
+    const user = await findUserByEmailOrUsername({ email, username }, "+password +refreshToken");
 
     if (!user) {
         throw new ApiError(
@@ -87,7 +112,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
         );
     }
 
-    // 2. Compare passwords
+    // 2) Compare password
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
         throw new ApiError(
@@ -97,43 +122,46 @@ const loginUser = asyncHandler(async (req, res, next) => {
         );
     }
 
-    // 3. Generate tokens
+    // 3) Generate access & refresh tokens using existing helper
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
 
-    // 4. Set Cookies
+    // 4) Set cookies (httpOnly, secure, sameSite, etc.)
     setAuthCookies(res, accessToken, refreshToken);
 
-    logger.info(`User logged in: ${user.username}`);
+    logger.info(`User logged in: ${user.username || user.email} (id: ${user._id})`);
 
-    // 5. Send response with tokens
-    return res.status(StatusCodes.OK)
-        .json(
-            new ApiResponse(
-                StatusCodes.OK,
-                {
-                    user: {
-                        _id: user._id,
-                        firstName: user.firstName,
-                        lastName: user.lastName,
-                        email: user.email,
-                        username: user.username,
-                    },
-                    accessToken,
-                    refreshToken,
+    // 5) Return safe user info + tokens in body (cookies already set)
+    return res.status(StatusCodes.OK).json(
+        new ApiResponse(
+            StatusCodes.OK,
+            {
+                user: {
+                    _id: user._id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    email: user.email,
+                    username: user.username,
+                    place: user.place,
+                    city: user.city,
+                    state: user.state,
+                    stateCode: user.stateCode,
+                    pinCode: user.pinCode,
                 },
-                "Login successful"
-            ));
-
+                accessToken,
+                refreshToken,
+            },
+            "Login successful"
+        )
+    );
 });
 
 /**
  * @route   POST /api/v1/users/logout
- * @desc    Logout user (clear tokens + invalidate refreshToken)
+ * @desc    Logout user: clear cookies and invalidate refresh token in DB
  * @access  Protected (JWT)
  */
 const logoutUser = asyncHandler(async (req, res, next) => {
-    // 1. Extract authenticated userId from request
-    const userId = req.user?._id; // set by verifyJWT middleware
+    const userId = req.user?._id;
 
     if (!userId) {
         throw new ApiError(
@@ -143,24 +171,22 @@ const logoutUser = asyncHandler(async (req, res, next) => {
         );
     }
 
-    // 2. Invalidate refreshToken in DB (remove from user document)
+    // Remove stored refreshToken from user document
     await User.findByIdAndUpdate(
         userId,
-        { $unset: { refreshToken: "" } }, // remove refreshToken
+        { $unset: { refreshToken: "" } },
         { new: true }
     );
 
-    // 3. Cookies options
     const cookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
-        path: "/"
+        path: "/",
     };
 
     logger.info(`User logged out: ${userId}`);
 
-    // 4. Send response (Clear access & refresh tokens from cookies)
     return res
         .status(StatusCodes.OK)
         .clearCookie("accessToken", cookieOptions)
@@ -170,7 +196,8 @@ const logoutUser = asyncHandler(async (req, res, next) => {
                 StatusCodes.OK,
                 null,
                 "Logout successful"
-            ));
+            )
+        );
 });
 
 /**
@@ -181,7 +208,6 @@ const logoutUser = asyncHandler(async (req, res, next) => {
 const fetchSecurityQuestion = asyncHandler(async (req, res, next) => {
     const { email, username } = req.query;
 
-    // 1. Find user by email or username
     const user = await findUserByEmailOrUsername({ email, username }, "+securityQuestion");
 
     if (!user) {
@@ -194,14 +220,13 @@ const fetchSecurityQuestion = asyncHandler(async (req, res, next) => {
 
     logger.info(`Security question fetched for user: ${email || username}`);
 
-    // 2. Send response (Return only the security question (never answer))
-    return res.status(StatusCodes.OK)
-        .json(
-            new ApiResponse(
-                StatusCodes.OK,
-                { securityQuestion: user.securityQuestion },
-                `Security question fetched successfully`
-            ));
+    return res.status(StatusCodes.OK).json(
+        new ApiResponse(
+            StatusCodes.OK,
+            { securityQuestion: user.securityQuestion },
+            "Security question fetched successfully"
+        )
+    );
 });
 
 /**
@@ -212,7 +237,6 @@ const fetchSecurityQuestion = asyncHandler(async (req, res, next) => {
 const validateSecurityAnswerController = asyncHandler(async (req, res, next) => {
     const { email, username, securityAnswer } = req.body;
 
-    // 1. Find user
     const user = await findUserByEmailOrUsername({ email, username }, "+securityAnswer");
 
     if (!user) {
@@ -223,7 +247,6 @@ const validateSecurityAnswerController = asyncHandler(async (req, res, next) => 
         );
     }
 
-    // 2. Compare provided answer (case-sensitive)
     const isAnswerValid = await user.compareSecurityAnswer(securityAnswer);
 
     if (!isAnswerValid) {
@@ -236,25 +259,23 @@ const validateSecurityAnswerController = asyncHandler(async (req, res, next) => 
 
     logger.info(`Security answer validated for user: ${email || username}`);
 
-    // 3. Send response (Return success)
-    return res.status(StatusCodes.OK)
-        .json(
-            new ApiResponse(
-                StatusCodes.OK,
-                null,
-                `Security answer validated successfully`
-            ));
+    return res.status(StatusCodes.OK).json(
+        new ApiResponse(
+            StatusCodes.OK,
+            null,
+            "Security answer validated successfully"
+        )
+    );
 });
 
 /**
  * @route   PATCH /api/v1/users/password/reset
- * @desc    Reset user’s password
+ * @desc    Reset user’s password (public; validated via security answer flow)
  * @access  Public
  */
 const resetUserPassword = asyncHandler(async (req, res, next) => {
     const { email, username, newPassword } = req.body;
 
-    // 1. Find user
     const user = await findUserByEmailOrUsername({ email, username }, "+password");
 
     if (!user) {
@@ -265,21 +286,20 @@ const resetUserPassword = asyncHandler(async (req, res, next) => {
         );
     }
 
-    // 2. Update password (pre-save hook will hash it)
+    // Assign new password — pre-save hook on model will hash it
     user.password = newPassword;
-    user.markModified("password"); // ensure password gets rehashed
+    user.markModified("password");
     await user.save({ validateModifiedOnly: true });
-
 
     logger.info(`Password reset successful for user: ${email || username}`);
 
-    // 3. Return success response
     return res.status(StatusCodes.OK).json(
         new ApiResponse(
             StatusCodes.OK,
             null,
-            `Password reset successfully. Please login with your new password.`
-        ));
+            "Password reset successfully. Please login with your new password."
+        )
+    );
 });
 
 /**
@@ -288,8 +308,7 @@ const resetUserPassword = asyncHandler(async (req, res, next) => {
  * @access  Public
  */
 const refreshTokens = asyncHandler(async (req, res, next) => {
-    // 1. Extract refresh token (from cookie or body)
-    const incomingRefreshToken = req.cookies.refreshToken || req.body?.refreshToken;
+    const incomingRefreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
 
     if (!incomingRefreshToken) {
         throw new ApiError(
@@ -299,15 +318,11 @@ const refreshTokens = asyncHandler(async (req, res, next) => {
         );
     }
 
-    // 2. Verify refresh token signature
+    // Verify signature & expiry
     let decodedToken;
-
     try {
-        decodedToken = jwt.verify(
-            incomingRefreshToken,
-            process.env.REFRESH_TOKEN_SECRET
-        );
-    } catch (error) {
+        decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
+    } catch (err) {
         throw new ApiError(
             StatusCodes.UNAUTHORIZED,
             ReasonPhrases.UNAUTHORIZED,
@@ -315,9 +330,8 @@ const refreshTokens = asyncHandler(async (req, res, next) => {
         );
     }
 
-
-    // 3. Find user & check stored refresh token
-    const user = await User.findById(decodedToken?._id);
+    // Validate user exists and stored refreshToken matches incoming one
+    const user = await User.findById(decodedToken?._id).select("+refreshToken");
     if (!user) {
         throw new ApiError(
             StatusCodes.NOT_FOUND,
@@ -334,26 +348,24 @@ const refreshTokens = asyncHandler(async (req, res, next) => {
         );
     }
 
-    // 4. Generate new access & refresh tokens
+    // Generate new tokens (helper expected to handle persistence)
     const { accessToken, refreshToken: newRefreshToken } = await generateAccessAndRefreshTokens(user._id);
 
-    // 5. Set Cookies
+    // Set cookies
     setAuthCookies(res, accessToken, newRefreshToken);
 
-    logger.info(`Access token refreshed for user: ${user.username}`);
+    logger.info(`Access token refreshed for user: ${user.username || user.email} (id: ${user._id})`);
 
-    // 6. Send response
-    return res
-        .status(StatusCodes.OK)
-        .json(
-            new ApiResponse(
-                StatusCodes.OK,
-                {
-                    accessToken,
-                    refreshToken: newRefreshToken,
-                },
-                "Access token refreshed successfully"
-            ));
+    return res.status(StatusCodes.OK).json(
+        new ApiResponse(
+            StatusCodes.OK,
+            {
+                accessToken,
+                refreshToken: newRefreshToken,
+            },
+            "Access token refreshed successfully"
+        )
+    );
 });
 
 export {
