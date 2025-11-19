@@ -7,14 +7,6 @@ dotenv.config("../../../../.env");
 import { FIELDS } from "../../../utils/index.js";
 import { ProductCategory } from "../../../models/master/productCategory.model.js";
 
-/**
- * ------------------------------------------------------------------------
- * PRODUCT CATEGORIES SEED DATA
- * ------------------------------------------------------------------------
- * Explicitly includes `isActive` field for consistency with schema.
- * `isActive: true` ensures all seeded categories are initially enabled.
- * ------------------------------------------------------------------------
- */
 const PRODUCT_CATEGORIES_WITH_CODES = [
     { name: "BLOCKBUSTERS", code: "BB", isActive: true },
     { name: "BULKS", code: "BP", isActive: true },
@@ -30,15 +22,6 @@ const PRODUCT_CATEGORIES_WITH_CODES = [
     { name: "CAKES", code: "CAKE", isActive: true },
 ];
 
-/**
- * ------------------------------------------------------------------------
- * SEED FUNCTION
- * ------------------------------------------------------------------------
- * - Connects to MongoDB using env variables.
- * - Clears existing product categories.
- * - Seeds fresh data including `isActive`.
- * ------------------------------------------------------------------------
- */
 const seedProductCategoryWithCodes = async () => {
     try {
         const { MONGO_URI, DB_NAME } = process.env;
