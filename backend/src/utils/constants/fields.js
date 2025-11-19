@@ -1,4 +1,14 @@
 export const FIELDS = {
+    IS_ACTIVE: "Active Status",
+
+    ADDRESS_INDIAN_STATE: "State",
+    ADDRESS_INDIAN_STATE_CODE: "State code",
+
+    PRODUCT_CATEGORY: "Product Category",
+    PRODUCT_CATEGORY_CODE: "Product Category Code",
+    PRODUCT_PACK_SIZE: "Product Pack Size",
+    PRODUCT_VOLUME_UNIT: "Product Volume unit",
+
     FIRST_NAME: "First name",
     LAST_NAME: "Last name",
     EMAIL: "Email",
@@ -20,16 +30,7 @@ export const FIELDS = {
 
     PLACE: "Place",
     CITY: "City",
-    INDIAN_STATE: "State",
-    INDIAN_STATE_CODE: "State code",
     PIN_CODE: "PIN code",
-
-    IS_ACTIVE: "Active Status",
-
-    PRODUCT_CATEGORY: "Product Category",
-    PRODUCT_CATEGORY_CODE: "Product Category Code",
-    PRODUCT_PACK_SIZE: "Product Pack Size",
-    PRODUCT_VOLUME_UNIT: "Product Volume unit",
 
     PRODUCT_NAME: "Product name",
     VOLUME_MAGNITUDE: "Volume magnitude",
