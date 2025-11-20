@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import { StatusCodes, ReasonPhrases } from "http-status-codes";
 
 import {
@@ -6,7 +5,6 @@ import {
     ApiResponse,
     ApiError,
     logger,
-    FIELDS,
     ensureAuthenticated,
     mongooseErrorHandler,
     formatCustomer,
@@ -14,7 +12,6 @@ import {
 } from "../utils/index.js";
 
 import { Customer } from "../models/customer.model.js";
-import { Address } from "../models/address.model.js";
 
 /**
  * @route POST /api/v1/customers
@@ -22,23 +19,23 @@ import { Address } from "../models/address.model.js";
  * @access Protected (JWT)
  */
 const addCustomer = asyncHandler(async (req, res, next) => {
-    let session;
     try {
         const userId = ensureAuthenticated(req);
 
-        const { customerAddress, ...customerData } = req.body;
+        const customerData = req.body;
 
-        // Check for ID clashes
         await checkCustomerIdClashes(userId, customerData);
 
-        // Standard duplicate check
+        // Duplicate ID check
         const orConditions = [];
-        if (customerData.havmorPlatformCustomerId) orConditions.push({ havmorPlatformCustomerId: customerData.havmorPlatformCustomerId });
-        if (customerData.temporaryCustomerId) orConditions.push({ temporaryCustomerId: customerData.temporaryCustomerId });
+        if (customerData.havmorPlatformCustomerId)
+            orConditions.push({ havmorPlatformCustomerId: customerData.havmorPlatformCustomerId });
+
+        if (customerData.temporaryCustomerId)
+            orConditions.push({ temporaryCustomerId: customerData.temporaryCustomerId });
 
         if (orConditions.length) {
-            const existingCustomer = await Customer.findOne({ userId, $or: orConditions }).populate("customerAddress").lean();
-
+            const existingCustomer = await Customer.findOne({ userId, $or: orConditions }).lean();
             if (existingCustomer) {
                 return res.status(StatusCodes.CONFLICT)
                     .json(
@@ -50,34 +47,22 @@ const addCustomer = asyncHandler(async (req, res, next) => {
             }
         }
 
-        // Transaction: Create Address & Customer
-        session = await mongoose.startSession();
-        session.startTransaction();
+        const newCustomer = await Customer.create({
+            userId,
+            ...customerData
+        });
 
-        const [addressDoc] = await Address.create([customerAddress], { session });
-        const [customerDoc] = await Customer.create([{ userId, ...customerData, customerAddress: addressDoc._id }], { session });
-
-        await session.commitTransaction();
-        session.endSession();
-
-        logger.info(`New customer added for user ${userId}: ${customerDoc._id}`);
+        logger.info(`New customer added for user ${userId}: ${newCustomer._id}`);
 
         return res.status(StatusCodes.CREATED)
             .json(
                 new ApiResponse(
                     StatusCodes.CREATED,
-                    { customer: formatCustomer(customerDoc, addressDoc) },
+                    { customer: formatCustomer(newCustomer) },
                     "Customer added successfully"
                 ));
-
     } catch (error) {
-        if (session) {
-            await session.abortTransaction();
-            session.endSession();
-        }
-
-        const processedError = mongooseErrorHandler(error) || error;
-        next(processedError);
+        next(mongooseErrorHandler(error) || error);
     }
 });
 
@@ -90,9 +75,9 @@ const getAllCustomers = asyncHandler(async (req, res, next) => {
     try {
         const userId = ensureAuthenticated(req);
 
-        const customers = await Customer.find({ userId }).populate("customerAddress").lean();
+        const customers = await Customer.find({ userId }).lean();
 
-        if (!customers || customers.length === 0) {
+        if (!customers.length) {
             return res.status(StatusCodes.OK)
                 .json(
                     new ApiResponse(
@@ -103,6 +88,7 @@ const getAllCustomers = asyncHandler(async (req, res, next) => {
         }
 
         const formattedCustomers = customers.map((c) => formatCustomer(c));
+
         return res.status(StatusCodes.OK)
             .json(
                 new ApiResponse(
@@ -110,7 +96,6 @@ const getAllCustomers = asyncHandler(async (req, res, next) => {
                     { customers: formattedCustomers },
                     "Customers fetched successfully"
                 ));
-
     } catch (error) {
         next(mongooseErrorHandler(error) || error);
     }
@@ -135,7 +120,14 @@ const getCustomerById = asyncHandler(async (req, res, next) => {
             );
         }
 
-        const customer = await Customer.findOne({ userId, $or: [{ havmorPlatformCustomerId: id }, { temporaryCustomerId: id }] }).populate("customerAddress");
+        const customer = await Customer.findOne({
+            userId,
+            $or: [
+                { havmorPlatformCustomerId: id },
+                { temporaryCustomerId: id }
+            ]
+        });
+
         if (!customer) {
             throw new ApiError(
                 StatusCodes.NOT_FOUND,
@@ -151,7 +143,6 @@ const getCustomerById = asyncHandler(async (req, res, next) => {
                     { customer: formatCustomer(customer) },
                     "Customer fetched successfully"
                 ));
-
     } catch (error) {
         next(mongooseErrorHandler(error) || error);
     }
@@ -163,7 +154,6 @@ const getCustomerById = asyncHandler(async (req, res, next) => {
  * @access Protected (JWT)
  */
 const updateCustomer = asyncHandler(async (req, res, next) => {
-    let session;
     try {
         const userId = ensureAuthenticated(req);
 
@@ -177,8 +167,16 @@ const updateCustomer = asyncHandler(async (req, res, next) => {
             );
         }
 
-        const { customerAddress, ...customerData } = req.body;
-        const customer = await Customer.findOne({ userId, $or: [{ havmorPlatformCustomerId: id }, { temporaryCustomerId: id }] }).populate("customerAddress");
+        const customerUpdates = req.body;
+
+        const customer = await Customer.findOne({
+            userId,
+            $or: [
+                { havmorPlatformCustomerId: id },
+                { temporaryCustomerId: id }
+            ]
+        });
+
         if (!customer) {
             throw new ApiError(
                 StatusCodes.NOT_FOUND,
@@ -187,51 +185,45 @@ const updateCustomer = asyncHandler(async (req, res, next) => {
             );
         }
 
-        // Check for ID clashes
-        await checkCustomerIdClashes(userId, customerData, customer._id);
+        // Avoid clashes with other customers
+        await checkCustomerIdClashes(userId, customerUpdates, customer._id);
 
         // If status changed to PERMANENT, copy temporaryCustomerId → havmorPlatformCustomerId
-        if (customerData.customerStatus?.toUpperCase() === "PERMANENT" && !customerData.havmorPlatformCustomerId) {
-            customerData.havmorPlatformCustomerId = customer.temporaryCustomerId || customerData.temporaryCustomerId;
+        if (
+            customerUpdates.customerStatus?.toUpperCase() === "PERMANENT" &&
+            !customerUpdates.havmorPlatformCustomerId
+        ) {
+            customerUpdates.havmorPlatformCustomerId =
+                customer.temporaryCustomerId || customerUpdates.temporaryCustomerId;
         }
-
-        // Transaction: Update Address & Customer
-        session = await mongoose.startSession();
-        session.startTransaction();
-
-        let updatedAddressDoc;
-        if (customerAddress && customer.customerAddress) {
-            updatedAddressDoc = await Address.findByIdAndUpdate(customer.customerAddress._id, customerAddress, { new: true, session });
-        } else if (customerAddress && !customer.customerAddress) {
-            const [addressDoc] = await Address.create([customerAddress], { session });
-            customerData.customerAddress = addressDoc._id;
-            updatedAddressDoc = addressDoc;
-        }
-
-        let updatedCustomer = await Customer.findByIdAndUpdate(customer._id, { $set: customerData }, { new: true, session }).populate("customerAddress");
+        let updatedCustomer = await Customer.findByIdAndUpdate(
+            customer._id,
+            { $set: customerUpdates },
+            { new: true }
+        );
 
         // Remove temporaryCustomerId if customer is now PERMANENT
-        if (updatedCustomer.customerStatus === "PERMANENT" && updatedCustomer.havmorPlatformCustomerId) {
-            updatedCustomer = await Customer.findByIdAndUpdate(updatedCustomer._id, { $unset: { temporaryCustomerId: "" } }, { new: true, session }).populate("customerAddress");
+        if (
+            updatedCustomer.customerStatus === "PERMANENT" &&
+            updatedCustomer.havmorPlatformCustomerId
+        ) {
+            updatedCustomer = await Customer.findByIdAndUpdate(
+                updatedCustomer._id,
+                { $unset: { temporaryCustomerId: "" } },
+                { new: true }
+            );
         }
 
-        await session.commitTransaction();
-        session.endSession();
-
         logger.info(`Customer updated for user ${userId}: ${updatedCustomer._id}`);
+
         return res.status(StatusCodes.OK)
             .json(
                 new ApiResponse(
                     StatusCodes.OK,
-                    { customer: formatCustomer(updatedCustomer, updatedAddressDoc) },
+                    { customer: formatCustomer(updatedCustomer) },
                     "Customer updated successfully"
                 ));
-
     } catch (error) {
-        if (session) {
-            await session.abortTransaction();
-            session.endSession();
-        }
         next(mongooseErrorHandler(error) || error);
     }
 });
@@ -242,7 +234,6 @@ const updateCustomer = asyncHandler(async (req, res, next) => {
  * @access Protected (JWT)
  */
 const deleteCustomer = asyncHandler(async (req, res, next) => {
-    let session;
     try {
         const userId = ensureAuthenticated(req);
 
@@ -256,7 +247,14 @@ const deleteCustomer = asyncHandler(async (req, res, next) => {
             );
         }
 
-        const customer = await Customer.findOne({ userId, $or: [{ havmorPlatformCustomerId: id }, { temporaryCustomerId: id }] });
+        const customer = await Customer.findOne({
+            userId,
+            $or: [
+                { havmorPlatformCustomerId: id },
+                { temporaryCustomerId: id }
+            ]
+        });
+
         if (!customer) {
             throw new ApiError(
                 StatusCodes.NOT_FOUND,
@@ -265,16 +263,10 @@ const deleteCustomer = asyncHandler(async (req, res, next) => {
             );
         }
 
-        session = await mongoose.startSession();
-        session.startTransaction();
-
-        await Customer.deleteOne({ _id: customer._id }, { session });
-        if (customer.customerAddress) await Address.deleteOne({ _id: customer.customerAddress }, { session });
-
-        await session.commitTransaction();
-        session.endSession();
+        await Customer.deleteOne({ _id: customer._id });
 
         logger.info(`Customer deleted for user ${userId}: ${customer._id}`);
+
         return res.status(StatusCodes.OK)
             .json(
                 new ApiResponse(
@@ -282,12 +274,7 @@ const deleteCustomer = asyncHandler(async (req, res, next) => {
                     { deletedCustomerId: customer._id },
                     "Customer deleted successfully"
                 ));
-
     } catch (error) {
-        if (session) {
-            await session.abortTransaction();
-            session.endSession();
-        }
         next(mongooseErrorHandler(error) || error);
     }
 });
