@@ -8,31 +8,58 @@ import { Customer } from "../../models/customer.model.js";
 /**
  * Format a customer object for API response
  * @param {Object} customer - Customer document
- * @param {Object} address - Optional populated address
  * @returns {Object} Formatted customer
  */
-const formatCustomer = (customer, address) => ({
+const formatCustomer = (customer) => ({
     _id: customer._id,
+
+    // Include userId
+    userId: customer.userId,
+
     customerStatus: customer.customerStatus,
-    temporaryCustomerId: customer.temporaryCustomerId,
-    havmorPlatformCustomerId: customer.havmorPlatformCustomerId,
+    temporaryCustomerId: customer.temporaryCustomerId,  // optional
+    havmorPlatformCustomerId: customer.havmorPlatformCustomerId,  // optional
+
     shopName: customer.shopName,
+
+    // Personal information
+    firstName: customer.firstName,  // optional
+    lastName: customer.lastName,  // optional
+    email: customer.email,  // optional
     phone: customer.phone,
-    customerAddress: address || customer.customerAddress,
+
+    // Business IDs
+    panCardNumber: customer.panCardNumber,  // optional
+    gstinNumber: customer.gstinNumber,  // optional
+
+    // Address fields
+    place: customer.place,
+    city: customer.city,
+    state: customer.state,
+    stateCode: customer.stateCode,
+    pinCode: customer.pinCode,
+
+    // Meta fields
+    createdAt: customer.createdAt,
+    updatedAt: customer.updatedAt,
 });
 
 /**
  * Check for cross-field clashes for a user
  * @param {String} userId - Authenticated user ID
  * @param {Object} data - Customer data (temporaryCustomerId, havmorPlatformCustomerId)
- * @param {String} excludeId - Optional: Customer _id to exclude (for updates)
+ * @param {String | null} excludeId - Optional: Customer _id to exclude (for updates)
  * @throws ApiError if conflicts exist
  */
 const checkCustomerIdClashes = async (userId, data, excludeId = null) => {
     const { havmorPlatformCustomerId, temporaryCustomerId } = data;
 
-    // Defensive check: IDs must not match
-    if (havmorPlatformCustomerId && temporaryCustomerId && havmorPlatformCustomerId === temporaryCustomerId) {
+    // 1. Defensive check: IDs must not match
+    if (
+        havmorPlatformCustomerId &&
+        temporaryCustomerId &&
+        havmorPlatformCustomerId === temporaryCustomerId
+    ) {
         throw new ApiError(
             StatusCodes.BAD_REQUEST,
             ReasonPhrases.BAD_REQUEST,
@@ -40,7 +67,7 @@ const checkCustomerIdClashes = async (userId, data, excludeId = null) => {
         );
     }
 
-    // Check if havmorPlatformCustomerId clashes with any existing temporaryCustomerId
+    // 2. Check if havmorPlatformCustomerId clashes with any existing temporaryCustomerId
     if (havmorPlatformCustomerId) {
         const clashTemp = await Customer.findOne({
             userId,
@@ -57,7 +84,7 @@ const checkCustomerIdClashes = async (userId, data, excludeId = null) => {
         }
     }
 
-    // Check if temporaryCustomerId clashes with any existing havmorPlatformCustomerId
+    // 3. Check if temporaryCustomerId clashes with any existing havmorPlatformCustomerId
     if (temporaryCustomerId) {
         const clashHavmor = await Customer.findOne({
             userId,
