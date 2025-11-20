@@ -6,7 +6,7 @@ import {
     REGEX,
     MESSAGES,
     ENUMS,
-    ApiError
+    ApiError,
 } from "../utils/index.js";
 
 const customerSchema = new Schema(
@@ -23,7 +23,7 @@ const customerSchema = new Schema(
             uppercase: true,
             enum: {
                 values: ENUMS.CUSTOMER_STATUS,
-                message: `Invalid ${FIELDS.CUSTOMER_STATUS}`,
+                message: MESSAGES.CUSTOMER_STATUS_INVALID,
             },
             required: [true, MESSAGES.REQUIRED(FIELDS.CUSTOMER_STATUS)],
             default: "TEMPORARY",
@@ -31,22 +31,14 @@ const customerSchema = new Schema(
         temporaryCustomerId: {
             type: String,
             trim: true,
-            validate: {
-                validator: (value) => !value || REGEX.TEMPORARY_CUSTOMER_ID.test(value),
-                message: MESSAGES.TEMPORARY_CUSTOMER_ID_INVALID,
-            },
+            match: [REGEX.TEMPORARY_CUSTOMER_ID, MESSAGES.TEMPORARY_CUSTOMER_ID_INVALID],
             sparse: true,
             unique: true,
         },
         havmorPlatformCustomerId: {
             type: String,
             trim: true,
-            validate: [
-                {
-                    validator: (value) => !value || REGEX.HAVMOR_PLATFORM_CUSTOMER_ID.test(value),
-                    message: MESSAGES.CUSTOMER_ID_INVALID,
-                },
-            ],
+            match: [REGEX.HAVMOR_PLATFORM_CUSTOMER_ID, MESSAGES.CUSTOMER_ID_INVALID],
             sparse: true,
             unique: true,
         },
@@ -92,29 +84,16 @@ const customerSchema = new Schema(
             type: String,
             trim: true,
             lowercase: true,
-            validate: [
-                {
-                    validator: (value) => !value || REGEX.EMAIL.test(value),
-                    message: MESSAGES.EMAIL_INVALID,
-                },
-            ],
+            match: [REGEX.EMAIL, MESSAGES.EMAIL_INVALID],
         },
-        /**
-         * PHONE: Schema-level normalization + validation
-         * - Stores with +91 prefix in DB
-         * - Returns 10 digits in JSON/Object outputs
-         */
         phone: {
             type: String,
             required: [true, MESSAGES.REQUIRED(FIELDS.PHONE)],
             trim: true,
             set: (value) => {
-                // Normalize value to 10 digits
                 const digits = value?.startsWith("+91") ? value.slice(3) : value;
 
-                // Validate using regex
                 if (!REGEX.PHONE.test(digits)) {
-                    // Instead of plain Error, throw ApiError
                     throw new ApiError(
                         StatusCodes.BAD_REQUEST,
                         MESSAGES.PHONE_INVALID
@@ -129,79 +108,86 @@ const customerSchema = new Schema(
             type: String,
             trim: true,
             uppercase: true,
-            validate: [
-                {
-                    validator: (value) => !value || REGEX.PAN_CARD.test(value),
-                    message: MESSAGES.PAN_CARD_INVALID,
-                },
-            ],
+            match: [REGEX.PAN_CARD, MESSAGES.PAN_CARD_INVALID],
         },
         gstinNumber: {
             type: String,
             trim: true,
             uppercase: true,
-            validate: [
-                {
-                    validator: (value) => !value || REGEX.GSTIN_NUMBER.test(value),
-                    message: MESSAGES.GSTIN_NUMBER_INVALID,
-                },
-            ],
+            match: [REGEX.GSTIN_NUMBER, MESSAGES.GSTIN_NUMBER_INVALID],
         },
-        customerAddress: {
-            type: Schema.Types.ObjectId,
-            ref: "Address",
-            required: [true, MESSAGES.REQUIRED(FIELDS.CUSTOMER_ADDRESS)],
+        place: {
+            type: String,
+            required: [true, MESSAGES.REQUIRED(FIELDS.PLACE)],
+            minlength: [3, MESSAGES.MIN_LENGTH(FIELDS.PLACE, 3)],
+            maxlength: [50, MESSAGES.MAX_LENGTH(FIELDS.PLACE, 50)],
+            trim: true,
+            lowercase: true,
+        },
+        city: {
+            type: String,
+            required: [true, MESSAGES.REQUIRED(FIELDS.CITY)],
+            minlength: [2, MESSAGES.MIN_LENGTH(FIELDS.CITY, 2)],
+            maxlength: [50, MESSAGES.MAX_LENGTH(FIELDS.CITY, 50)],
+            trim: true,
+            lowercase: true,
+            match: [REGEX.CITY, MESSAGES.CITY_INVALID],
+        },
+        state: {
+            type: String,
+            trim: true,
+            uppercase: true,
+            required: [true, MESSAGES.REQUIRED(FIELDS.ADDRESS_INDIAN_STATE)],
+        },
+        stateCode: {
+            type: String,
+            trim: true,
+            uppercase: true,
+            required: [true, MESSAGES.REQUIRED(FIELDS.ADDRESS_INDIAN_STATE_CODE)],
+        },
+        pinCode: {
+            type: String,
+            required: [true, MESSAGES.REQUIRED(FIELDS.PIN_CODE)],
+            trim: true,
+            match: [REGEX.PIN_CODE, MESSAGES.PINCODE_INVALID],
         },
     },
     {
         timestamps: true,
+        toJSON: { getters: true },
+        toObject: { getters: true }
     }
 );
-
-// Enable getters when converting to JSON or plain objects
-customerSchema.set("toJSON", { getters: true });
-customerSchema.set("toObject", { getters: true });
 
 // Indexes
 customerSchema.index({ userId: 1, temporaryCustomerId: 1 });
 customerSchema.index({ userId: 1, havmorPlatformCustomerId: 1 });
 
-// Middleware
+// Pre-Save Middleware
 customerSchema.pre("save", async function (next) {
     try {
-        // Handle temporary customers – generate unique temporaryCustomerId only if missing or modified
+        // Auto-generate temporaryCustomerId only for TEMPORARY customers
         if (
             this.customerStatus === "TEMPORARY" &&
             (!this.temporaryCustomerId || this.isModified("temporaryCustomerId"))
         ) {
-            let newCode;
+            let newId;
             let exists = true;
 
-            do {
-                // Generate an 8-digit random number
-                newCode = Math.floor(10000000 + Math.random() * 90000000).toString();
+            while (exists) {
+                newId = Math.floor(10000000 + Math.random() * 90000000).toString();
 
-                // Check against other customers
-                const clash = await mongoose.models.Customer.findOne({
+                const duplicate = await mongoose.models.Customer.findOne({
                     $or: [
-                        { temporaryCustomerId: newCode },
-                        { havmorPlatformCustomerId: newCode },
+                        { temporaryCustomerId: newId },
+                        { havmorPlatformCustomerId: newId },
                     ],
                 });
 
-                // Also ensure it’s not equal to this doc’s own havmorPlatformCustomerId
-                if (
-                    this.havmorPlatformCustomerId === newCode ||
-                    this.temporaryCustomerId === newCode
-                ) {
-                    exists = true;
-                } else {
-                    exists = !!clash;
-                }
-            } while (exists);
+                exists = !!duplicate || this.havmorPlatformCustomerId === newId;
+            }
 
-            // Assign the unique code
-            this.temporaryCustomerId = newCode;
+            this.temporaryCustomerId = newId;
         }
 
         next();
