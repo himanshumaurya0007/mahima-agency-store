@@ -9,71 +9,65 @@ import {
 
 import { User } from "../models/user.model.js";
 
-const verifyJWT = asyncHandler(async (req, res, next) => {
-    try {
-        let token = null;
+/**
+ * JWT Authentication Guard
+ * ------------------------------------------------------------------
+ * - Extracts JWT from Authorization header or cookies
+ * - Verifies signature and expiration
+ * - Loads user into req.user
+ * - Throws structured ApiError for all auth failure states
+ * ------------------------------------------------------------------
+ */
+export const verifyJWT = asyncHandler(async (req, res, next) => {
 
-        // Extract token from Authorization header
-        const authHeader = req.headers["authorization"];
-        if (authHeader?.startsWith("Bearer ")) {
-            token = authHeader.split(" ")[1];
-        }
+    // Extract JWT from header
+    let token = req.headers?.authorization?.startsWith("Bearer ")
+        ? req.headers.authorization.split(" ")[1]
+        : req.cookies?.accessToken;
 
-        // Fallback: Check cookies if no token in header
-        if (!token && req.cookies?.accessToken) {
-            token = req.cookies.accessToken;
-        }
-
-        if (!token) {
-            logger.warn("Authentication failed: No token found in header or cookies");
-            throw new ApiError(
-                StatusCodes.UNAUTHORIZED,
-                ReasonPhrases.UNAUTHORIZED,
-                ["Authentication token required"]
-            );
-        }
-
-        // Verify token signature & expiration
-        let decoded;
-        try {
-            decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-        } catch (err) {
-            logger.error("Invalid or expired token", { reason: err.message });
-            throw new ApiError(
-                StatusCodes.UNAUTHORIZED,
-                ReasonPhrases.UNAUTHORIZED,
-                ["Invalid or expired token"]
-            );
-        }
-
-        // Fetch user
-        const user = await User.findById(decoded._id)
-            .select("-password -securityAnswer -refreshToken");
-
-        if (!user) {
-            logger.warn("Token valid but corresponding user no longer exists", {
-                userId: decoded._id,
-            });
-            throw new ApiError(
-                StatusCodes.UNAUTHORIZED,
-                ReasonPhrases.UNAUTHORIZED,
-                ["User no longer exists"]
-            );
-        }
-
-        req.user = user;
-
-        logger.info(`Authenticated user: ${user._id}`);
-
-        next();
-    } catch (error) {
-        next(
-            new ApiError(
-                error.statusCode || StatusCodes.UNAUTHORIZED,
-                error.message || ReasonPhrases.UNAUTHORIZED,
-                error.errors || []
-            ));
+    if (!token) {
+        logger.warn("Authentication failed: No token provided");
+        throw new ApiError(
+            StatusCodes.UNAUTHORIZED,
+            "Authentication token required",
+            ["Token missing from header or cookies"]
+        );
     }
-});
 
-export { verifyJWT };
+    // Verify token validity
+    let decoded;
+    try {
+        decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    } catch (err) {
+        logger.warn("Authentication failed: Invalid or expired token", {
+            reason: err.message,
+        });
+
+        throw new ApiError(
+            StatusCodes.UNAUTHORIZED,
+            "Invalid or expired token",
+            [err.message]
+        );
+    }
+
+    // Validate user existence
+    const user = await User.findById(decoded._id)
+        .select("-password -securityAnswer -refreshToken");
+
+    if (!user) {
+        logger.warn("Authentication failed: User not found", {
+            userId: decoded._id,
+        });
+
+        throw new ApiError(
+            StatusCodes.UNAUTHORIZED,
+            "User no longer exists",
+            [`User with ID ${decoded._id} not found`]
+        );
+    }
+
+    req.user = user;
+    logger.info(`Authenticated user: ${user._id}`);
+
+    next();
+});
