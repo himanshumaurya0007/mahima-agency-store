@@ -43,7 +43,7 @@ export const MESSAGES = {
     // 🏪 CUSTOMER / BUSINESS DETAILS
     // ---------------------------
     TEMPORARY_CUSTOMER_ID_INVALID: "Temporary Customer ID must be a valid 8 digits",
-    CUSTOMER_ID_INVALID: "Customer ID must be a valid Havmor Platform Customer ID with 8 digits",
+    HAVMOR_PLATFORM_CUSTOMER_ID_INVALID: "Havmor Platform Customer ID must be a valid 8 digits",
     CUSTOMER_STATUS_INVALID: "Customer status must be either TEMPORARY or PERMANENT",
     SHOP_NAME_INVALID: "Shop name must contain only letters, numbers, spaces, and common punctuation",
     HAVMOR_PLATFORM_ID_MISSING: "Havmor Platform Customer ID is required for permanent customers",
