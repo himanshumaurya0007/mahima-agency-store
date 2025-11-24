@@ -31,16 +31,28 @@ const customerSchema = new Schema(
         temporaryCustomerId: {
             type: String,
             trim: true,
-            match: [REGEX.TEMPORARY_CUSTOMER_ID, MESSAGES.TEMPORARY_CUSTOMER_ID_INVALID],
             sparse: true,
             unique: true,
+            validate: {
+                validator: function (value) {
+                    if (!value || value === "") return true;
+                    return REGEX.TEMPORARY_CUSTOMER_ID.test(value);
+                },
+                message: MESSAGES.TEMPORARY_CUSTOMER_ID_INVALID
+            }
         },
         havmorPlatformCustomerId: {
             type: String,
             trim: true,
-            match: [REGEX.HAVMOR_PLATFORM_CUSTOMER_ID, MESSAGES.CUSTOMER_ID_INVALID],
             sparse: true,
             unique: true,
+            validate: {
+                validator: function (value) {
+                    if (!value || value === "") return true;
+                    return REGEX.HAVMOR_PLATFORM_CUSTOMER_ID.test(value);
+                },
+                message: MESSAGES.HAVMOR_PLATFORM_CUSTOMER_ID_INVALID
+            }
         },
         shopName: {
             type: String,
@@ -56,11 +68,11 @@ const customerSchema = new Schema(
             lowercase: true,
             validate: [
                 {
-                    validator: (value) => !value || value.length >= 2,
+                    validator: (value) => !value || value === "" || value.length >= 2,
                     message: MESSAGES.MIN_LENGTH(FIELDS.FIRST_NAME, 2),
                 },
                 {
-                    validator: (value) => !value || value.length <= 50,
+                    validator: (value) => !value || value === "" || value.length <= 50,
                     message: MESSAGES.MAX_LENGTH(FIELDS.FIRST_NAME, 50),
                 },
             ],
@@ -71,11 +83,11 @@ const customerSchema = new Schema(
             lowercase: true,
             validate: [
                 {
-                    validator: (value) => !value || value.length >= 2,
+                    validator: (value) => !value || value === "" || value.length >= 2,
                     message: MESSAGES.MIN_LENGTH(FIELDS.LAST_NAME, 2),
                 },
                 {
-                    validator: (value) => !value || value.length <= 50,
+                    validator: (value) => !value || value === "" || value.length <= 50,
                     message: MESSAGES.MAX_LENGTH(FIELDS.LAST_NAME, 50),
                 },
             ],
@@ -84,7 +96,13 @@ const customerSchema = new Schema(
             type: String,
             trim: true,
             lowercase: true,
-            match: [REGEX.EMAIL, MESSAGES.EMAIL_INVALID],
+            validate: {
+                validator: function (value) {
+                    if (!value || value === "") return true;
+                    return REGEX.EMAIL.test(value);
+                },
+                message: MESSAGES.EMAIL_INVALID
+            }
         },
         phone: {
             type: String,
@@ -108,13 +126,25 @@ const customerSchema = new Schema(
             type: String,
             trim: true,
             uppercase: true,
-            match: [REGEX.PAN_CARD, MESSAGES.PAN_CARD_INVALID],
+            validate: {
+                validator: function (value) {
+                    if (!value || value === "") return true;
+                    return REGEX.PAN_CARD.test(value);
+                },
+                message: MESSAGES.PAN_CARD_INVALID,
+            }
         },
         gstinNumber: {
             type: String,
             trim: true,
             uppercase: true,
-            match: [REGEX.GSTIN_NUMBER, MESSAGES.GSTIN_NUMBER_INVALID],
+            validate: {
+                validator: function (value) {
+                    if (!value || value === "") return true;
+                    return REGEX.GSTIN_NUMBER.test(value);
+                },
+                message: MESSAGES.GSTIN_NUMBER_INVALID,
+            }
         },
         place: {
             type: String,
@@ -144,6 +174,7 @@ const customerSchema = new Schema(
             trim: true,
             uppercase: true,
             required: [true, MESSAGES.REQUIRED(FIELDS.ADDRESS_INDIAN_STATE_CODE)],
+            match: [REGEX.STATE_CODE, MESSAGES.STATE_CODE_INVALID],
         },
         pinCode: {
             type: String,
