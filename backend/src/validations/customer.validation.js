@@ -33,7 +33,7 @@ const customerValidationSchema = Joi.object({
         .optional()
         .allow(null, "")
         .messages({
-            "string.pattern.base": MESSAGES.CUSTOMER_ID_INVALID,
+            "string.pattern.base": MESSAGES.HAVMOR_PLATFORM_CUSTOMER_ID_INVALID,
         }),
 
     shopName: Joi.string()
