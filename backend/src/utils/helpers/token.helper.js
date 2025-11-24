@@ -1,5 +1,5 @@
-import jwt from "jsonwebtoken";
 import { StatusCodes, ReasonPhrases } from "http-status-codes";
+import bcrypt from "bcryptjs";
 
 import { ApiError, logger } from "../../utils/index.js";
 
@@ -25,8 +25,11 @@ export const generateAccessAndRefreshTokens = async (userId) => {
         const accessToken = user.generateAccessToken();
         const refreshToken = user.generateRefreshToken();
 
-        // Save refresh token in DB
-        user.refreshToken = refreshToken;
+        // Hash the refresh token before saving
+        const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS) || 10;
+        const hashedRefreshToken = await bcrypt.hash(refreshToken, saltRounds);
+
+        user.refreshToken = hashedRefreshToken;
         await user.save({ validateBeforeSave: false });
 
         logger.debug(`Tokens generated successfully for userId: ${userId}`);
@@ -44,23 +47,36 @@ export const generateAccessAndRefreshTokens = async (userId) => {
 };
 
 export const setAuthCookies = (res, accessToken, refreshToken) => {
-    const cookieOptions = {
+    const accessTokenCookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
         path: "/",
-        // maxAge: process.env.REFRESH_TOKEN_MAX_AGE || 7 * 24 * 60 * 60 * 1000,
-        maxAge: process.env.REFRESH_TOKEN_MAX_AGE || 604800000,
+        maxAge: Number(process.env.ACCESS_TOKEN_MAX_AGE) || 15 * 60 * 1000, // 15m
+    };
+
+    const refreshTokenCookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        path: "/",
+        // path: "/api/v1/users/tokens",
+        maxAge: Number(process.env.REFRESH_TOKEN_MAX_AGE) || 7 * 24 * 60 * 60 * 1000, // 7d
     };
 
     res
-        .cookie("accessToken", accessToken, cookieOptions)
-        .cookie("refreshToken", refreshToken, cookieOptions);
+        .cookie("accessToken", accessToken, accessTokenCookieOptions)
+        .cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
 };
 
 export const findUserByEmailOrUsername = async (query = {}, selectFields = "") => {
     const filters = [];
-    if (query.email) filters.push({ email: query.email });
-    if (query.username) filters.push({ username: query.username });
+
+    if (query.email) 
+        filters.push({ email: query.email });
+    
+    if (query.username) 
+        filters.push({ username: query.username });
+
     return User.findOne({ $or: filters }).select(selectFields);
 }
