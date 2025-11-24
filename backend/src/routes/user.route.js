@@ -16,7 +16,8 @@ import {
     fetchSecurityQuestion,
     validateSecurityAnswerController,
     resetUserPassword,
-    refreshTokens
+    refreshTokens,
+    // userProfile
 } from "../controllers/user.controller.js";
 
 const router = Router();
@@ -63,5 +64,9 @@ router.use(verifyJWT); // Protect all routes below this line
 router
     .route("/logout")
     .post(logoutUser);
+
+// router
+//     .route("/me")
+//     .get(userProfile);
 
 export default router;
